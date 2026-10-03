@@ -401,23 +401,25 @@ input:focus, textarea:focus, select:focus {
 /* 9:16 Aspect Ratio Model Card - Exact 5-Inch Height on PC */
 .model-reel-card {
   position: relative;
-  height: 5in; /* Exact 5-inch height on PC requested by user (1in = 96px => 480px) */
+  height: 5in; /* Exact 5-inch height on PC (480px, 9:16 ratio) */
   aspect-ratio: 9 / 16;
-  width: calc(5in * 9 / 16); /* ~270px width */
+  width: calc(5in * 9 / 16); /* 270px */
   border-radius: 1.5rem;
   overflow: hidden;
   flex-shrink: 0;
-  box-shadow: 0 16px 36px -8px rgba(237, 150, 215, 0.45), 0 6px 18px rgba(43, 14, 35, 0.12);
+  box-shadow: 0 16px 36px -8px rgba(237, 150, 215, 0.5), 0 8px 24px rgba(43, 14, 35, 0.16);
   border: 2px solid rgba(255, 255, 255, 0.95);
   background: #fdf2f8;
   pointer-events: auto;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+  opacity: 0.92;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease, border-color 0.4s ease, opacity 0.3s ease;
 }
 
 .model-reel-card:hover {
-  transform: translateY(-8px) scale(1.03);
+  transform: translateY(-8px) scale(1.04);
   border-color: #ED96D7;
-  box-shadow: 0 25px 50px -10px rgba(237, 150, 215, 0.6), 0 10px 25px rgba(219, 39, 119, 0.25);
+  opacity: 1;
+  box-shadow: 0 25px 50px -10px rgba(237, 150, 215, 0.7), 0 12px 28px rgba(219, 39, 119, 0.3);
   z-index: 5;
 }
 
@@ -447,8 +449,8 @@ input:focus, textarea:focus, select:focus {
     animation-duration: 32s;
   }
   .model-reel-card {
-    height: 350px; /* Scaled cleanly for mobile tablets/phones */
-    width: calc(350px * 9 / 16); /* ~197px */
+    height: 360px; /* Scaled cleanly for mobile tablets/phones */
+    width: calc(360px * 9 / 16); /* ~202px */
     border-radius: 1.25rem;
   }
 }
@@ -459,8 +461,8 @@ input:focus, textarea:focus, select:focus {
     animation-duration: 26s;
   }
   .model-reel-card {
-    height: 290px; /* Perfectly fits handheld phone viewports */
-    width: calc(290px * 9 / 16); /* ~163px */
+    height: 300px; /* Fits handheld phone viewports */
+    width: calc(300px * 9 / 16); /* ~168px */
     border-radius: 1rem;
     box-shadow: 0 10px 25px -6px rgba(237, 150, 215, 0.35);
   }
@@ -470,7 +472,7 @@ input:focus, textarea:focus, select:focus {
 .hero-vignette-overlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, rgba(255, 248, 250, 0.88) 15%, rgba(255, 248, 250, 0.72) 60%, rgba(255, 248, 250, 0.96) 100%);
+  background: radial-gradient(circle at center, rgba(255, 248, 250, 0.2) 10%, rgba(255, 248, 250, 0.15) 50%, rgba(255, 248, 250, 0.55) 100%);
   pointer-events: none;
   z-index: 2;
 }
@@ -478,7 +480,7 @@ input:focus, textarea:focus, select:focus {
 .hero-vignette-sides {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, #fff8fa 0%, transparent 12%, transparent 88%, #fff8fa 100%);
+  background: linear-gradient(to right, rgba(255, 248, 250, 0.75) 0%, transparent 12%, transparent 88%, rgba(255, 248, 250, 0.75) 100%);
   pointer-events: none;
   z-index: 3;
 }
@@ -486,17 +488,23 @@ input:focus, textarea:focus, select:focus {
 .hero-vignette-vertical {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, #fff8fa 0%, transparent 18%, transparent 82%, #fff8fa 100%);
+  background: linear-gradient(to bottom, rgba(255, 248, 250, 0.75) 0%, transparent 15%, transparent 85%, rgba(255, 248, 250, 0.75) 100%);
   pointer-events: none;
   z-index: 3;
 }
 
-/* Center Frosted Glass Box for Hero Content */
+/* Center Frosted Glass Box for Hero Content - Ultra Transparent Crystal Glass */
 .hero-center-box {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1.5px solid rgba(237, 150, 215, 0.5);
-  box-shadow: 0 25px 60px -15px rgba(237, 150, 215, 0.35), 0 10px 30px rgba(43, 14, 35, 0.08);
+  background: rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(237, 150, 215, 0.55);
+  box-shadow: 0 25px 60px -15px rgba(237, 150, 215, 0.38), 0 10px 30px rgba(43, 14, 35, 0.08);
+}
+
+.hero-center-box h1,
+.hero-center-box p,
+.hero-center-box .font-heading {
+  text-shadow: 0 1px 5px rgba(255, 255, 255, 0.95), 0 2px 12px rgba(255, 255, 255, 0.8);
 }
 
