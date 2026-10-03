@@ -152,29 +152,34 @@ function initAuth() {
     return;
   }
 
-  // 1. Initial Session Check
-  client.auth.getSession().then(({ data: { session }, error }) => {
-    if (error) {
-      console.warn('Session check error:', error);
+  // 1. Initial Session Check (Supabase session or Super Admin session)
+  const masterAuth = sessionStorage.getItem('bongbangla_admin_auth') === 'true';
+  if (masterAuth) {
+    showAuthenticatedState({ email: 'admin@bongbangla.top' });
+  } else {
+    client.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.warn('Session check error:', error);
+        showUnauthenticatedState();
+        return;
+      }
+      if (session && session.user) {
+        showAuthenticatedState(session.user);
+      } else {
+        showUnauthenticatedState();
+      }
+    }).catch(err => {
+      console.warn('Auth getSession failed:', err);
       showUnauthenticatedState();
-      return;
-    }
-    if (session && session.user) {
-      showAuthenticatedState(session.user);
-    } else {
-      showUnauthenticatedState();
-    }
-  }).catch(err => {
-    console.warn('Auth getSession failed:', err);
-    showUnauthenticatedState();
-  });
+    });
+  }
 
   // 2. Auth State Change Listener
   try {
     client.auth.onAuthStateChange((event, session) => {
       if (session && session.user) {
         showAuthenticatedState(session.user);
-      } else {
+      } else if (!sessionStorage.getItem('bongbangla_admin_auth')) {
         showUnauthenticatedState();
       }
     });
@@ -230,18 +235,29 @@ function initAuth() {
             showAlert('info', 'অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে! যদি কনফার্মেশন চালু থাকে তবে আপনার ইমেইল চেক করুন, অথবা কনসোল থেকে Confirm Email করুন।');
           }
         } else {
+          // Check master admin credentials first or fallback
+          const isMaster = (email.toLowerCase() === 'admin@bongbangla.top' || email.toLowerCase() === 'admin') && 
+                           (password === 'bongbangla2026' || password === 'bong2026');
+
           // --- Real Supabase Sign In ---
           const { data, error } = await client.auth.signInWithPassword({
-            email,
+            email: email.includes('@') ? email : 'admin@bongbangla.top',
             password
           });
+
+          if (error && isMaster) {
+            sessionStorage.setItem('bongbangla_admin_auth', 'true');
+            showAlert('success', 'লগইন সফল হয়েছে! ড্যাশবোর্ডে প্রবেশ করা হচ্ছে...');
+            showAuthenticatedState({ email: 'admin@bongbangla.top' });
+            return;
+          }
 
           if (error) {
             let msg = error.message;
             if (msg.includes('Invalid login credentials')) {
               msg = 'ভুল ইমেইল বা পাসওয়ার্ড! অনুগ্রহ করে সঠিক তথ্য দিয়ে পুনরায় চেষ্টা করুন।';
             } else if (msg.includes('Email not confirmed')) {
-              msg = 'ইমেইলটি এখনও কনফার্ম করা হয়নি। অনুগ্রহ করে ইনবক্স চেক করুন বা Supabase ড্যাশবোর্ডে অটো-কনফার্ম চেক করুন।';
+              msg = 'ইমেইলটি এখনও কনফার্ম করা হয়নি। অনুগ্রহ করে ইনবক্স চেক করুন বা Supabase ড্যাশবোর্ডে Confirm Email করুন।';
             }
             showAlert('error', msg);
           } else if (data?.session) {
@@ -263,6 +279,7 @@ function initAuth() {
   // 4. Logout Handler
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
+      sessionStorage.removeItem('bongbangla_admin_auth');
       try {
         await client.auth.signOut();
       } catch (err) {
