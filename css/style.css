@@ -1,0 +1,502 @@
+/* ==========================================================================
+   BongBangla Agency - White Pinkish Luxury Bengali Aesthetic
+   Domain: bongbangla.top
+   Primary Brand Accent: #ED96D7 (Blossom Orchid Pink)
+   Aesthetic: Ultra-Clean White & Rose Silk, Jamdani Floral Zari & Haute Couture Media
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@600;700;800&display=swap');
+
+:root {
+  --font-heading: 'Syne', sans-serif;
+  --font-royal: 'Cinzel', serif;
+  --font-bangla: 'Hind Siliguri', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  
+  /* White & Pinkish Theme Palette */
+  --bg-main: #fff8fa;
+  --bg-card: rgba(255, 255, 255, 0.94);
+  --bg-card-hover: #ffffff;
+  --bg-soft-pink: #fdf2f8;
+  --bg-blush: #fce7f3;
+  
+  /* Primary & Accent Pink Tones */
+  --pink-primary: #ED96D7;
+  --pink-glow: rgba(237, 150, 215, 0.45);
+  --pink-deep: #db2777;
+  --pink-rose: #be185d;
+  --pink-light: #fbcfe8;
+  --pink-pastel: #fdf2f8;
+  
+  /* High-Contrast Luxury Typography */
+  --text-primary: #2b0e23;
+  --text-secondary: #572449;
+  --text-muted: #8c4f75;
+  --text-light: #ab6d95;
+  
+  /* Borders & Shadows */
+  --border-subtle: rgba(237, 150, 215, 0.3);
+  --border-medium: rgba(237, 150, 215, 0.55);
+  --border-active: #ED96D7;
+  --shadow-pink-soft: 0 10px 30px -5px rgba(237, 150, 215, 0.22);
+  --shadow-pink-glow: 0 15px 40px -5px rgba(237, 150, 215, 0.38);
+}
+
+* {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-main);
+  color: var(--text-secondary);
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+  position: relative;
+}
+
+::selection {
+  background: var(--pink-primary);
+  color: #ffffff;
+}
+
+/* Custom Scrollbar in Luxury White Pinkish */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: #fdf2f8;
+}
+::-webkit-scrollbar-thumb {
+  background: #ED96D7;
+  border-radius: 6px;
+  border: 2px solid #fff8fa;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pink-deep);
+  box-shadow: 0 0 10px var(--pink-glow);
+}
+
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-royal {
+  font-family: var(--font-royal);
+}
+
+.font-bangla {
+  font-family: var(--font-bangla);
+}
+
+/* Atmospheric Glow Background (White-Pink Dreams) */
+.ambient-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(140px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.55;
+}
+
+.glow-crimson, .glow-pink-primary {
+  background: radial-gradient(circle, #ED96D7 0%, rgba(237, 150, 215, 0.25) 55%, transparent 75%);
+}
+
+.glow-gold, .glow-rose-blush {
+  background: radial-gradient(circle, #fbcfe8 0%, rgba(251, 207, 232, 0.3) 60%, transparent 75%);
+}
+
+.glow-maroon, .glow-plum-soft {
+  background: radial-gradient(circle, #f472b6 0%, rgba(244, 114, 182, 0.15) 55%, transparent 75%);
+}
+
+/* Jamdani / Floral Bengali Texture Pattern */
+.bg-jamdani-pattern {
+  background-image: 
+    radial-gradient(rgba(237, 150, 215, 0.25) 1.5px, transparent 1.5px),
+    linear-gradient(to right, rgba(237, 150, 215, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(237, 150, 215, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px, 64px 64px, 64px 64px;
+}
+
+/* Glassmorphism Card Classes (White Pink Luxury) */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 10px 30px -5px rgba(237, 150, 215, 0.15), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.glass-panel-hover {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-panel-hover:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-active);
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -10px rgba(237, 150, 215, 0.35), 0 0 15px rgba(237, 150, 215, 0.15) inset;
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(237, 150, 215, 0.35);
+  box-shadow: 0 4px 20px -2px rgba(237, 150, 215, 0.12);
+}
+
+/* Bengali Luxury Gradient Text in Orchid Pink & Rose */
+.text-gradient-crimson, .text-gradient-pink {
+  background: linear-gradient(135deg, #2b0e23 0%, #db2777 45%, #ED96D7 85%, #be185d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(237, 150, 215, 0.25));
+}
+
+.text-gradient-gold, .text-gradient-rose {
+  background: linear-gradient(135deg, #db2777 0%, #ED96D7 50%, #f472b6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(237, 150, 215, 0.3));
+}
+
+.royal-text-glow {
+  text-shadow: 0 0 12px rgba(237, 150, 215, 0.65), 0 0 25px rgba(219, 39, 119, 0.25);
+}
+
+/* Primary Glowing Button with #ED96D7 */
+.btn-primary-glow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #ED96D7 0%, #f472b6 35%, #db2777 100%);
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 0 25px rgba(237, 150, 215, 0.55), 0 8px 25px rgba(219, 39, 119, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary-glow::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: rotate(45deg) translateY(-100%);
+  transition: all 0.6s ease;
+}
+
+.btn-primary-glow:hover::after {
+  transform: rotate(45deg) translateY(100%);
+}
+
+.btn-primary-glow:hover {
+  box-shadow: 0 0 35px rgba(237, 150, 215, 0.8), 0 12px 30px rgba(219, 39, 119, 0.4);
+  transform: translateY(-2px);
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+/* Secondary Button (Frosted White with #ED96D7 Border & Deep Pink Text) */
+.btn-secondary-glass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid #ED96D7;
+  color: #be185d;
+  font-weight: 700;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(237, 150, 215, 0.15);
+  transition: all 0.3s ease;
+}
+
+.btn-secondary-glass:hover {
+  background: #fdf2f8;
+  border-color: #db2777;
+  color: #9d174d;
+  box-shadow: 0 0 25px rgba(237, 150, 215, 0.45);
+  transform: translateY(-2px);
+}
+
+/* Alta / Orchid Pulse Animation */
+@keyframes alta-pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(237, 150, 215, 0.8); }
+  70% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(237, 150, 215, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(237, 150, 215, 0); }
+}
+
+.pulse-indicator {
+  animation: alta-pulse 2s infinite;
+}
+
+/* Jamdani Border Decor */
+.border-jamdani {
+  border: 1px solid rgba(237, 150, 215, 0.4);
+  position: relative;
+}
+
+.border-jamdani::before {
+  content: '❖';
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  padding: 0 8px;
+  color: #ED96D7;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Badges with Pink & Blossom Accents */
+.badge-tag {
+  background: rgba(237, 150, 215, 0.16);
+  border: 1px solid rgba(237, 150, 215, 0.5);
+  color: #be185d;
+  font-weight: 600;
+}
+
+.badge-gold {
+  background: rgba(251, 207, 232, 0.4);
+  border: 1px solid rgba(237, 150, 215, 0.55);
+  color: #9d174d;
+  font-weight: 600;
+}
+
+/* Gallery Item Zoom Overlay */
+.gallery-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1.5px solid rgba(237, 150, 215, 0.28);
+  box-shadow: 0 8px 25px -5px rgba(237, 150, 215, 0.15);
+  transition: all 0.35s ease;
+  background: #ffffff;
+}
+
+.gallery-card:hover {
+  border-color: #ED96D7;
+  box-shadow: 0 16px 40px -8px rgba(237, 150, 215, 0.4);
+  transform: translateY(-4px);
+}
+
+.gallery-card img {
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.gallery-card:hover img {
+  transform: scale(1.08);
+}
+
+.gallery-overlay {
+  background: linear-gradient(to top, rgba(43, 14, 35, 0.94) 0%, rgba(43, 14, 35, 0.4) 50%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gallery-card:hover .gallery-overlay {
+  opacity: 1;
+}
+
+/* Modal Transitions & Mobile Stability */
+.modal-backdrop {
+  background: rgba(43, 14, 35, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  width: 100vw;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+#booking-modal .modal-card,
+#booking-modal .glass-panel {
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: min(520px, calc(100vw - 24px)) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+#booking-modal button[type="submit"] {
+  white-space: normal !important;
+  word-break: break-word;
+}
+
+/* Floating Animation */
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+/* Smooth Form Focus */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #ED96D7 !important;
+  box-shadow: 0 0 0 3px rgba(237, 150, 215, 0.25) !important;
+}
+
+/* ==========================================================================
+   Hero Section 9:16 Background Slideshow Reel
+   ========================================================================== */
+.hero-slideshow-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero-slideshow-track {
+  display: flex;
+  gap: 1.5rem;
+  width: max-content;
+  animation: heroReelMarquee 42s linear infinite;
+  will-change: transform;
+}
+
+.hero-slideshow-container:hover .hero-slideshow-track,
+.hero-slideshow-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes heroReelMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* 9:16 Aspect Ratio Model Card - Exact 5-Inch Height on PC */
+.model-reel-card {
+  position: relative;
+  height: 5in; /* Exact 5-inch height on PC requested by user (1in = 96px => 480px) */
+  aspect-ratio: 9 / 16;
+  width: calc(5in * 9 / 16); /* ~270px width */
+  border-radius: 1.5rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 16px 36px -8px rgba(237, 150, 215, 0.45), 0 6px 18px rgba(43, 14, 35, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  background: #fdf2f8;
+  pointer-events: auto;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+}
+
+.model-reel-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  border-color: #ED96D7;
+  box-shadow: 0 25px 50px -10px rgba(237, 150, 215, 0.6), 0 10px 25px rgba(219, 39, 119, 0.25);
+  z-index: 5;
+}
+
+.model-reel-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.model-reel-card:hover img {
+  transform: scale(1.08);
+}
+
+/* Mobile & Tablet Responsiveness for Phone Optimization */
+@media (max-width: 1024px) {
+  .model-reel-card {
+    height: 4.2in;
+    width: calc(4.2in * 9 / 16);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-slideshow-track {
+    gap: 1rem;
+    animation-duration: 32s;
+  }
+  .model-reel-card {
+    height: 350px; /* Scaled cleanly for mobile tablets/phones */
+    width: calc(350px * 9 / 16); /* ~197px */
+    border-radius: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-slideshow-track {
+    gap: 0.75rem;
+    animation-duration: 26s;
+  }
+  .model-reel-card {
+    height: 290px; /* Perfectly fits handheld phone viewports */
+    width: calc(290px * 9 / 16); /* ~163px */
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px -6px rgba(237, 150, 215, 0.35);
+  }
+}
+
+/* Vignette Masks for Atmospheric White-Pink Luxury */
+.hero-vignette-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 248, 250, 0.88) 15%, rgba(255, 248, 250, 0.72) 60%, rgba(255, 248, 250, 0.96) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hero-vignette-sides {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, #fff8fa 0%, transparent 12%, transparent 88%, #fff8fa 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.hero-vignette-vertical {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, #fff8fa 0%, transparent 18%, transparent 82%, #fff8fa 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Center Frosted Glass Box for Hero Content */
+.hero-center-box {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(237, 150, 215, 0.5);
+  box-shadow: 0 25px 60px -15px rgba(237, 150, 215, 0.35), 0 10px 30px rgba(43, 14, 35, 0.08);
+}
+
