@@ -634,9 +634,9 @@ function resetReelsToDefault() {
 }
 
 /**
- * Renders the 3 Row x 3 Column (9 Reels per page) grid with full dynamic pagination
+ * Renders the 3 Row x 3 Column (9 Reels per page) grid with full dynamic pagination & Realtime Supabase Sync
  */
-function initReelsPage(options = {}) {
+async function initReelsPage(options = {}) {
   const {
     category = 'all',
     containerId = 'reels-grid-container',
@@ -647,14 +647,20 @@ function initReelsPage(options = {}) {
 
   let currentPage = 1;
 
-  function render() {
+  async function render() {
     const container = document.getElementById(containerId);
     const pagination = document.getElementById(paginationId);
     const countBadge = document.getElementById(countBadgeId);
 
     if (!container) return;
 
-    const allCategoryReels = getReels(category);
+    let allCategoryReels = [];
+    if (window.BongBanglaSupabase && window.BongBanglaSupabase.isConfigured()) {
+      allCategoryReels = await window.BongBanglaSupabase.fetchReels(category);
+    } else {
+      allCategoryReels = getReels(category);
+    }
+
     const totalItems = allCategoryReels.length;
     const totalPages = Math.max(1, Math.ceil(totalItems / perPage));
 
@@ -673,7 +679,7 @@ function initReelsPage(options = {}) {
         <div class="col-span-full text-center py-16 bg-white rounded-3xl border border-dashed border-[#ED96D7]/50 p-8">
           <i class="fa-solid fa-film text-4xl text-[#ED96D7] mb-3"></i>
           <h4 class="font-bangla font-bold text-lg text-[#2b0e23]">এই ক্যাটাগরিতে এখনও কোনো রিলস যোগ করা হয়নি</h4>
-          <p class="text-xs text-[#8c4f75] mt-1 font-bangla">অ্যাডমিন প্যানেল থেকে নতুন রিলস ভিডিও আপলোড করুন।</p>
+          <p class="text-xs text-[#8c4f75] mt-1 font-bangla">অ্যাডমিন প্যানেল বা Supabase থেকে নতুন রিলস ভিডিও আপলোড করুন।</p>
           <a href="admin.html" class="inline-block mt-4 px-5 py-2.5 rounded-xl bg-[#db2777] text-white text-xs font-bold font-bangla shadow-md hover:bg-[#be185d]">
             <i class="fa-solid fa-plus mr-1.5"></i> অ্যাডমিন থেকে রিলস আপলোড করুন
           </a>
@@ -821,7 +827,23 @@ function initReelsPage(options = {}) {
   }
 
   // Initial render
-  render();
+  await render();
+
+  // Listen to Supabase Realtime changes on 'reels' table
+  if (window.BongBanglaSupabase && window.BongBanglaSupabase.getClient()) {
+    try {
+      const client = window.BongBanglaSupabase.getClient();
+      client
+        .channel(`public:reels:${category}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'reels' }, () => {
+          console.log('⚡ Realtime reels update detected from Supabase!');
+          render();
+        })
+        .subscribe();
+    } catch (e) {
+      console.warn('Realtime subscription error:', e);
+    }
+  }
 }
 
 /**
