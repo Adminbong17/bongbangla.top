@@ -157,23 +157,23 @@ body {
   box-shadow: 0 4px 20px -2px rgba(237, 150, 215, 0.12);
 }
 
-/* Bengali Luxury Gradient Text in Orchid Pink & Rose */
+/* Bengali Luxury High-Contrast Gradient & Solid Text */
 .text-gradient-crimson, .text-gradient-pink {
-  background: linear-gradient(135deg, #2b0e23 0%, #db2777 45%, #ED96D7 85%, #be185d 100%);
+  color: #db2777;
+  background: linear-gradient(135deg, #be185d 0%, #db2777 50%, #9d174d 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 10px rgba(237, 150, 215, 0.25));
 }
 
 .text-gradient-gold, .text-gradient-rose {
-  background: linear-gradient(135deg, #db2777 0%, #ED96D7 50%, #f472b6 100%);
+  color: #be185d;
+  background: linear-gradient(135deg, #db2777 0%, #be185d 50%, #831843 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 8px rgba(237, 150, 215, 0.3));
 }
 
 .royal-text-glow {
-  text-shadow: 0 0 12px rgba(237, 150, 215, 0.65), 0 0 25px rgba(219, 39, 119, 0.25);
+  text-shadow: 0 0 8px rgba(237, 150, 215, 0.35);
 }
 
 /* Primary Glowing Button with #ED96D7 */
@@ -525,25 +525,25 @@ input:focus, textarea:focus, select:focus {
   z-index: 3;
 }
 
-/* Center Frosted Glass Box - Crystal Sheer Transparency & Gloss */
+/* Center Frosted Glass Box - Crystal Glass Transparency & Perfect Text Readability */
 .hero-center-box {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.1) 100%);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border: 1.5px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 30px 70px -10px rgba(237, 150, 215, 0.35), 0 10px 25px rgba(43, 14, 35, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.95);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.65) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 25px 60px -10px rgba(237, 150, 215, 0.35), 0 8px 25px rgba(43, 14, 35, 0.06), inset 0 1px 2px rgba(255, 255, 255, 1);
 }
 
 .hero-center-box h1,
 .hero-center-box .hero-title-main {
   color: #180413;
-  text-shadow: 0 1px 3px rgba(255, 255, 255, 1), 0 2px 10px rgba(255, 255, 255, 0.9), 0 0 20px rgba(255, 255, 255, 0.95);
+  text-shadow: none;
 }
 
 .hero-center-box p {
-  color: #2b0e23;
+  color: #3b112f;
   font-weight: 500;
-  text-shadow: 0 1px 3px rgba(255, 255, 255, 1), 0 0 12px rgba(255, 255, 255, 0.95);
+  text-shadow: none;
 }
 
 /* Glossy Service Tag Pills */
