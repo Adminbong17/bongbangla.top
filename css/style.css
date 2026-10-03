@@ -362,12 +362,6 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* ==========================================================================
-   Hero Section 9:16 Background Slideshow Reel
-   ========================================================================== */
-.hero-slideshow-container {
-  position: absolute;
-  inset: 0;
-/* ==========================================================================
    Hero Section 9:16 Model Carousel & Ultra-Transparent Glossy Glass
    - Card Height: 5 Inches (480px, 9:16 aspect ratio)
    - High Gloss Specular Reflection & 3D Glowing Luster
