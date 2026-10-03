@@ -53,49 +53,225 @@ window.setAdminLogoLang = function(lang) {
 };
 
 /* ==========================================================================
-   1. Authentication System
+   1. Real Supabase Authentication System
    ========================================================================== */
+function getSupabaseAuthClient() {
+  if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.getClient === 'function') {
+    const client = window.BongBanglaSupabase.getClient();
+    if (client) return client;
+  }
+  const url = window.SUPABASE_URL || "https://sfnyuzemaqplpdeedsgg.supabase.co";
+  const key = window.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmbnl1emVtYXFwbHBkZWVkc2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMzE3ODEsImV4cCI6MjEwNjYwNzc4MX0.z3YtkhMBSQnMMdCWWCRrFAYn2Yv4bAQcyZ3NGFZOlyw";
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    return window.supabase.createClient(url, key);
+  }
+  return null;
+}
+
 function initAuth() {
   const loginScreen = document.getElementById('login-screen');
   const dashboardScreen = document.getElementById('dashboard-screen');
   const loginForm = document.getElementById('admin-login-form');
+  const emailInput = document.getElementById('admin-email');
+  const passwordInput = document.getElementById('admin-password');
   const logoutBtn = document.getElementById('admin-logout-btn');
+  const tabSignIn = document.getElementById('auth-tab-signin');
+  const tabSignUp = document.getElementById('auth-tab-signup');
+  const alertBox = document.getElementById('auth-alert-box');
+  const submitBtn = document.getElementById('auth-submit-btn');
+  const submitBtnText = document.getElementById('auth-btn-text');
+  const submitBtnIcon = document.getElementById('auth-btn-icon');
+  const userEmailBadge = document.getElementById('admin-user-badge');
+  const userEmailText = document.getElementById('admin-user-email');
 
-  const checkAuth = () => {
-    const isAuth = sessionStorage.getItem('bongbangla_admin_auth') === 'true';
-    if (isAuth) {
-      loginScreen.classList.add('hidden');
-      dashboardScreen.classList.remove('hidden');
-      renderDashboard();
+  let authMode = 'signin'; // 'signin' or 'signup'
+
+  // Helper to show alerts
+  const showAlert = (type, message) => {
+    if (!alertBox) return;
+    alertBox.classList.remove('hidden');
+    if (type === 'error') {
+      alertBox.className = 'p-3 rounded-xl text-xs font-bangla font-medium text-left leading-relaxed bg-rose-50 text-rose-800 border border-rose-200 block';
+      alertBox.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mr-1.5"></i> ${message}`;
+    } else if (type === 'success') {
+      alertBox.className = 'p-3 rounded-xl text-xs font-bangla font-medium text-left leading-relaxed bg-emerald-50 text-emerald-800 border border-emerald-200 block';
+      alertBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i> ${message}`;
     } else {
-      loginScreen.classList.remove('hidden');
-      dashboardScreen.classList.add('hidden');
+      alertBox.className = 'p-3 rounded-xl text-xs font-bangla font-medium text-left leading-relaxed bg-pink-50 text-[#8c4f75] border border-[#ED96D7]/40 block';
+      alertBox.innerHTML = `<i class="fa-solid fa-circle-info text-[#db2777] mr-1.5"></i> ${message}`;
     }
   };
 
-  if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const user = document.getElementById('admin-username').value.trim();
-      const pass = document.getElementById('admin-password').value.trim();
+  const hideAlert = () => {
+    if (alertBox) {
+      alertBox.classList.add('hidden');
+      alertBox.innerHTML = '';
+    }
+  };
 
-      if (user === 'admin' && pass === 'bong2026') {
-        sessionStorage.setItem('bongbangla_admin_auth', 'true');
-        checkAuth();
+  // Switch between Sign In and Sign Up modes
+  const setAuthMode = (mode) => {
+    authMode = mode;
+    hideAlert();
+    if (mode === 'signup') {
+      if (tabSignUp) tabSignUp.className = 'py-2 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white shadow-sm transition-all';
+      if (tabSignIn) tabSignIn.className = 'py-2 rounded-xl text-[#572449] hover:text-[#db2777] transition-all';
+      if (submitBtnText) submitBtnText.textContent = 'নতুন অ্যাডমিন তৈরি করুন';
+      if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-user-plus';
+    } else {
+      if (tabSignIn) tabSignIn.className = 'py-2 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white shadow-sm transition-all';
+      if (tabSignUp) tabSignUp.className = 'py-2 rounded-xl text-[#572449] hover:text-[#db2777] transition-all';
+      if (submitBtnText) submitBtnText.textContent = 'ড্যাশবোর্ডে প্রবেশ করুন';
+      if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-arrow-right';
+    }
+  };
+
+  if (tabSignIn) tabSignIn.addEventListener('click', () => setAuthMode('signin'));
+  if (tabSignUp) tabSignUp.addEventListener('click', () => setAuthMode('signup'));
+
+  // Update UI on authenticated
+  const showAuthenticatedState = (user) => {
+    if (loginScreen) loginScreen.classList.add('hidden');
+    if (dashboardScreen) dashboardScreen.classList.remove('hidden');
+    if (userEmailText) userEmailText.textContent = (user && user.email) ? user.email : 'Admin';
+    if (userEmailBadge) userEmailBadge.classList.remove('hidden');
+    renderDashboard();
+  };
+
+  // Update UI on unauthenticated
+  const showUnauthenticatedState = () => {
+    if (dashboardScreen) dashboardScreen.classList.add('hidden');
+    if (loginScreen) loginScreen.classList.remove('hidden');
+    if (userEmailBadge) userEmailBadge.classList.add('hidden');
+  };
+
+  const client = getSupabaseAuthClient();
+  if (!client) {
+    console.error('Supabase Client could not be initialized.');
+    showAlert('error', 'Supabase ক্লাউড কানেকশন পাওয়া যায়নি। ইন্টারনেট সংযোগ চেক করুন।');
+    return;
+  }
+
+  // 1. Initial Session Check
+  client.auth.getSession().then(({ data: { session }, error }) => {
+    if (error) {
+      console.warn('Session check error:', error);
+      showUnauthenticatedState();
+      return;
+    }
+    if (session && session.user) {
+      showAuthenticatedState(session.user);
+    } else {
+      showUnauthenticatedState();
+    }
+  }).catch(err => {
+    console.warn('Auth getSession failed:', err);
+    showUnauthenticatedState();
+  });
+
+  // 2. Auth State Change Listener
+  try {
+    client.auth.onAuthStateChange((event, session) => {
+      if (session && session.user) {
+        showAuthenticatedState(session.user);
       } else {
-        alert('ভুল ইউজারনেম বা পাসওয়ার্ড! অনুগ্রহ করে সঠিক তথ্য দিন।');
+        showUnauthenticatedState();
+      }
+    });
+  } catch (err) {
+    console.warn('onAuthStateChange listener failed:', err);
+  }
+
+  // 3. Form Submit Handler (Sign In / Sign Up)
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+
+      const email = emailInput ? emailInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value.trim() : '';
+
+      if (!email || !password) {
+        showAlert('error', 'অনুগ্রহ করে ইমেইল ও পাসওয়ার্ড উভয়ই লিখুন।');
+        return;
+      }
+
+      if (password.length < 6) {
+        showAlert('error', 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।');
+        return;
+      }
+
+      // Set Loading UI
+      const originalText = submitBtnText ? submitBtnText.textContent : '';
+      if (submitBtn) submitBtn.disabled = true;
+      if (submitBtnText) submitBtnText.textContent = authMode === 'signup' ? 'অ্যাকাউন্ট তৈরি হচ্ছে...' : 'যাচাই করা হচ্ছে...';
+      if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-spinner fa-spin';
+
+      try {
+        if (authMode === 'signup') {
+          // --- Real Supabase Sign Up ---
+          const { data, error } = await client.auth.signUp({
+            email,
+            password
+          });
+
+          if (error) {
+            let msg = error.message;
+            if (msg.includes('already registered')) {
+              msg = 'এই ইমেইল দিয়ে ইতোমধ্যে একটি অ্যাকাউন্ট রয়েছে! লগইন ট্যাবে গিয়ে পাসওয়ার্ড দিন।';
+            } else if (msg.includes('Password should be')) {
+              msg = 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।';
+            }
+            showAlert('error', msg);
+          } else if (data?.session) {
+            showAlert('success', 'নতুন অ্যাকাউন্ট তৈরি সফল হয়েছে! ড্যাশবোর্ডে প্রবেশ করা হচ্ছে...');
+            showAuthenticatedState(data.user);
+          } else if (data?.user) {
+            showAlert('info', 'অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে! যদি কনফার্মেশন চালু থাকে তবে আপনার ইমেইল চেক করুন, অথবা কনসোল থেকে Confirm Email করুন।');
+          }
+        } else {
+          // --- Real Supabase Sign In ---
+          const { data, error } = await client.auth.signInWithPassword({
+            email,
+            password
+          });
+
+          if (error) {
+            let msg = error.message;
+            if (msg.includes('Invalid login credentials')) {
+              msg = 'ভুল ইমেইল বা পাসওয়ার্ড! অনুগ্রহ করে সঠিক তথ্য দিয়ে পুনরায় চেষ্টা করুন।';
+            } else if (msg.includes('Email not confirmed')) {
+              msg = 'ইমেইলটি এখনও কনফার্ম করা হয়নি। অনুগ্রহ করে ইনবক্স চেক করুন বা Supabase ড্যাশবোর্ডে অটো-কনফার্ম চেক করুন।';
+            }
+            showAlert('error', msg);
+          } else if (data?.session) {
+            showAlert('success', 'লগইন সফল হয়েছে! ড্যাশবোর্ডে স্বাগতম...');
+            showAuthenticatedState(data.user);
+          }
+        }
+      } catch (err) {
+        console.error('Auth request failed:', err);
+        showAlert('error', 'নেটওয়ার্ক বা সার্ভার ত্রুটি! কিছুক্ষণ পর আবার চেষ্টা করুন: ' + (err.message || ''));
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+        if (submitBtnText) submitBtnText.textContent = originalText;
+        if (submitBtnIcon) submitBtnIcon.className = authMode === 'signup' ? 'fa-solid fa-user-plus' : 'fa-solid fa-arrow-right';
       }
     });
   }
 
+  // 4. Logout Handler
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      sessionStorage.removeItem('bongbangla_admin_auth');
-      checkAuth();
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await client.auth.signOut();
+      } catch (err) {
+        console.warn('SignOut error:', err);
+      }
+      showUnauthenticatedState();
+      showAlert('info', 'আপনি সফলভাবে লগআউট হয়েছেন।');
     });
   }
-
-  checkAuth();
 }
 
 /* ==========================================================================
