@@ -175,7 +175,7 @@
       formData.append('password', cfg.pass);
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout for large videos
 
       const res = await fetch(`${cfg.url}/api/upload`, {
         method: 'POST',
@@ -196,9 +196,11 @@
             storage: 'vault'
           };
         }
+      } else {
+        console.warn('Vault API responded:', res.status, await res.text().catch(() => ''));
       }
     } catch(err) {
-      console.warn('Vault API upload notice:', err);
+      console.warn('Vault API upload notice:', err.message || err);
     }
 
     // 2. Cloud backup to Supabase Storage
