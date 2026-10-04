@@ -323,18 +323,27 @@ function renderFrontendModels() {
   container.innerHTML = models.map(m => {
     const rawImg = m.image || defaultModelFallback;
     const modelImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImg, 'models') : rawImg;
+    const detailsUrl = `model-details.html?id=${encodeURIComponent(m.id)}`;
 
     return `
-      <div class="glass-panel rounded-3xl overflow-hidden group border border-[#ED96D7]/30 hover:border-[#ED96D7] transition-all hover:shadow-[0_15px_35px_rgba(237,150,215,0.3)] bg-white shadow-sm flex flex-col justify-between">
-        <div class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8]">
+      <div class="glass-panel rounded-3xl overflow-hidden group border border-[#ED96D7]/30 hover:border-[#db2777] transition-all hover:shadow-[0_15px_35px_rgba(237,150,215,0.3)] bg-white shadow-sm flex flex-col justify-between">
+        <a href="${detailsUrl}" class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8] block group-hover:opacity-95 transition-opacity">
           <img src="${modelImg || defaultModelFallback}" alt="${m.name}" onerror="this.onerror=null; this.src='${defaultModelFallback}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-          <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full ${m.available !== false ? 'bg-white/90 text-[#be185d] border-[#ED96D7]/50' : 'bg-gray-100 text-gray-500 border-gray-300'} backdrop-blur-md text-[10px] font-bold border shadow-sm">
+          <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full ${m.available !== false ? 'bg-white/95 text-[#be185d] border-[#ED96D7]/50' : 'bg-gray-100 text-gray-500 border-gray-300'} backdrop-blur-md text-[10px] font-bold border shadow-sm">
             ${m.available !== false ? 'AVAILABLE' : 'BOOKED'}
           </div>
-        </div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+            <span class="text-white text-xs font-bold font-bangla flex items-center gap-1.5">
+              <span>সম্পূর্ণ প্রোফাইল দেখুন</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </span>
+          </div>
+        </a>
         <div class="p-5 space-y-3 font-bangla">
           <div class="flex items-center justify-between gap-2">
-            <h4 class="font-bangla font-bold text-[#2b0e23] text-base">${m.name}</h4>
+            <a href="${detailsUrl}" class="font-bangla font-bold text-[#2b0e23] text-base hover:text-[#db2777] transition-colors truncate">
+              ${m.name}
+            </a>
             <span class="text-xs text-[#db2777] font-bold truncate">${m.category || 'মডেল'}</span>
           </div>
           <div class="grid grid-cols-3 gap-2 text-center text-[10px] text-[#572449] bg-[#fdf2f8] p-2 rounded-xl border border-[#ED96D7]/20">
@@ -342,10 +351,12 @@ function renderFrontendModels() {
             <div>শ্যুট: <span class="text-[#2b0e23] font-bold">${m.shoots || '২০+'}</span></div>
             <div>স্ট্যাটাস: <span class="text-[#db2777] font-bold">${m.available !== false ? 'অ্যাক্টিভ' : 'বুকড'}</span></div>
           </div>
-          <button class="open-booking-modal w-full py-2.5 rounded-xl bg-[#fdf2f8] hover:bg-gradient-to-r hover:from-[#ED96D7] hover:to-[#db2777] hover:text-white text-[#be185d] text-xs font-bold transition-all border border-[#ED96D7]/40 shadow-sm"
-                  data-service-preset="model-portfolio">
-            কাস্টিং বুক করুন
-          </button>
+          <a href="${detailsUrl}"
+             class="w-full py-2.5 rounded-xl bg-[#fdf2f8] hover:bg-gradient-to-r hover:from-[#ED96D7] hover:to-[#db2777] hover:text-white text-[#be185d] text-xs font-bold transition-all border border-[#ED96D7]/40 shadow-sm flex items-center justify-center gap-2 group-hover:border-[#db2777]">
+            <i class="fa-solid fa-circle-user text-xs"></i>
+            <span>বিস্তারিত দেখুন</span>
+            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </a>
         </div>
       </div>
     `;

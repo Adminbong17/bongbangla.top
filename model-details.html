@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="bn" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title id="page-title">মডেল প্রোফাইল ও বিস্তারিত বিবরণ | BongBangla Media</title>
+  <meta name="description" id="page-desc" content="BongBangla Media-র প্রফেশনাল মডেল কাস্টিং রোস্টার। হাই-ফ্যাশন, শাড়ি, ব্রাইডাল এবং কমার্শিয়াল শ্যুটের জন্য মডেল বুক করুন।">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="favicon.png">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            pinkPrimary: '#ED96D7',
+            pinkDeep: '#db2777',
+            pinkRose: '#be185d',
+            pinkLight: '#fdf2f8',
+            pinkBlush: '#fce7f3',
+            plumDark: '#2b0e23',
+            plumMuted: '#572449',
+            plumSubtle: '#8c4f75'
+          },
+          fontFamily: {
+            heading: ['Syne', 'sans-serif'],
+            royal: ['Cinzel', 'serif'],
+            bangla: ['"Hind Siliguri"', 'sans-serif'],
+            body: ['"Plus Jakarta Sans"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#fff8fa] text-[#572449] antialiased selection:bg-[#ED96D7]/40 selection:text-[#2b0e23] overflow-x-hidden min-h-screen flex flex-col justify-between">
+
+  <!-- ========================================================================
+       Top Navigation Bar
+       ======================================================================== -->
+  <header id="main-header" class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#ED96D7]/30 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Brand Logo -->
+        <a href="index.html" class="flex items-center gap-2 group">
+          <img id="main-brand-logo" src="assets/logo-bn.png" alt="বং বাংলা" class="h-12 sm:h-16 w-auto max-w-[190px] sm:max-w-[280px] object-contain transition-transform duration-300 group-hover:scale-105">
+        </a>
+
+        <!-- Desktop Nav Links -->
+        <nav class="hidden md:flex items-center gap-6 font-bangla font-semibold text-sm text-[#2b0e23]">
+          <a href="index.html" class="hover:text-[#db2777] transition-colors">হোম</a>
+          <a href="index.html#models" class="text-[#db2777] font-bold border-b-2 border-[#db2777] pb-1">মডেল রোস্টার</a>
+          <a href="service-saree-model-shoot.html" class="hover:text-[#db2777] transition-colors">শাড়ি ও বোল্ড শ্যুট</a>
+          <a href="service-cinema-ads.html" class="hover:text-[#db2777] transition-colors">৪K সিনেমা অ্যাড</a>
+          <a href="service-viral-reels.html" class="hover:text-[#db2777] transition-colors">ভাইরাল রিলস</a>
+          <a href="service-facebook-ads.html" class="hover:text-[#db2777] transition-colors">ফেসবুক অ্যাডস</a>
+          <a href="service-jewellery-luxury.html" class="hover:text-[#db2777] transition-colors">জুয়েলারি শ্যুট</a>
+        </nav>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-2.5 sm:gap-4">
+          <button id="header-book-btn" class="open-booking-modal hidden sm:inline-flex btn-primary-glow font-bangla px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md items-center gap-2">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>কাস্টিং বুক করুন</span>
+          </button>
+
+          <a id="header-whatsapp-btn" href="https://wa.me/8801700000000" target="_blank" class="p-2 sm:px-3.5 sm:py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all" title="WhatsApp-এ যোগাযোগ করুন">
+            <i class="fa-brands fa-whatsapp text-base"></i>
+            <span class="hidden md:inline font-bangla">WhatsApp</span>
+          </a>
+
+          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-xl bg-white border border-[#ED96D7]/40 text-[#2b0e23] hover:text-[#db2777]">
+            <i class="fa-solid fa-bars-staggered text-lg"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div id="mobile-drawer" class="hidden md:hidden bg-white border-b border-[#ED96D7]/30 px-4 py-5 space-y-3 font-bangla shadow-2xl">
+      <a href="index.html" class="mobile-nav-link block text-sm font-semibold text-[#2b0e23] hover:text-[#db2777]">মূল হোমপেজ</a>
+      <a href="index.html#models" class="mobile-nav-link block text-sm font-bold text-[#db2777]">💃 মডেল রোস্টার</a>
+      <a href="service-saree-model-shoot.html" class="mobile-nav-link block text-sm font-semibold text-[#2b0e23] hover:text-[#db2777]">🥻 শাড়ি ও বোল্ড মডেল শ্যুট</a>
+      <a href="service-cinema-ads.html" class="mobile-nav-link block text-sm font-semibold text-[#2b0e23] hover:text-[#db2777]">🎬 ৪K সিনেমা অ্যাড ফিল্মস</a>
+      <a href="service-viral-reels.html" class="mobile-nav-link block text-sm font-semibold text-[#2b0e23] hover:text-[#db2777]">⚡ ভাইরাল প্রোডাক্ট রিলস</a>
+      <a href="service-facebook-ads.html" class="mobile-nav-link block text-sm font-semibold text-[#2b0e23] hover:text-[#db2777]">📈 ফেসবুক অ্যাড স্কেলিং</a>
+      <a href="service-jewellery-luxury.html" class="mobile-nav-link block text-sm font-semibold text-[#2b0e23] hover:text-[#db2777]">💎 জুয়েলারি ও লাক্সারি শ্যুট</a>
+      <a href="admin.html" class="mobile-nav-link block text-sm font-bold text-[#be185d] border-t border-[#ED96D7]/20 pt-2.5">
+        <i class="fa-solid fa-lock mr-2 text-[#db2777]"></i>অ্যাডমিন ড্যাশবোর্ড
+      </a>
+      <div class="pt-2 border-t border-[#ED96D7]/20 flex flex-col gap-2">
+        <button class="open-booking-modal w-full btn-primary-glow font-bangla py-2.5 rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2">
+          <i class="fa-solid fa-calendar-check"></i>
+          <span>কাস্টিং বুক করুন</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       Breadcrumbs Navigation
+       ======================================================================== -->
+  <div class="bg-[#fdf2f8] border-b border-[#ED96D7]/20 py-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav class="flex items-center gap-2 text-xs font-bangla text-[#8c4f75]">
+        <a href="index.html" class="hover:text-[#db2777] transition-colors"><i class="fa-solid fa-house mr-1"></i>হোম</a>
+        <i class="fa-solid fa-chevron-right text-[9px] text-[#ED96D7]"></i>
+        <a href="index.html#models" class="hover:text-[#db2777] transition-colors">মডেল রোস্টার</a>
+        <i class="fa-solid fa-chevron-right text-[9px] text-[#ED96D7]"></i>
+        <span id="breadcrumb-model-name" class="font-bold text-[#2b0e23]">মডেলের বিবরণ</span>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       Main Content: Model Detailed Profile
+       ======================================================================== -->
+  <main class="flex-grow py-8 sm:py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <!-- Loading State -->
+      <div id="model-loading-state" class="py-20 text-center space-y-4">
+        <div class="w-14 h-14 border-4 border-[#ED96D7]/30 border-t-[#db2777] rounded-full animate-spin mx-auto"></div>
+        <p class="font-bangla text-sm text-[#8c4f75] font-semibold">মডেলের পূর্ণাঙ্গ প্রোফাইল লোড হচ্ছে...</p>
+      </div>
+
+      <!-- Not Found State -->
+      <div id="model-not-found-state" class="hidden py-20 text-center max-w-lg mx-auto space-y-4 bg-white rounded-3xl border border-[#ED96D7]/40 p-8 shadow-sm">
+        <div class="w-16 h-16 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center text-2xl mx-auto">
+          <i class="fa-solid fa-user-xmark"></i>
+        </div>
+        <h3 class="font-bangla font-bold text-xl text-[#2b0e23]">মডেল প্রোফাইল খুঁজে পাওয়া যায়নি</h3>
+        <p class="font-bangla text-xs text-[#8c4f75] leading-relaxed">অনুরোধকৃত মডেলের আইডি বা লিঙ্কটি সঠিক নয় অথবা প্রোফাইলটি আপডেট করা হয়েছে।</p>
+        <a href="index.html#models" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl btn-pink-primary font-bangla font-bold text-xs shadow-md">
+          <i class="fa-solid fa-arrow-left"></i> সব মডেলদের দেখুন
+        </a>
+      </div>
+
+      <!-- Loaded Profile Container -->
+      <div id="model-profile-content" class="hidden space-y-12">
+
+        <!-- Top Profile Showcase -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          
+          <!-- Left Column: Portrait Card & Direct Booking CTAs -->
+          <div class="lg:col-span-5 space-y-4">
+            <div class="glass-panel rounded-3xl overflow-hidden border-2 border-[#ED96D7]/40 bg-white shadow-xl relative group">
+              <div class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8]">
+                <img id="model-detail-image" src="" alt="Model Photo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                
+                <!-- Availability Badge -->
+                <div id="model-detail-status-badge" class="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold font-mono tracking-wider border shadow-md backdrop-blur-md">
+                  AVAILABLE
+                </div>
+
+                <!-- Verified Badge -->
+                <div class="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/90 text-[#db2777] text-xs font-bold font-bangla border border-[#ED96D7]/40 shadow-md backdrop-blur-md flex items-center gap-1.5">
+                  <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
+                  <span>ভেরিফাইড মডেল</span>
+                </div>
+
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
+
+                <div class="absolute bottom-4 inset-x-4 text-white">
+                  <div class="text-[11px] uppercase tracking-widest text-[#ED96D7] font-bold font-mono" id="model-detail-category-overlay">FASHION & ETHNIC</div>
+                  <h2 class="text-2xl font-bold font-bangla drop-shadow-md" id="model-detail-name-overlay">Model Name</h2>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons Box -->
+            <div class="p-5 bg-white rounded-3xl border border-[#ED96D7]/30 shadow-md space-y-3 font-bangla">
+              <button id="book-model-cta-btn" class="open-booking-modal w-full py-3.5 rounded-2xl btn-primary-glow font-bold text-sm shadow-md flex items-center justify-center gap-2">
+                <i class="fa-solid fa-calendar-check text-base"></i>
+                <span id="book-model-cta-text">এই মডেলকে শ্যুটের জন্য বুক করুন</span>
+              </button>
+
+              <a id="model-whatsapp-cta-btn" href="#" target="_blank" class="w-full py-3 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs">
+                <i class="fa-brands fa-whatsapp text-lg text-emerald-600"></i>
+                <span>WhatsApp-এ সরাসরি আলোচনা</span>
+              </a>
+
+              <div class="pt-2 text-center text-[11px] text-[#8c4f75] flex items-center justify-center gap-3">
+                <span class="flex items-center gap-1"><i class="fa-solid fa-shield-check text-emerald-500"></i> ১০০% অফিসিয়াল এগ্রিমেন্ট</span>
+                <span>•</span>
+                <span class="flex items-center gap-1"><i class="fa-solid fa-camera-retro text-[#db2777]"></i> প্রোফেশনাল শ্যুট</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Full Specifications & Biography -->
+          <div class="lg:col-span-7 space-y-6 font-bangla">
+            
+            <!-- Title & Quick Highlights -->
+            <div class="space-y-2 border-b border-[#ED96D7]/20 pb-5">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <span id="model-detail-category-badge" class="px-3 py-1 rounded-full bg-pink-100/70 text-[#be185d] font-bold text-xs border border-[#ED96D7]/40">
+                  শাড়ি ও ফ্যাশন
+                </span>
+                <span id="model-detail-id-badge" class="text-xs text-gray-400 font-mono">ID: M-101</span>
+              </div>
+
+              <h1 id="model-detail-name" class="text-3xl sm:text-4xl font-bold text-[#2b0e23] font-bangla">
+                মডেলের নাম
+              </h1>
+
+              <div class="flex items-center gap-4 text-xs text-[#8c4f75] pt-1">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-location-dot text-[#db2777]"></i> <span id="model-detail-location">ঢাকা, বাংলাদেশ</span></span>
+                <span>•</span>
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-briefcase text-[#db2777]"></i> <span id="model-detail-experience">৩+ বছরের অভিজ্ঞতা</span></span>
+                <span id="model-detail-instagram-wrapper" class="hidden">
+                  <span>•</span>
+                  <a id="model-detail-instagram" href="#" target="_blank" class="text-[#db2777] hover:underline font-bold flex items-center gap-1">
+                    <i class="fa-brands fa-instagram"></i> <span>Instagram</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+
+            <!-- Stats & Measurements Grid -->
+            <div class="space-y-3">
+              <h3 class="text-sm font-bold text-[#2b0e23] uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-ruler-combined text-[#db2777]"></i> শারীরিক মাপ ও বিবরণ (Physical Stats)
+              </h3>
+
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
+                <!-- Height -->
+                <div class="p-3.5 bg-white rounded-2xl border border-[#ED96D7]/30 shadow-xs space-y-1">
+                  <div class="text-[11px] text-[#8c4f75] font-medium">উচ্চতা (Height)</div>
+                  <div id="stat-height" class="text-sm font-bold text-[#2b0e23] font-mono">৫'৭"</div>
+                </div>
+
+                <!-- Measurements -->
+                <div class="p-3.5 bg-white rounded-2xl border border-[#ED96D7]/30 shadow-xs space-y-1">
+                  <div class="text-[11px] text-[#8c4f75] font-medium">শারীরিক মাপ (B-W-H)</div>
+                  <div id="stat-measurements" class="text-sm font-bold text-[#2b0e23] font-mono">৩৪-২৬-৩৬</div>
+                </div>
+
+                <!-- Age -->
+                <div class="p-3.5 bg-white rounded-2xl border border-[#ED96D7]/30 shadow-xs space-y-1">
+                  <div class="text-[11px] text-[#8c4f75] font-medium">বয়স (Age)</div>
+                  <div id="stat-age" class="text-sm font-bold text-[#2b0e23]">২২ বছর</div>
+                </div>
+
+                <!-- Shoots -->
+                <div class="p-3.5 bg-white rounded-2xl border border-[#ED96D7]/30 shadow-xs space-y-1">
+                  <div class="text-[11px] text-[#8c4f75] font-medium">মোট সফল শ্যুট</div>
+                  <div id="stat-shoots" class="text-sm font-bold text-[#db2777]">৪০+</div>
+                </div>
+
+                <!-- Skin Tone -->
+                <div class="p-3.5 bg-white rounded-2xl border border-[#ED96D7]/30 shadow-xs space-y-1">
+                  <div class="text-[11px] text-[#8c4f75] font-medium">গায়ের রঙ (Skin)</div>
+                  <div id="stat-skintone" class="text-xs font-bold text-[#2b0e23]">উজ্জ্বল শ্যামলা</div>
+                </div>
+
+                <!-- Eye Color -->
+                <div class="p-3.5 bg-white rounded-2xl border border-[#ED96D7]/30 shadow-xs space-y-1">
+                  <div class="text-[11px] text-[#8c4f75] font-medium">চোখের রঙ</div>
+                  <div id="stat-eyecolor" class="text-xs font-bold text-[#2b0e23]">ডার্ক ব্রাউন</div>
+                </div>
+
+                <!-- Hair -->
+                <div class="p-3.5 bg-white rounded-2xl border border-[#ED96D7]/30 shadow-xs space-y-1">
+                  <div class="text-[11px] text-[#8c4f75] font-medium">চুলের ধরন</div>
+                  <div id="stat-haircolor" class="text-xs font-bold text-[#2b0e23]">কালো সিল্কি লম্বা</div>
+                </div>
+
+                <!-- Status -->
+                <div class="p-3.5 bg-white rounded-2xl border border-[#ED96D7]/30 shadow-xs space-y-1">
+                  <div class="text-[11px] text-[#8c4f75] font-medium">বুকিং স্ট্যাটাস</div>
+                  <div id="stat-status" class="text-xs font-bold text-emerald-600">অ্যাক্টিভ ও প্রস্তুত</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Specialties / Works tags -->
+            <div class="space-y-2.5">
+              <h3 class="text-sm font-bold text-[#2b0e23] uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-sparkles text-[#db2777]"></i> পারদর্শিতা ও কাজের ক্ষেত্র (Specialties)
+              </h3>
+              <div id="model-specialties-container" class="flex flex-wrap gap-2">
+                <span class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-semibold text-[#572449] shadow-xs">জামদানি ও সিল্ক শাড়ি শ্যুট</span>
+                <span class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-semibold text-[#572449] shadow-xs">ব্রাইডাল মেকওভার পোর্টফোলিও</span>
+                <span class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-semibold text-[#572449] shadow-xs">বোল্ড ওয়েস্টার্ন ফ্যাশন ক্যাটালগ</span>
+                <span class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-semibold text-[#572449] shadow-xs">৪K সিনেমাটিক ভিডিও বিজ্ঞাপন</span>
+                <span class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-semibold text-[#572449] shadow-xs">র‌্যাম্প ওয়াক ও ফ্যাশন উইক</span>
+              </div>
+            </div>
+
+            <!-- Biography / About paragraph -->
+            <div class="space-y-2.5 bg-white p-6 rounded-3xl border border-[#ED96D7]/30 shadow-sm">
+              <h3 class="text-sm font-bold text-[#2b0e23] uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-address-card text-[#db2777]"></i> মডেল পরিচিতি (About / Bio)
+              </h3>
+              <p id="model-detail-bio" class="text-xs sm:text-sm text-[#572449] leading-relaxed">
+                অভিজ্ঞ ও ট্রেন্ডসেটিং প্রফেশনাল মডেল। দেশীয় ফ্যাশন হাউস, জামদানি ও বুটিক ব্র্যান্ডের জন্য একাধিক সফল ক্যাটালগ ও সোশ্যাল মিডিয়া ভাইরাল ক্যাম্পেইনে অংশ নিয়েছেন। ক্যামেরা ফেস ও এক্সপ্রেশন অত্যন্ত নিখুঁত ও ন্যাচারাল।
+              </p>
+            </div>
+
+            <!-- Direct Booking Inquiry Form on Profile Page -->
+            <div class="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#fff0f6] to-[#fdf2f8] border-2 border-[#ED96D7]/50 shadow-md space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base sm:text-lg font-bold text-[#2b0e23] flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane text-[#db2777]"></i> সরাসরি বুকিং রিকোয়েস্ট পাঠান
+                  </h3>
+                  <p class="text-xs text-[#8c4f75] mt-0.5">তথ্য জমা দিলে আমাদের কাস্টিং ডিরেক্টর ১ ঘণ্টার মধ্যে আপনার সাথে যোগাযোগ করবেন।</p>
+                </div>
+              </div>
+
+              <form id="direct-model-booking-form" class="space-y-3 text-xs">
+                <input type="hidden" id="direct-form-model-id" name="modelId">
+                <input type="hidden" id="direct-form-model-name" name="modelName">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[#572449] font-bold mb-1">আপনার নাম / কন্টাক্ট পার্সন *</label>
+                    <input type="text" name="name" required placeholder="উদাঃ তানভীর আহমেদ" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3.5 py-2.5 text-[#2b0e23] focus:border-[#db2777] focus:outline-none">
+                  </div>
+                  <div>
+                    <label class="block text-[#572449] font-bold mb-1">ব্র্যান্ড / পেজের নাম *</label>
+                    <input type="text" name="brand" required placeholder="উদাঃ আর্ট অ্যান্ড ফ্যাশন বিডি" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3.5 py-2.5 text-[#2b0e23] focus:border-[#db2777] focus:outline-none">
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[#572449] font-bold mb-1">WhatsApp / ফোন নম্বর *</label>
+                    <input type="tel" name="phone" required placeholder="উদাঃ 017XXXXXXXX" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3.5 py-2.5 text-[#2b0e23] focus:border-[#db2777] focus:outline-none">
+                  </div>
+                  <div>
+                    <label class="block text-[#572449] font-bold mb-1">শ্যুট সার্ভিস টাইপ</label>
+                    <select name="service" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2.5 text-[#2b0e23] focus:border-[#db2777] focus:outline-none">
+                      <option value="শাড়ি ও মডেল শ্যুট">শাড়ি ও এথনিক মডেল শ্যুট</option>
+                      <option value="৪K সিনেমা কমার্শিয়াল অ্যাড">৪K সিনেমা কমার্শিয়াল অ্যাড</option>
+                      <option value="ভাইরাল প্রোডাক্ট রিলস">ভাইরাল প্রোডাক্ট রিলস</option>
+                      <option value="জুয়েলারি ও লাক্সারি শ্যুট">জুয়েলারি ও লাক্সারি শ্যুট</option>
+                      <option value="ফ্যাশন ক্যাটালগ শ্যুট">ফ্যাশন ক্যাটালগ ও পোর্টফোলিও</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-[#572449] font-bold mb-1">আনুমানিক তারিখ ও কোনো বিশেষ চাহিদা</label>
+                  <textarea name="notes" rows="2" placeholder="শুটিংয়ের সম্ভাব্য তারিখ, লোকেশন বা প্রয়োজনীয় ড্রেসের সংখ্যা..." class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3.5 py-2 text-[#2b0e23] resize-none focus:border-[#db2777] focus:outline-none"></textarea>
+                </div>
+
+                <button type="submit" id="direct-form-submit-btn" class="w-full py-3 rounded-xl btn-primary-glow font-bold text-xs shadow-md flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>বুকিং কনফার্মেশনের জন্য সাবমিট করুন</span>
+                </button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Section: Other Recommended Models -->
+        <div class="pt-8 border-t border-[#ED96D7]/30 space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="badge-tag px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest inline-block">
+                আমাদের কাস্টিং রোস্টার
+              </span>
+              <h3 class="text-xl sm:text-2xl font-bold text-[#2b0e23] font-bangla mt-1">
+                রোস্টারের অন্যান্য মডেল
+              </h3>
+            </div>
+            <a href="index.html#models" class="text-xs text-[#db2777] font-bold font-bangla hover:underline flex items-center gap-1">
+              <span>সব মডেল দেখুন</span> <i class="fa-solid fa-arrow-right"></i>
+            </a>
+          </div>
+
+          <div id="related-models-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 font-bangla">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================================================
+       Footer
+       ======================================================================== -->
+  <footer class="bg-white border-t border-[#ED96D7]/30 pt-12 pb-8 font-bangla">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div class="space-y-3">
+          <img src="assets/logo-bn.png" alt="BongBangla Logo" class="h-10 w-auto">
+          <p class="text-xs text-[#8c4f75] leading-relaxed">
+            বাংলাদেশের শীর্ষস্থানীয় মডেল কাস্টিং ও ভিডিও প্রোডাকশন এজেন্সি। আপনার ব্র্যান্ডকে পৌঁছে দিন কাঙ্ক্ষিত গ্রাহকের কাছে।
+          </p>
+        </div>
+        <div>
+          <h4 class="font-bold text-[#2b0e23] text-sm mb-3">সার্ভিসেস</h4>
+          <ul class="space-y-2 text-xs text-[#572449]">
+            <li><a href="service-saree-model-shoot.html" class="hover:text-[#db2777]">শাড়ি ও বোল্ড শ্যুট</a></li>
+            <li><a href="service-cinema-ads.html" class="hover:text-[#db2777]">৪K সিনেমা অ্যাড</a></li>
+            <li><a href="service-viral-reels.html" class="hover:text-[#db2777]">ভাইরাল রিলস</a></li>
+            <li><a href="service-facebook-ads.html" class="hover:text-[#db2777]">ফেসবুক অ্যাডস</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold text-[#2b0e23] text-sm mb-3">যোগাযোগ</h4>
+          <ul class="space-y-2 text-xs text-[#572449]">
+            <li><i class="fa-solid fa-phone text-[#db2777] mr-1.5"></i> +880 1700-000000</li>
+            <li><i class="fa-brands fa-whatsapp text-emerald-600 mr-1.5"></i> +880 1700-000000</li>
+            <li><i class="fa-solid fa-envelope text-[#db2777] mr-1.5"></i> hello@bongbangla.top</li>
+            <li><i class="fa-solid fa-location-dot text-[#db2777] mr-1.5"></i> বনানী, ঢাকা, বাংলাদেশ</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold text-[#2b0e23] text-sm mb-3">অ্যাডমিন ও নিরাপত্তা</h4>
+          <ul class="space-y-2 text-xs text-[#572449]">
+            <li><a href="admin.html" class="text-[#db2777] font-bold hover:underline"><i class="fa-solid fa-lock mr-1"></i>অ্যাডমিন পোর্টাল লগইন</a></li>
+            <li><span class="text-emerald-700 font-bold"><i class="fa-solid fa-cloud-arrow-up mr-1"></i>Vault Cloud CDN ইন্টিগ্রেটেড</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-[#ED96D7]/20 pt-6 text-center text-xs text-[#8c4f75]">
+        © ২০২৬ BongBangla Media. সর্বস্বত্ব সংরক্ষিত।
+      </div>
+    </div>
+  </footer>
+
+  <!-- Booking Modal -->
+  <div id="booking-modal" class="fixed inset-0 z-50 hidden modal-backdrop overflow-y-auto overflow-x-hidden p-3 sm:p-6 flex items-start sm:items-center justify-center font-bangla">
+    <div class="relative w-full max-w-lg mx-auto my-3 sm:my-8 rounded-3xl overflow-hidden border-2 border-[#ED96D7]/50 shadow-2xl bg-white">
+      <div class="px-5 py-4 border-b border-[#ED96D7]/30 flex items-center justify-between bg-[#fdf2f8]">
+        <div>
+          <span class="text-[10px] uppercase font-bold text-[#db2777] tracking-wider block">BongBangla Casting</span>
+          <h3 class="font-bold text-base text-[#2b0e23]" id="modal-title">মডেল কাস্টিং ও বুকিং</h3>
+        </div>
+        <button type="button" class="close-booking-modal w-8 h-8 rounded-full bg-white hover:bg-[#db2777] hover:text-white text-[#572449] border border-[#ED96D7]/40 flex items-center justify-center transition-colors">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <form id="booking-form" class="p-5 space-y-3.5 text-xs">
+        <div>
+          <label class="block font-bold text-[#572449] mb-1">আপনার নাম *</label>
+          <input type="text" name="name" required placeholder="উদাঃ তানভীর ইসলাম" class="w-full bg-[#fff8fa] border border-[#ED96D7]/40 rounded-xl px-3.5 py-2 text-[#2b0e23] focus:border-[#db2777] focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-[#572449] mb-1">ব্র্যান্ড / পেজের নাম *</label>
+          <input type="text" name="brand" required placeholder="উদাঃ জামদানি হাউস" class="w-full bg-[#fff8fa] border border-[#ED96D7]/40 rounded-xl px-3.5 py-2 text-[#2b0e23] focus:border-[#db2777] focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-[#572449] mb-1">ফোন / WhatsApp নম্বর *</label>
+          <input type="tel" name="phone" required placeholder="উদাঃ 017XXXXXXXX" class="w-full bg-[#fff8fa] border border-[#ED96D7]/40 rounded-xl px-3.5 py-2 text-[#2b0e23] focus:border-[#db2777] focus:outline-none">
+        </div>
+        <button type="submit" id="booking-submit-btn" class="w-full py-3 rounded-xl btn-primary-glow font-bold text-xs shadow-md">
+          বুকিং রিকোয়েস্ট পাঠান
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/vault-config.js"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script>
+    // Model Details Dynamic Page Logic
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Mobile drawer toggle
+      const mobileBtn = document.getElementById('mobile-menu-btn');
+      const mobileDrawer = document.getElementById('mobile-drawer');
+      if (mobileBtn && mobileDrawer) {
+        mobileBtn.addEventListener('click', () => {
+          mobileDrawer.classList.toggle('hidden');
+        });
+      }
+
+      // Modals
+      const bookingModal = document.getElementById('booking-modal');
+      const openModalBtns = document.querySelectorAll('.open-booking-modal');
+      const closeModalBtns = document.querySelectorAll('.close-booking-modal');
+
+      openModalBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (bookingModal) bookingModal.classList.remove('hidden');
+        });
+      });
+
+      closeModalBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (bookingModal) bookingModal.classList.add('hidden');
+        });
+      });
+
+      // Parse Query Parameter ?id=...
+      const urlParams = new URLSearchParams(window.location.search);
+      const modelId = urlParams.get('id');
+
+      // Fetch or read models
+      let models = [];
+      try {
+        const raw = localStorage.getItem('bongbangla_models');
+        if (raw) models = JSON.parse(raw);
+      } catch(e) {}
+
+      if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.fetchModels === 'function') {
+        try {
+          const remoteModels = await window.BongBanglaSupabase.fetchModels();
+          if (Array.isArray(remoteModels) && remoteModels.length > 0) {
+            models = remoteModels;
+          }
+        } catch(e) {}
+      }
+
+      const loadingEl = document.getElementById('model-loading-state');
+      const notFoundEl = document.getElementById('model-not-found-state');
+      const contentEl = document.getElementById('model-profile-content');
+
+      if (loadingEl) loadingEl.classList.add('hidden');
+
+      if (!modelId || !Array.isArray(models) || models.length === 0) {
+        // If no specific ID, grab first model or show not found
+        if (Array.isArray(models) && models.length > 0) {
+          renderModelDetail(models[0], models);
+        } else {
+          if (notFoundEl) notFoundEl.classList.remove('hidden');
+        }
+        return;
+      }
+
+      const model = models.find(m => m.id === modelId || m.name.toLowerCase() === modelId.toLowerCase());
+      if (!model) {
+        if (notFoundEl) notFoundEl.classList.remove('hidden');
+        return;
+      }
+
+      renderModelDetail(model, models);
+    });
+
+    function renderModelDetail(model, allModels) {
+      const contentEl = document.getElementById('model-profile-content');
+      if (contentEl) contentEl.classList.remove('hidden');
+
+      const defaultFallback = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80';
+      const rawImg = model.image || defaultFallback;
+      const modelImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImg, 'models') : rawImg;
+
+      // Update Page Title
+      document.title = `${model.name} - মডেল কাস্টিং ও প্রোফাইল | BongBangla Media`;
+      const breadcrumbName = document.getElementById('breadcrumb-model-name');
+      if (breadcrumbName) breadcrumbName.textContent = model.name;
+
+      // Populate Elements
+      const imgEl = document.getElementById('model-detail-image');
+      if (imgEl) {
+        imgEl.src = modelImg;
+        imgEl.onerror = () => { imgEl.onerror = null; imgEl.src = defaultFallback; };
+      }
+
+      const nameEl = document.getElementById('model-detail-name');
+      const nameOverlay = document.getElementById('model-detail-name-overlay');
+      if (nameEl) nameEl.textContent = model.name;
+      if (nameOverlay) nameOverlay.textContent = model.name;
+
+      const catBadge = document.getElementById('model-detail-category-badge');
+      const catOverlay = document.getElementById('model-detail-category-overlay');
+      if (catBadge) catBadge.textContent = model.category || 'ফ্যাশন ও শাড়ি';
+      if (catOverlay) catOverlay.textContent = (model.category || 'FASHION MODEL').toUpperCase();
+
+      const idBadge = document.getElementById('model-detail-id-badge');
+      if (idBadge) idBadge.textContent = `ID: ${model.id}`;
+
+      const locEl = document.getElementById('model-detail-location');
+      if (locEl) locEl.textContent = model.location || 'ঢাকা ও কলকাতা';
+
+      const expEl = document.getElementById('model-detail-experience');
+      if (expEl) expEl.textContent = model.experience || '৩+ বছরের অভিজ্ঞতা';
+
+      // Status
+      const statusBadge = document.getElementById('model-detail-status-badge');
+      const statStatus = document.getElementById('stat-status');
+      const isAvail = model.available !== false;
+      if (statusBadge) {
+        statusBadge.className = isAvail
+          ? 'absolute top-4 right-4 px-3 py-1 rounded-full bg-emerald-500/90 text-white text-xs font-bold font-mono tracking-wider shadow-md backdrop-blur-md'
+          : 'absolute top-4 right-4 px-3 py-1 rounded-full bg-gray-600/90 text-white text-xs font-bold font-mono tracking-wider shadow-md backdrop-blur-md';
+        statusBadge.textContent = isAvail ? 'AVAILABLE' : 'BOOKED';
+      }
+      if (statStatus) {
+        statStatus.className = isAvail ? 'text-xs font-bold text-emerald-600' : 'text-xs font-bold text-gray-500';
+        statStatus.textContent = isAvail ? 'অ্যাক্টিভ ও বুকিংয়ের জন্য প্রস্তুত' : 'সাময়িকভাবে বুকড';
+      }
+
+      // Stats
+      const statHeight = document.getElementById('stat-height');
+      if (statHeight) statHeight.textContent = model.height || "৫'৭\"";
+
+      const statMeas = document.getElementById('stat-measurements');
+      if (statMeas) statMeas.textContent = model.measurements || '৩৪-২৬-৩৬';
+
+      const statAge = document.getElementById('stat-age');
+      if (statAge) statAge.textContent = model.age || '২২ বছর';
+
+      const statShoots = document.getElementById('stat-shoots');
+      if (statShoots) statShoots.textContent = model.shoots || '৪০+';
+
+      const statSkin = document.getElementById('stat-skintone');
+      if (statSkin) statSkin.textContent = model.skinTone || 'উজ্জ্বল শ্যামলা';
+
+      const statEyes = document.getElementById('stat-eyecolor');
+      if (statEyes) statEyes.textContent = model.eyeColor || 'ডার্ক ব্রাউন';
+
+      const statHair = document.getElementById('stat-haircolor');
+      if (statHair) statHair.textContent = model.hairColor || 'কালো সিল্কি লম্বা';
+
+      // Specialties
+      const specContainer = document.getElementById('model-specialties-container');
+      if (specContainer && model.specialties) {
+        const list = model.specialties.split(',').map(s => s.trim()).filter(Boolean);
+        if (list.length > 0) {
+          specContainer.innerHTML = list.map(item => `
+            <span class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-semibold text-[#572449] shadow-xs flex items-center gap-1.5">
+              <i class="fa-solid fa-check text-[#db2777] text-[10px]"></i>
+              <span>${item}</span>
+            </span>
+          `).join('');
+        }
+      }
+
+      // Bio
+      const bioEl = document.getElementById('model-detail-bio');
+      if (bioEl && model.bio) {
+        bioEl.textContent = model.bio;
+      }
+
+      // Instagram
+      if (model.instagram) {
+        const igWrap = document.getElementById('model-detail-instagram-wrapper');
+        const igLink = document.getElementById('model-detail-instagram');
+        if (igWrap) igWrap.classList.remove('hidden');
+        if (igLink) {
+          const handle = model.instagram.replace('@', '');
+          igLink.href = `https://instagram.com/${handle}`;
+          igLink.querySelector('span').textContent = model.instagram.startsWith('@') ? model.instagram : `@${model.instagram}`;
+        }
+      }
+
+      // Prepopulate direct booking form
+      const formModelId = document.getElementById('direct-form-model-id');
+      const formModelName = document.getElementById('direct-form-model-name');
+      if (formModelId) formModelId.value = model.id;
+      if (formModelName) formModelName.value = model.name;
+
+      // WhatsApp links
+      const waMsg = encodeURIComponent(`নমস্কার/সালাম BongBangla! আমি মডেল "${model.name}" (ID: ${model.id})-কে আমাদের পরবর্তী ব্র্যান্ড শ্যুটের জন্য বুক করতে চাই।`);
+      const waBtn = document.getElementById('model-whatsapp-cta-btn');
+      const headerWaBtn = document.getElementById('header-whatsapp-btn');
+      if (waBtn) waBtn.href = `https://wa.me/8801700000000?text=${waMsg}`;
+      if (headerWaBtn) headerWaBtn.href = `https://wa.me/8801700000000?text=${waMsg}`;
+
+      // Handle Direct Form Submission
+      const directForm = document.getElementById('direct-model-booking-form');
+      if (directForm && !directForm.dataset.initialized) {
+        directForm.dataset.initialized = 'true';
+        directForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const submitBtn = document.getElementById('direct-form-submit-btn');
+          const origText = submitBtn.innerHTML;
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> রিকোয়েস্ট জমা হচ্ছে...';
+
+          try {
+            const fd = new FormData(directForm);
+            const leadData = {
+              id: 'L-' + Date.now(),
+              name: fd.get('name'),
+              brand: fd.get('brand'),
+              phone: fd.get('phone'),
+              service: `${fd.get('service')} (মডেল: ${model.name})`,
+              budget: '৳ ২৫,০০০+',
+              status: 'New',
+              notes: `মডেল বুকিং: ${model.name} (ID: ${model.id}). ক্লায়েন্ট নোটস: ${fd.get('notes') || 'N/A'}`
+            };
+
+            // Save to local leads
+            try {
+              const leads = JSON.parse(localStorage.getItem('bongbangla_leads') || '[]');
+              leads.unshift(leadData);
+              localStorage.setItem('bongbangla_leads', JSON.stringify(leads));
+            } catch(err) {}
+
+            // Save to Supabase
+            if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.saveLead === 'function') {
+              try {
+                await window.BongBanglaSupabase.saveLead(leadData);
+              } catch(err) {
+                console.warn('Supabase save lead error:', err);
+              }
+            }
+
+            alert(`ধন্যবাদ ${leadData.name}! মডেল "${model.name}"-এর জন্য আপনার কাস্টিং রিকোয়েস্ট সফলভাবে জমা হয়েছে। আমাদের টিম দ্রুত আপনার সাথে যোগাযোগ করবে।`);
+            directForm.reset();
+          } catch(err) {
+            alert('সাবমিট করতে সমস্যা হয়েছে। অনুগ্রহ করে WhatsApp বাটনে ক্লিক করে সরাসরি যোগাযোগ করুন।');
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origText;
+          }
+        });
+      }
+
+      // Related models
+      const relatedGrid = document.getElementById('related-models-grid');
+      if (relatedGrid && Array.isArray(allModels)) {
+        const others = allModels.filter(m => m.id !== model.id).slice(0, 3);
+        if (others.length > 0) {
+          relatedGrid.innerHTML = others.map(om => {
+            const omImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(om.image || defaultFallback, 'models') : (om.image || defaultFallback);
+            return `
+              <div class="glass-panel rounded-3xl overflow-hidden group border border-[#ED96D7]/30 hover:border-[#db2777] transition-all hover:shadow-lg bg-white flex flex-col justify-between">
+                <a href="model-details.html?id=${encodeURIComponent(om.id)}" class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8] block">
+                  <img src="${omImg}" alt="${om.name}" onerror="this.onerror=null; this.src='${defaultFallback}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                  <div class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-white/95 text-[10px] font-bold text-[#be185d] border border-[#ED96D7]/40 shadow-xs">
+                    ${om.available !== false ? 'AVAILABLE' : 'BOOKED'}
+                  </div>
+                </a>
+                <div class="p-4 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <h4 class="font-bold text-[#2b0e23] text-sm">${om.name}</h4>
+                    <span class="text-[11px] text-[#db2777] font-semibold">${om.category || 'মডেল'}</span>
+                  </div>
+                  <div class="flex items-center justify-between text-[11px] text-[#8c4f75] pt-1.5 border-t border-[#ED96D7]/20">
+                    <span>হাইট: ${om.height || "৫'৭\""}</span>
+                    <span>শ্যুট: ${om.shoots || '২০+'}</span>
+                  </div>
+                  <a href="model-details.html?id=${encodeURIComponent(om.id)}" class="w-full mt-2 py-2 rounded-xl bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
+                    <i class="fa-solid fa-circle-user text-xs"></i>
+                    <span>বিস্তারিত দেখুন</span>
+                  </a>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+    }
+  </script>
+</body>
+</html>

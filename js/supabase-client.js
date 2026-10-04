@@ -240,15 +240,33 @@
           .order('created_at', { ascending: false });
 
         if (!error && data !== null) {
-          const mapped = data.map(m => ({
-            id: m.id,
-            name: m.name,
-            category: m.category,
-            height: m.height,
-            shoots: m.shoots,
-            image: m.image_url,
-            available: m.available !== false
-          }));
+          let localModels = [];
+          try {
+            localModels = JSON.parse(localStorage.getItem('bongbangla_models') || '[]');
+          } catch(e) {}
+
+          const mapped = data.map(d => {
+            const local = (Array.isArray(localModels) ? localModels.find(lm => lm.id === d.id) : null) || {};
+            return {
+              id: d.id,
+              name: d.name,
+              category: d.category,
+              height: d.height || local.height || "৫'৭\"",
+              shoots: d.shoots || local.shoots || "২০+",
+              image: d.image_url || local.image,
+              available: d.available !== false,
+              age: d.age || local.age || '',
+              measurements: d.measurements || local.measurements || '',
+              skinTone: d.skin_tone || d.skinTone || local.skinTone || '',
+              eyeColor: d.eye_color || d.eyeColor || local.eyeColor || '',
+              hairColor: d.hair_color || d.hairColor || local.hairColor || '',
+              location: d.location || local.location || 'ঢাকা, বাংলাদেশ',
+              experience: d.experience || local.experience || '',
+              instagram: d.instagram || local.instagram || '',
+              specialties: d.specialties || local.specialties || '',
+              bio: d.bio || local.bio || ''
+            };
+          });
           localStorage.setItem('bongbangla_models', JSON.stringify(mapped));
           return mapped;
         }

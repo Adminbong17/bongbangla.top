@@ -742,7 +742,17 @@ function initDashboard() {
           height: formData.get('height') || '৫\'৭"',
           shoots: formData.get('shoots') || '২৫+',
           image: formattedImage,
-          available: true
+          available: formData.get('available') !== 'false',
+          age: (formData.get('age') || '').toString().trim(),
+          measurements: (formData.get('measurements') || '').toString().trim(),
+          skinTone: (formData.get('skinTone') || '').toString().trim(),
+          eyeColor: (formData.get('eyeColor') || '').toString().trim(),
+          hairColor: (formData.get('hairColor') || '').toString().trim(),
+          location: (formData.get('location') || '').toString().trim() || 'ঢাকা, বাংলাদেশ',
+          experience: (formData.get('experience') || '').toString().trim(),
+          instagram: (formData.get('instagram') || '').toString().trim(),
+          specialties: (formData.get('specialties') || '').toString().trim(),
+          bio: (formData.get('bio') || '').toString().trim()
         };
         models.push(newModel);
         saveModels(models);
@@ -759,7 +769,7 @@ function initDashboard() {
         clearModelFileSelection();
         addModelModal.classList.add('hidden');
         renderModelsGrid();
-        alert('নতুন মডেলের ছবি ও প্রোফাইল সফলভাবে আপলোড ও লাইভ করা হয়েছে!');
+        alert('নতুন মডেলের বিস্তারিত প্রোফাইল সফলভাবে যোগ ও লাইভ করা হয়েছে!');
       } catch (err) {
         console.error('Error saving model:', err);
         alert('মডেল সেভ করতে সমস্যা হয়েছে: ' + (err.message || ''));
@@ -812,6 +822,19 @@ function initDashboard() {
     const heightInput = document.getElementById('edit-model-height');
     const shootsInput = document.getElementById('edit-model-shoots');
     const availableSelect = document.getElementById('edit-model-available');
+    
+    // Rich details inputs
+    const ageInput = document.getElementById('edit-model-age');
+    const measurementsInput = document.getElementById('edit-model-measurements');
+    const skinToneInput = document.getElementById('edit-model-skinTone');
+    const eyeColorInput = document.getElementById('edit-model-eyeColor');
+    const hairColorInput = document.getElementById('edit-model-hairColor');
+    const locationInput = document.getElementById('edit-model-location');
+    const experienceInput = document.getElementById('edit-model-experience');
+    const instagramInput = document.getElementById('edit-model-instagram');
+    const specialtiesInput = document.getElementById('edit-model-specialties');
+    const bioInput = document.getElementById('edit-model-bio');
+
     const previewImg = document.getElementById('edit-model-file-preview-img');
     const fileNameEl = document.getElementById('edit-model-file-name');
     const urlInput = document.getElementById('edit-model-image-input');
@@ -825,6 +848,17 @@ function initDashboard() {
     if (heightInput) heightInput.value = model.height || "৫'৭\"";
     if (shootsInput) shootsInput.value = model.shoots || '২০+';
     if (availableSelect) availableSelect.value = model.available !== false ? 'true' : 'false';
+
+    if (ageInput) ageInput.value = model.age || '';
+    if (measurementsInput) measurementsInput.value = model.measurements || '';
+    if (skinToneInput) skinToneInput.value = model.skinTone || '';
+    if (eyeColorInput) eyeColorInput.value = model.eyeColor || '';
+    if (hairColorInput) hairColorInput.value = model.hairColor || '';
+    if (locationInput) locationInput.value = model.location || 'ঢাকা, বাংলাদেশ';
+    if (experienceInput) experienceInput.value = model.experience || '';
+    if (instagramInput) instagramInput.value = model.instagram || '';
+    if (specialtiesInput) specialtiesInput.value = model.specialties || '';
+    if (bioInput) bioInput.value = model.bio || '';
 
     const currentImg = model.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
     if (previewImg) previewImg.src = currentImg;
@@ -913,9 +947,20 @@ function initDashboard() {
         model.shoots = formData.get('shoots') || '২০+';
         model.available = formData.get('available') === 'true';
         model.image = photoUrl;
+        
+        // Detailed fields
+        model.age = (formData.get('age') || '').toString().trim();
+        model.measurements = (formData.get('measurements') || '').toString().trim();
+        model.skinTone = (formData.get('skinTone') || '').toString().trim();
+        model.eyeColor = (formData.get('eyeColor') || '').toString().trim();
+        model.hairColor = (formData.get('hairColor') || '').toString().trim();
+        model.location = (formData.get('location') || '').toString().trim() || 'ঢাকা, বাংলাদেশ';
+        model.experience = (formData.get('experience') || '').toString().trim();
+        model.instagram = (formData.get('instagram') || '').toString().trim();
+        model.specialties = (formData.get('specialties') || '').toString().trim();
+        model.bio = (formData.get('bio') || '').toString().trim();
 
         saveModels(models);
-
 
         if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.getClient === 'function') {
           const client = window.BongBanglaSupabase.getClient();
@@ -933,10 +978,9 @@ function initDashboard() {
           }
         }
 
-
         closeEditModelModal();
         renderModelsGrid();
-        alert('মডেলের তথ্য ও ছবি সফলভাবে আপডেট করা হয়েছে!');
+        alert('মডেলের বিস্তারিত প্রোফাইল সফলভাবে আপডেট করা হয়েছে!');
       } catch (err) {
         console.error('Error updating model:', err);
         alert('মডেল আপডেট করতে সমস্যা হয়েছে: ' + (err.message || ''));
@@ -2365,12 +2409,18 @@ function renderModelsGrid() {
           </div>
         </div>
         <div class="p-4 space-y-1.5 font-bangla text-xs">
-          <div class="font-bold text-[#2b0e23] text-sm">${m.name}</div>
+          <div class="flex items-center justify-between">
+            <div class="font-bold text-[#2b0e23] text-sm">${m.name}</div>
+            <a href="model-details.html?id=${encodeURIComponent(m.id)}" target="_blank" class="text-[10px] text-[#db2777] hover:underline font-bold flex items-center gap-1" title="ওয়েবসাইটে প্রোফাইল দেখুন">
+              <span>ভিউ</span> <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+            </a>
+          </div>
           <div class="text-[#be185d] text-[11px] font-semibold">${m.category}</div>
           <div class="flex items-center justify-between text-[#8c4f75] text-[11px] pt-2 border-t border-[#ED96D7]/20">
             <span>উচ্চতা: ${m.height}</span>
             <span>শ্যুট: ${m.shoots}</span>
           </div>
+          ${m.location ? `<div class="text-[10px] text-gray-500 truncate"><i class="fa-solid fa-location-dot text-[#db2777] text-[9px] mr-1"></i>${m.location}</div>` : ''}
           <div class="pt-2 flex items-center gap-2">
             <button onclick="openEditModelModal('${m.id}')" class="flex-1 py-1.5 rounded-xl bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs">
               <i class="fa-solid fa-pen-to-square text-xs"></i>

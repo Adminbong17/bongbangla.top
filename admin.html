@@ -847,38 +847,111 @@
        Modal: Add New Model
        ======================================================================== -->
   <div id="add-model-modal" class="fixed inset-0 z-50 hidden bg-[#2b0e23]/60 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="max-w-md w-full glass-panel p-6 sm:p-7 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+    <div class="max-w-xl w-full glass-panel p-6 sm:p-7 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar bg-white">
       <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
         <h4 class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
-          <i class="fa-solid fa-user-plus text-[#db2777]"></i> নতুন মডেল যোগ করুন
+          <i class="fa-solid fa-user-plus text-[#db2777]"></i> নতুন মডেল কাস্টিং প্রোফাইল যোগ করুন
         </h4>
         <button id="close-add-model-btn" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
       </div>
 
       <form id="add-model-form" class="space-y-3.5 text-xs font-bangla">
-        <div>
-          <label class="block text-[#572449] font-bold mb-1">মডেলের নাম *</label>
-          <input type="text" name="name" required placeholder="উদাঃ অনন্যা রায়" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
-        </div>
-        <div>
-          <label class="block text-[#572449] font-bold mb-1">ক্যাটাগরি / স্টাইল *</label>
-          <input type="text" name="category" required placeholder="উদাঃ শাড়ি, ব্রাইডাল ও বোল্ড" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-[#572449] font-bold mb-1">উচ্চতা (Height)</label>
-            <input type="text" name="height" placeholder="৫'৭&quot;" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+        <!-- 1. Basic Info -->
+        <div class="p-3 bg-pink-50/40 rounded-2xl border border-[#ED96D7]/30 space-y-2.5">
+          <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider block flex items-center gap-1.5">
+            <i class="fa-solid fa-id-card"></i> ১. মূল পরিচিতি
+          </span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">মডেলের নাম *</label>
+              <input type="text" name="name" required placeholder="উদাঃ অনন্যা রায় / Neha Jaman" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">ক্যাটাগরি / স্টাইল *</label>
+              <input type="text" name="category" required placeholder="উদাঃ শাড়ি, ব্রাইডাল ও বোল্ড ফ্যাশন" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+            </div>
           </div>
-          <div>
-            <label class="block text-[#572449] font-bold mb-1">মোট শ্যুট সংখ্যা</label>
-            <input type="text" name="shoots" placeholder="৪০+" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">উচ্চতা (Height)</label>
+              <input type="text" name="height" placeholder="৫'৭&quot;" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-2 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">মোট শ্যুট</label>
+              <input type="text" name="shoots" placeholder="৪০+" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-2 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">বুকিং স্ট্যাটাস</label>
+              <select name="available" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2 py-2 text-[#2b0e23]">
+                <option value="true">Active (উপলব্ধ)</option>
+                <option value="false">Booked (বুকড)</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <!-- Model Photo: Direct Upload & URL Dual Mode -->
+        <!-- 2. Physical Stats & Measurements -->
+        <div class="p-3 bg-pink-50/40 rounded-2xl border border-[#ED96D7]/30 space-y-2.5">
+          <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider block flex items-center gap-1.5">
+            <i class="fa-solid fa-ruler-combined"></i> ২. শারীরিক বিবরণ ও পরিমাপ (Stats)
+          </span>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">বয়স (Age)</label>
+              <input type="text" name="age" placeholder="২২ বছর" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">শারীরিক মাপ (B-W-H)</label>
+              <input type="text" name="measurements" placeholder="৩৪-২৬-৩৬" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">গায়ের রঙ (Skin)</label>
+              <input type="text" name="skinTone" placeholder="উজ্জ্বল শ্যামলা / Fair" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">চোখের রঙ (Eyes)</label>
+              <input type="text" name="eyeColor" placeholder="ডার্ক ব্রাউন / কালো" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">চুলের রঙ (Hair)</label>
+              <input type="text" name="hairColor" placeholder="কালো সিল্কি লম্বা" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">শহর / লোকেশন</label>
+              <input type="text" name="location" placeholder="ঢাকা, বাংলাদেশ" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Professional Profile & Bio -->
+        <div class="p-3 bg-pink-50/40 rounded-2xl border border-[#ED96D7]/30 space-y-2.5">
+          <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider block flex items-center gap-1.5">
+            <i class="fa-solid fa-star"></i> ৩. কাজের অভিজ্ঞতা ও বিস্তারিত বায়ো
+          </span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">অভিজ্ঞতা (Experience)</label>
+              <input type="text" name="experience" placeholder="৩+ বছরের প্রফেশনাল মডেলিং" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">ইনস্টাগ্রাম / সোশ্যাল হ্যান্ডেল</label>
+              <input type="text" name="instagram" placeholder="@ananya_jaman" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
+            </div>
+          </div>
+          <div>
+            <label class="block text-[#572449] font-bold mb-1">পারদর্শিতা / স্পেশালিটি (কমা দিয়ে লিখুন)</label>
+            <input type="text" name="specialties" placeholder="জামদানি শাড়ি শ্যুট, ব্রাইডাল মেকওভার, বোল্ড ক্যাটালগ, ৪K সিনেমাটিক অ্যাড, র‌্যাম্প ওয়াক" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
+          </div>
+          <div>
+            <label class="block text-[#572449] font-bold mb-1">মডেলের বিস্তারিত পরিচিতি (About / Bio)</label>
+            <textarea name="bio" rows="2" placeholder="মডেলের ক্যারিয়ার, কাজের স্টাইল, ফটোশ্যুট এক্সপেরিয়েন্স সম্পর্কে কিছু তথ্য লিখুন..." class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] resize-none"></textarea>
+          </div>
+        </div>
+
+        <!-- 4. Model Photo: Direct Upload & URL Dual Mode -->
         <div class="space-y-2 pt-1 border-t border-[#ED96D7]/20">
           <div class="flex items-center justify-between">
-            <label class="block text-[#572449] font-bold">মডেলের ছবি (Photo) *</label>
+            <label class="block text-[#572449] font-bold">মডেলের প্রোফাইল ছবি (Photo) *</label>
             <!-- Mode Tabs -->
             <div class="inline-flex rounded-lg bg-pink-50 p-0.5 border border-[#ED96D7]/30 text-[10px]">
               <button type="button" id="model-tab-file-btn" onclick="setModelPhotoInputMode('file')" class="px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs">
@@ -930,9 +1003,12 @@
           </div>
         </div>
 
-        <button type="submit" id="model-submit-btn" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2 flex items-center justify-center gap-2">
+        <button type="submit" id="model-submit-btn" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2 flex items-center justify-center gap-2 shadow-md">
           <i class="fa-solid fa-check"></i>
           <span>মডেল প্রোফাইল সেভ করুন</span>
+        </button>
+      </form>
+    </div>
         </button>
       </form>
     </div>
@@ -1200,10 +1276,10 @@
        Modal: Edit Existing Model
        ======================================================================== -->
   <div id="edit-model-modal" class="fixed inset-0 z-50 hidden bg-[#2b0e23]/60 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="max-w-md w-full glass-panel p-6 sm:p-7 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar bg-white">
+    <div class="max-w-xl w-full glass-panel p-6 sm:p-7 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar bg-white">
       <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
         <h4 class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
-          <i class="fa-solid fa-user-pen text-[#db2777]"></i> মডেল প্রোফাইল এডিট করুন
+          <i class="fa-solid fa-user-pen text-[#db2777]"></i> মডেল প্রোফাইল ও বিস্তারিত তথ্য এডিট করুন
         </h4>
         <button id="close-edit-model-btn" onclick="closeEditModelModal()" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
       </div>
@@ -1211,36 +1287,99 @@
       <form id="edit-model-form" class="space-y-3.5 text-xs font-bangla">
         <input type="hidden" id="edit-model-id" name="id">
 
-        <div>
-          <label class="block text-[#572449] font-bold mb-1">মডেলের নাম *</label>
-          <input type="text" id="edit-model-name" name="name" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+        <!-- 1. Basic Info -->
+        <div class="p-3 bg-pink-50/40 rounded-2xl border border-[#ED96D7]/30 space-y-2.5">
+          <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider block flex items-center gap-1.5">
+            <i class="fa-solid fa-id-card"></i> ১. মূল পরিচিতি
+          </span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">মডেলের নাম *</label>
+              <input type="text" id="edit-model-name" name="name" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">ক্যাটাগরি / স্টাইল *</label>
+              <input type="text" id="edit-model-category" name="category" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">উচ্চতা (Height)</label>
+              <input type="text" id="edit-model-height" name="height" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-2 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">মোট শ্যুট</label>
+              <input type="text" id="edit-model-shoots" name="shoots" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-2 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">স্ট্যাটাস / কাস্টিং</label>
+              <select id="edit-model-available" name="available" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2 py-2 text-[#2b0e23]">
+                <option value="true">Active (উপলব্ধ)</option>
+                <option value="false">Booked (বুকড)</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <label class="block text-[#572449] font-bold mb-1">ক্যাটাগরি / স্টাইল *</label>
-          <input type="text" id="edit-model-category" name="category" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+        <!-- 2. Physical Stats & Measurements -->
+        <div class="p-3 bg-pink-50/40 rounded-2xl border border-[#ED96D7]/30 space-y-2.5">
+          <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider block flex items-center gap-1.5">
+            <i class="fa-solid fa-ruler-combined"></i> ২. শারীরিক বিবরণ ও পরিমাপ (Stats)
+          </span>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">বয়স (Age)</label>
+              <input type="text" id="edit-model-age" name="age" placeholder="২২ বছর" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">শারীরিক মাপ (B-W-H)</label>
+              <input type="text" id="edit-model-measurements" name="measurements" placeholder="৩৪-২৬-৩৬" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">গায়ের রঙ (Skin)</label>
+              <input type="text" id="edit-model-skinTone" name="skinTone" placeholder="উজ্জ্বল শ্যামলা / Fair" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">চোখের রঙ (Eyes)</label>
+              <input type="text" id="edit-model-eyeColor" name="eyeColor" placeholder="ডার্ক ব্রাউন / কালো" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">চুলের রঙ (Hair)</label>
+              <input type="text" id="edit-model-hairColor" name="hairColor" placeholder="কালো সিল্কি লম্বা" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">শহর / লোকেশন</label>
+              <input type="text" id="edit-model-location" name="location" placeholder="ঢাকা, বাংলাদেশ" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+            </div>
+          </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-[#572449] font-bold mb-1">উচ্চতা (Height)</label>
-            <input type="text" id="edit-model-height" name="height" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+        <!-- 3. Professional Profile & Bio -->
+        <div class="p-3 bg-pink-50/40 rounded-2xl border border-[#ED96D7]/30 space-y-2.5">
+          <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider block flex items-center gap-1.5">
+            <i class="fa-solid fa-star"></i> ৩. কাজের অভিজ্ঞতা ও বিস্তারিত বায়ো
+          </span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">অভিজ্ঞতা (Experience)</label>
+              <input type="text" id="edit-model-experience" name="experience" placeholder="৩+ বছরের প্রফেশনাল মডেলিং" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">ইনস্টাগ্রাম / সোশ্যাল হ্যান্ডেল</label>
+              <input type="text" id="edit-model-instagram" name="instagram" placeholder="@ananya_jaman" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
+            </div>
           </div>
           <div>
-            <label class="block text-[#572449] font-bold mb-1">মোট শ্যুট সংখ্যা</label>
-            <input type="text" id="edit-model-shoots" name="shoots" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+            <label class="block text-[#572449] font-bold mb-1">পারদর্শিতা / স্পেশালিটি (কমা দিয়ে লিখুন)</label>
+            <input type="text" id="edit-model-specialties" name="specialties" placeholder="জামদানি শাড়ি শ্যুট, ব্রাইডাল মেকওভার, বোল্ড ক্যাটালগ, ৪K সিনেমাটিক অ্যাড, র‌্যাম্প ওয়াক" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
+          </div>
+          <div>
+            <label class="block text-[#572449] font-bold mb-1">মডেলের বিস্তারিত পরিচিতি (About / Bio)</label>
+            <textarea id="edit-model-bio" name="bio" rows="2" placeholder="মডেলের ক্যারিয়ার, কাজের স্টাইল, ফটোশ্যুট এক্সপেরিয়েন্স সম্পর্কে তথ্য লিখুন..." class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] resize-none"></textarea>
           </div>
         </div>
 
-        <div>
-          <label class="block text-[#572449] font-bold mb-1">স্ট্যাটাস / কাস্টিং বুকিং</label>
-          <select id="edit-model-available" name="available" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
-            <option value="true">Active / Available (উপলব্ধ)</option>
-            <option value="false">Booked (বুকড)</option>
-          </select>
-        </div>
-
-        <!-- Model Photo: Direct Upload & URL Dual Mode in Edit Modal -->
+        <!-- 4. Model Photo: Direct Upload & URL Dual Mode in Edit Modal -->
         <div class="space-y-2 pt-1 border-t border-[#ED96D7]/20">
           <div class="flex items-center justify-between">
             <label class="block text-[#572449] font-bold">মডেলের ছবি পরিবর্তন করুন *</label>

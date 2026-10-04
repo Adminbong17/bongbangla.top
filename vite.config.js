@@ -13,6 +13,7 @@ export default defineConfig({
         serviceReels: resolve(__dirname, 'service-viral-reels.html'),
         serviceFacebook: resolve(__dirname, 'service-facebook-ads.html'),
         serviceJewellery: resolve(__dirname, 'service-jewellery-luxury.html'),
+        modelDetails: resolve(__dirname, 'model-details.html'),
       },
     },
   },
