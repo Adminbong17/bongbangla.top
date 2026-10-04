@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BongBangla Admin Portal | ????????, ???? ? ???? ??????????</title>
+  <title>BongBangla Admin Portal | ইনকোয়ারি, মডেল ও সেলস ড্যাশবোর্ড</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -69,23 +69,23 @@
     <div class="max-w-md w-full glass-panel p-6 sm:p-9 rounded-3xl border border-[#ED96D7]/50 shadow-2xl shadow-[#ED96D7]/25 text-center space-y-5">
       
       <div class="text-center">
-        <img id="admin-login-logo" src="assets/logo-bn.png" alt="?? ?????" class="h-16 sm:h-20 w-auto max-w-[300px] mx-auto object-contain mb-3">
+        <img id="admin-login-logo" src="assets/logo-bn.png" alt="বং বাংলা" class="h-16 sm:h-20 w-auto max-w-[300px] mx-auto object-contain mb-3">
         <div class="inline-flex items-center p-0.5 rounded-full bg-white border border-[#ED96D7]/50 text-[11px] font-bold shadow-sm">
-          <button type="button" id="admin-login-btn-bn" class="px-3 py-1 rounded-full bg-[#db2777] text-white shadow-sm transition-all" onclick="setAdminLogoLang('bn')">?????</button>
+          <button type="button" id="admin-login-btn-bn" class="px-3 py-1 rounded-full bg-[#db2777] text-white shadow-sm transition-all" onclick="setAdminLogoLang('bn')">বাংলা</button>
           <button type="button" id="admin-login-btn-en" class="px-3 py-1 rounded-full text-[#572449] hover:text-[#db2777] transition-all" onclick="setAdminLogoLang('en')">English</button>
         </div>
         <p class="text-xs text-[#8c4f75] mt-2.5 font-bangla font-semibold">
-          <i class="fa-solid fa-shield-halved text-[#db2777] mr-1"></i> Supabase ?????? ???????? ???????????
+          <i class="fa-solid fa-shield-halved text-[#db2777] mr-1"></i> Supabase সিকিউর অ্যাডমিন অথেন্টিকেশন
         </p>
       </div>
 
       <!-- Auth Mode Switcher (Sign In vs Sign Up) -->
       <div class="grid grid-cols-2 p-1 bg-white rounded-2xl border border-[#ED96D7]/40 shadow-sm text-xs font-bold font-bangla">
         <button type="button" id="auth-tab-signin" onclick="setAuthMode('signin')" class="py-2 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white shadow-sm transition-all">
-          <i class="fa-solid fa-right-to-bracket mr-1"></i> ????
+          <i class="fa-solid fa-right-to-bracket mr-1"></i> লগইন
         </button>
         <button type="button" id="auth-tab-signup" onclick="setAuthMode('signup')" class="py-2 rounded-xl text-[#572449] hover:text-[#db2777] transition-all">
-          <i class="fa-solid fa-user-plus mr-1"></i> ???? ??????????
+          <i class="fa-solid fa-user-plus mr-1"></i> নতুন অ্যাকাউন্ট
         </button>
       </div>
 
@@ -96,37 +96,37 @@
       <form id="admin-login-form" onsubmit="handleAdminLoginSubmit(event)" action="javascript:void(0);" class="space-y-4 text-left">
         <div>
           <label class="block text-xs font-bold text-[#572449] mb-1 font-bangla">
-            <i class="fa-regular fa-envelope text-[#db2777] mr-1"></i> ???????? ????? (Email)
+            <i class="fa-regular fa-envelope text-[#db2777] mr-1"></i> অ্যাডমিন ইমেইল (Email)
           </label>
           <input type="text" id="admin-email" required placeholder="admin@bongbangla.top" value="admin@bongbangla.top" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-4 py-3 text-sm text-[#2b0e23] focus:outline-none focus:border-[#db2777] focus:ring-2 focus:ring-[#ED96D7]/20 transition-all font-mono">
         </div>
 
         <div>
           <label class="block text-xs font-bold text-[#572449] mb-1 font-bangla flex items-center justify-between">
-            <span><i class="fa-solid fa-key text-[#db2777] mr-1"></i> ??????? ????????? (Password)</span>
-            <span class="text-[10px] text-[#8c4f75] font-normal">??????? ? ?????</span>
+            <span><i class="fa-solid fa-key text-[#db2777] mr-1"></i> সিক্রেট পাসওয়ার্ড (Password)</span>
+            <span class="text-[10px] text-[#8c4f75] font-normal">কমপক্ষে ৬ অক্ষর</span>
           </label>
-          <input type="password" id="admin-password" required minlength="6" placeholder="��������" value="bongbangla2026" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-4 py-3 text-sm text-[#2b0e23] focus:outline-none focus:border-[#db2777] focus:ring-2 focus:ring-[#ED96D7]/20 transition-all">
+          <input type="password" id="admin-password" required minlength="6" placeholder="••••••••" value="bongbangla2026" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-4 py-3 text-sm text-[#2b0e23] focus:outline-none focus:border-[#db2777] focus:ring-2 focus:ring-[#ED96D7]/20 transition-all">
           <div class="mt-2 p-2 rounded-lg bg-pink-50/70 border border-[#ED96D7]/30 text-[11px] text-[#8c4f75] font-bangla space-y-1">
             <div class="flex items-center justify-between">
-              <span>???????? ??????:</span>
+              <span>অ্যাডমিন এক্সেস:</span>
               <span class="font-mono text-[#be185d] font-bold">model@bongbangla.top / admin</span>
             </div>
           </div>
         </div>
 
         <button type="button" id="auth-submit-btn" onclick="handleAdminLoginSubmit(event)" class="w-full py-3.5 rounded-xl btn-pink-primary font-bangla font-bold text-sm shadow-lg shadow-[#ED96D7]/40 transition-all flex items-center justify-center gap-2">
-          <span id="auth-btn-text">??????????? ?????? ????</span>
+          <span id="auth-btn-text">ড্যাশবোর্ডে প্রবেশ করুন</span>
           <i id="auth-btn-icon" class="fa-solid fa-arrow-right"></i>
         </button>
       </form>
 
       <div class="pt-2 border-t border-[#ED96D7]/20 flex items-center justify-between text-xs text-[#8c4f75]">
         <a href="index.html" class="hover:text-[#db2777] flex items-center gap-1 font-medium transition-colors">
-          <i class="fa-solid fa-arrow-left text-[10px]"></i> ????????? ???
+          <i class="fa-solid fa-arrow-left text-[10px]"></i> ওয়েবসাইটে যান
         </a>
         <span class="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-indicator"></span> Supabase ??????
+          <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-indicator"></span> Supabase ক্লাউড
         </span>
       </div>
 
@@ -156,7 +156,7 @@
         </div>
         
         <!-- Collapse / Fold Button (Desktop) -->
-        <button type="button" onclick="toggleSidebar()" class="w-7 h-7 rounded-lg hover:bg-pink-50 text-[#8c4f75] hover:text-[#db2777] flex items-center justify-center transition-colors" title="??????? ??? / ?? ????">
+        <button type="button" onclick="toggleSidebar()" class="w-7 h-7 rounded-lg hover:bg-pink-50 text-[#8c4f75] hover:text-[#db2777] flex items-center justify-center transition-colors" title="সাইডবার ছোট / বড় করুন">
           <i id="sidebar-collapse-icon" class="fa-solid fa-chevron-left text-xs"></i>
         </button>
       </div>
@@ -177,12 +177,12 @@
           <div id="submenu-dashboard" class="mt-1 space-y-1 pl-2">
             <button type="button" onclick="switchSection('section-overview', this)" class="admin-nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gradient-to-r from-[#db2777] to-[#be185d] text-white font-bold shadow-md transition-all text-left">
               <i class="fa-solid fa-chart-pie w-4 text-center"></i>
-              <span class="sidebar-label">??????? (Overview)</span>
+              <span class="sidebar-label">ওভারভিউ (Overview)</span>
             </button>
             <button type="button" onclick="switchSection('section-leads', this)" class="admin-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
               <span class="flex items-center gap-2.5">
                 <i class="fa-solid fa-clock-rotate-left w-4 text-center"></i>
-                <span class="sidebar-label">???????????? ?? & ????</span>
+                <span class="sidebar-label">অ্যাক্টিভিটি লগ & লিডস</span>
               </span>
               <span id="badge-nav-leads" class="px-1.5 py-0.5 rounded-full bg-pink-100 text-[#db2777] text-[10px] font-bold">New</span>
             </button>
@@ -204,15 +204,15 @@
           <div id="submenu-catalog" class="mt-1 space-y-1 pl-2">
             <button type="button" onclick="switchSection('section-models', this)" class="admin-nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
               <i class="fa-solid fa-users w-4 text-center"></i>
-              <span class="sidebar-label">???? ? ???????? ?????????</span>
+              <span class="sidebar-label">মডেল ও আর্টিস্ট ডিরেক্টরি</span>
             </button>
             <button type="button" onclick="switchSection('section-reels', this)" class="admin-nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
               <i class="fa-solid fa-film w-4 text-center"></i>
-              <span class="sidebar-label">???? ? ????? ??????????</span>
+              <span class="sidebar-label">রিলস ও ভিডিও পোর্টফোলিও</span>
             </button>
             <button type="button" onclick="switchSection('section-hero-slides', this)" class="admin-nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
               <i class="fa-solid fa-images w-4 text-center"></i>
-              <span class="sidebar-label">???? ???????? ? ????</span>
+              <span class="sidebar-label">হিরো স্লাইডার ও ইমেজ</span>
             </button>
           </div>
         </div>
@@ -233,12 +233,12 @@
             <button type="button" onclick="switchSection('section-leads', this)" class="admin-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
               <span class="flex items-center gap-2.5">
                 <i class="fa-solid fa-inbox w-4 text-center"></i>
-                <span class="sidebar-label">???????? ? ?????? (Orders)</span>
+                <span class="sidebar-label">ইনকোয়ারি ও অর্ডার (Orders)</span>
               </span>
             </button>
             <button type="button" onclick="openAddLeadModal()" class="admin-nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
               <i class="fa-solid fa-plus-circle w-4 text-center text-[#db2777]"></i>
-              <span class="sidebar-label">????????? ?????? ???????</span>
+              <span class="sidebar-label">ম্যানুয়াল অর্ডার এন্ট্রি</span>
             </button>
           </div>
         </div>
@@ -249,7 +249,7 @@
         <div>
           <button type="button" onclick="document.getElementById('open-supabase-settings-btn').click()" class="admin-nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
             <i class="fa-solid fa-cloud w-4 text-center text-emerald-600"></i>
-            <span class="sidebar-label">Supabase ?????? ?????</span>
+            <span class="sidebar-label">Supabase ক্লাউড সিঙ্ক</span>
           </button>
         </div>
 
@@ -296,26 +296,26 @@
 
         <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
           <!-- Supabase Cloud Connection Indicator / Button -->
-          <button id="open-supabase-settings-btn" class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-bold text-[#572449] hover:border-[#db2777] flex items-center gap-1.5 transition-all shadow-sm" title="Supabase ??????? ??????">
+          <button id="open-supabase-settings-btn" class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-bold text-[#572449] hover:border-[#db2777] flex items-center gap-1.5 transition-all shadow-sm" title="Supabase ডাটাবেস সেটিংস">
             <span id="supabase-status-dot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-            <span id="supabase-status-text" class="font-bangla text-[11px]">????? ???</span>
+            <span id="supabase-status-text" class="font-bangla text-[11px]">লোকাল মোড</span>
             <i class="fa-solid fa-gear text-[10px] text-[#db2777]"></i>
           </button>
 
           <!-- Logged-in Real Auth Badge -->
-          <div id="admin-user-badge" class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-bold text-[#2b0e23] hidden sm:flex items-center gap-1.5 shadow-sm" title="??????? ????????">
+          <div id="admin-user-badge" class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-bold text-[#2b0e23] hidden sm:flex items-center gap-1.5 shadow-sm" title="লগইনকৃত অ্যাডমিন">
             <i class="fa-solid fa-circle-user text-[#db2777]"></i>
             <span id="admin-user-email" class="font-mono text-[11px] max-w-[140px] truncate">admin</span>
           </div>
 
           <!-- BN / EN Logo Toggle on the right -->
           <div class="inline-flex items-center p-0.5 rounded-full bg-white border border-[#ED96D7]/50 text-[10px] font-bold shadow-sm">
-            <button type="button" id="admin-nav-btn-bn" class="px-2 py-0.5 rounded-full bg-[#db2777] text-white shadow-sm transition-all" onclick="setAdminLogoLang('bn')">???</button>
+            <button type="button" id="admin-nav-btn-bn" class="px-2 py-0.5 rounded-full bg-[#db2777] text-white shadow-sm transition-all" onclick="setAdminLogoLang('bn')">বাং</button>
             <button type="button" id="admin-nav-btn-en" class="px-2 py-0.5 rounded-full text-[#572449] hover:text-[#db2777] transition-all" onclick="setAdminLogoLang('en')">EN</button>
           </div>
 
           <a href="index.html" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs text-[#572449] hover:text-[#db2777] hover:border-[#db2777] hover:bg-[#fdf2f8] flex items-center gap-1.5 transition-all font-semibold shadow-sm">
-            <i class="fa-solid fa-external-link text-[10px] text-[#db2777]"></i> ???? ????
+            <i class="fa-solid fa-external-link text-[10px] text-[#db2777]"></i> লাইভ সাইট
           </a>
         </div>
       </header>
@@ -333,9 +333,9 @@
             
             <div class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/35 flex items-center justify-between">
               <div>
-                <span class="text-xs text-[#8c4f75] font-bangla font-medium">??? ????????</span>
-                <div id="stat-total-leads" class="text-3xl font-extrabold text-[#2b0e23] mt-1 font-heading">?</div>
-                <span class="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">???????? ???? ???????</span>
+                <span class="text-xs text-[#8c4f75] font-bangla font-medium">মোট ইনকোয়ারি</span>
+                <div id="stat-total-leads" class="text-3xl font-extrabold text-[#2b0e23] mt-1 font-heading">০</div>
+                <span class="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">ওয়েবসাইট থেকে প্রাপ্ত</span>
               </div>
               <div class="w-12 h-12 rounded-2xl bg-[#ED96D7]/25 text-[#be185d] flex items-center justify-center text-xl shadow-sm">
                 <i class="fa-solid fa-users"></i>
@@ -344,9 +344,9 @@
 
             <div class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/35 flex items-center justify-between">
               <div>
-                <span class="text-xs text-[#8c4f75] font-bangla font-medium">???? ??? (Pending)</span>
-                <div id="stat-new-leads" class="text-3xl font-extrabold text-[#db2777] mt-1 font-heading">?</div>
-                <span class="text-[10px] text-amber-700 font-semibold bg-amber-50 px-1.5 py-0.5 rounded">??????? ???? ???</span>
+                <span class="text-xs text-[#8c4f75] font-bangla font-medium">নতুন লিড (Pending)</span>
+                <div id="stat-new-leads" class="text-3xl font-extrabold text-[#db2777] mt-1 font-heading">০</div>
+                <span class="text-[10px] text-amber-700 font-semibold bg-amber-50 px-1.5 py-0.5 rounded">যোগাযোগ করতে হবে</span>
               </div>
               <div class="w-12 h-12 rounded-2xl bg-pink-100 text-[#db2777] flex items-center justify-center text-xl shadow-sm">
                 <i class="fa-solid fa-bell"></i>
@@ -355,9 +355,9 @@
 
             <div class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/35 flex items-center justify-between">
               <div>
-                <span class="text-xs text-[#8c4f75] font-bangla font-medium">???????? ?????</span>
-                <div id="stat-booked-leads" class="text-3xl font-extrabold text-emerald-700 mt-1 font-heading">?</div>
-                <span class="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">????? ???????</span>
+                <span class="text-xs text-[#8c4f75] font-bangla font-medium">কনফার্মড শ্যুট</span>
+                <div id="stat-booked-leads" class="text-3xl font-extrabold text-emerald-700 mt-1 font-heading">০</div>
+                <span class="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">বুকিং কমপ্লিট</span>
               </div>
               <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shadow-sm">
                 <i class="fa-solid fa-calendar-check"></i>
@@ -366,9 +366,9 @@
 
             <div class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/35 flex items-center justify-between">
               <div>
-                <span class="text-xs text-[#8c4f75] font-bangla font-medium">???????? ????????</span>
-                <div id="stat-pipeline-value" class="text-2xl font-extrabold text-[#be185d] mt-1 font-heading">? ?</div>
-                <span class="text-[10px] text-[#8c4f75] font-semibold bg-purple-50 px-1.5 py-0.5 rounded">????????? ???????</span>
+                <span class="text-xs text-[#8c4f75] font-bangla font-medium">আনুমানিক পাইপলাইন</span>
+                <div id="stat-pipeline-value" class="text-2xl font-extrabold text-[#be185d] mt-1 font-heading">৳ ০</div>
+                <span class="text-[10px] text-[#8c4f75] font-semibold bg-purple-50 px-1.5 py-0.5 rounded">পটেনশিয়াল রেভিনিউ</span>
               </div>
               <div class="w-12 h-12 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center text-xl shadow-sm">
                 <i class="fa-solid fa-chart-line"></i>
@@ -384,8 +384,8 @@
                 <i class="fa-solid fa-inbox"></i>
               </div>
               <div>
-                <h4 class="font-bold text-sm text-[#2b0e23]">???????? ? ??? ??????</h4>
-                <p class="text-xs text-[#8c4f75] mt-0.5">?? ???????? ?????????? ??? ? ????????? ????? ????</p>
+                <h4 class="font-bold text-sm text-[#2b0e23]">ইনকোয়ারি ও লিড তালিকা</h4>
+                <p class="text-xs text-[#8c4f75] mt-0.5">সব কাস্টমার রিকুয়েস্ট চেক ও স্ট্যাটাস চেঞ্জ করুন</p>
               </div>
             </button>
 
@@ -394,8 +394,8 @@
                 <i class="fa-solid fa-users"></i>
               </div>
               <div>
-                <h4 class="font-bold text-sm text-[#2b0e23]">???? ?????????</h4>
-                <p class="text-xs text-[#8c4f75] mt-0.5">???? ?????? ??? ? ???????? ????? ????</p>
+                <h4 class="font-bold text-sm text-[#2b0e23]">মডেল ডিরেক্টরি</h4>
+                <p class="text-xs text-[#8c4f75] mt-0.5">নতুন মডেলের ছবি ও প্রোফাইল যুক্ত করুন</p>
               </div>
             </button>
 
@@ -404,8 +404,8 @@
                 <i class="fa-solid fa-film"></i>
               </div>
               <div>
-                <h4 class="font-bold text-sm text-[#2b0e23]">???? ??????????</h4>
-                <p class="text-xs text-[#8c4f75] mt-0.5">?:?? ????? ???? ????? ? ??????? ????</p>
+                <h4 class="font-bold text-sm text-[#2b0e23]">রিলস পোর্টফোলিও</h4>
+                <p class="text-xs text-[#8c4f75] mt-0.5">৯:১৬ ভিডিও রিলস আপলোড ও ম্যানেজ করুন</p>
               </div>
             </button>
           </div>
@@ -422,31 +422,31 @@
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#ED96D7]/20 pb-4">
               <div>
                 <h3 class="text-xl font-bold font-bangla text-[#2b0e23] flex items-center gap-2">
-                  <i class="fa-solid fa-inbox text-[#db2777]"></i> ????????? ???????? ? ????
+                  <i class="fa-solid fa-inbox text-[#db2777]"></i> ক্লায়েন্ট ইনকোয়ারি ও লিডস
                 </h3>
                 <p class="text-xs text-[#8c4f75] font-bangla mt-0.5">
-                  ????????? ???? ?????? ???? ?? ?????????? ???? ?????? ????? ????????? ? ???????? ???
+                  ওয়েবসাইটে ফর্ম সাবমিট হওয়া সব কাস্টমারের তথ্য সরাসরি এখানে প্রদর্শিত ও সংরক্ষিত হয়।
                 </p>
               </div>
 
               <div class="flex items-center gap-2.5 flex-wrap">
                 <!-- Filter Tabs -->
                 <select id="lead-filter-status" class="bg-white border border-[#ED96D7]/50 rounded-xl px-3 py-2 text-xs text-[#2b0e23] font-medium focus:outline-none focus:border-[#db2777] cursor-pointer">
-                  <option value="all">?? ??? (All)</option>
-                  <option value="New">???? (New)</option>
-                  <option value="Contacted">?????????? (Contacted)</option>
-                  <option value="Booked">???? (Booked)</option>
-                  <option value="Completed">??????? (Completed)</option>
+                  <option value="all">সব লিড (All)</option>
+                  <option value="New">নতুন (New)</option>
+                  <option value="Contacted">যোগাযোগকৃত (Contacted)</option>
+                  <option value="Booked">বুকড (Booked)</option>
+                  <option value="Completed">সম্পন্ন (Completed)</option>
                 </select>
 
                 <!-- Export to CSV -->
                 <button id="export-csv-btn" class="px-3.5 py-2 rounded-xl bg-white hover:bg-[#fdf2f8] border border-[#ED96D7]/50 text-xs text-[#be185d] font-bold flex items-center gap-1.5 transition-all shadow-sm">
-                  <i class="fa-solid fa-download text-[11px]"></i> CSV ?????????
+                  <i class="fa-solid fa-download text-[11px]"></i> CSV এক্সপোর্ট
                 </button>
 
                 <!-- Manual Add Lead Trigger -->
                 <button id="open-add-lead-btn" class="px-4 py-2 rounded-xl btn-pink-primary text-xs font-bold flex items-center gap-1.5 shadow-md">
-                  <i class="fa-solid fa-plus"></i> ???? ??? ????? ????
+                  <i class="fa-solid fa-plus"></i> নতুন লিড যুক্ত করুন
                 </button>
               </div>
             </div>
@@ -459,39 +459,39 @@
                 </span>
                 <div>
                   <span id="leads-selected-count" class="font-bold text-sm text-[#ED96D7]">0</span>
-                  <span class="text-xs text-white/90">?? ???????? ?????????</span>
+                  <span class="text-xs text-white/90">টি ইনকোয়ারি সিলেক্টেড</span>
                 </div>
               </div>
 
               <div class="flex items-center gap-2 flex-wrap text-xs">
                 <!-- Bulk Status Change -->
                 <div class="flex items-center gap-1.5 bg-white/10 rounded-xl px-2 py-1 border border-white/20">
-                  <span class="text-[11px] text-pink-200">?????????:</span>
+                  <span class="text-[11px] text-pink-200">স্ট্যাটাস:</span>
                   <select id="leads-bulk-status-select" class="bg-white text-[#2b0e23] text-xs font-semibold rounded-lg px-2 py-1 focus:outline-none">
-                    <option value="New">???? (New)</option>
-                    <option value="Contacted">?????????? (Contacted)</option>
-                    <option value="Booked">???? (Booked)</option>
-                    <option value="Completed">??????? (Completed)</option>
+                    <option value="New">নতুন (New)</option>
+                    <option value="Contacted">যোগাযোগকৃত (Contacted)</option>
+                    <option value="Booked">বুকড (Booked)</option>
+                    <option value="Completed">সম্পন্ন (Completed)</option>
                   </select>
                   <button type="button" onclick="applyBulkLeadsStatus()" class="px-2.5 py-1 rounded-lg bg-[#db2777] hover:bg-[#be185d] text-white font-bold transition-all shadow-xs">
-                    ??????
+                    প্রয়োগ
                   </button>
                 </div>
 
                 <!-- Export Selected -->
                 <button type="button" onclick="exportSelectedLeadsCSV()" class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold transition-all flex items-center gap-1.5 border border-white/20">
                   <i class="fa-solid fa-file-export text-[11px] text-[#ED96D7]"></i>
-                  <span>????????? CSV</span>
+                  <span>সিলেক্টেড CSV</span>
                 </button>
 
                 <!-- Bulk Delete -->
                 <button type="button" onclick="applyBulkLeadsDelete()" class="px-3 py-1.5 rounded-xl bg-rose-600/90 hover:bg-rose-700 text-white font-bold transition-all flex items-center gap-1.5 shadow-xs">
                   <i class="fa-solid fa-trash-can text-[11px]"></i>
-                  <span>?????? ?????</span>
+                  <span>একসাথে ডিলিট</span>
                 </button>
 
                 <!-- Deselect All -->
-                <button type="button" onclick="deselectAllLeads()" class="px-2.5 py-1.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all" title="??????? ?????">
+                <button type="button" onclick="deselectAllLeads()" class="px-2.5 py-1.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all" title="সিলেকশন বাতিল">
                   <i class="fa-solid fa-xmark"></i>
                 </button>
               </div>
@@ -503,15 +503,15 @@
                 <thead class="text-[11px] text-[#572449] font-bold uppercase bg-[#fdf2f8] border-b border-[#ED96D7]/30 font-bangla">
                   <tr>
                     <th class="py-3.5 px-3 w-10 text-center">
-                      <input type="checkbox" id="leads-select-all" class="w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer" title="?? ??????? ????">
+                      <input type="checkbox" id="leads-select-all" class="w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer" title="সব সিলেক্ট করুন">
                     </th>
-                    <th class="py-3.5 px-4">????? ? ????</th>
-                    <th class="py-3.5 px-4">????????? ? ?????????</th>
-                    <th class="py-3.5 px-4">??? / WhatsApp</th>
-                    <th class="py-3.5 px-4">???????</th>
-                    <th class="py-3.5 px-4">?????</th>
-                    <th class="py-3.5 px-4">?????????</th>
-                    <th class="py-3.5 px-4 text-right">???????</th>
+                    <th class="py-3.5 px-4">তারিখ ও আইডি</th>
+                    <th class="py-3.5 px-4">ক্লায়েন্ট ও ব্র্যান্ড</th>
+                    <th class="py-3.5 px-4">ফোন / WhatsApp</th>
+                    <th class="py-3.5 px-4">সার্ভিস</th>
+                    <th class="py-3.5 px-4">বাজেট</th>
+                    <th class="py-3.5 px-4">স্ট্যাটাস</th>
+                    <th class="py-3.5 px-4 text-right">অ্যাকশন</th>
                   </tr>
                 </thead>
                 <tbody id="leads-table-body" class="divide-y divide-[#ED96D7]/15 font-bangla text-[#2b0e23]">
@@ -522,7 +522,7 @@
 
             <!-- Empty state placeholder -->
             <div id="leads-empty-state" class="hidden text-center py-12 text-[#8c4f75] text-sm font-bangla bg-[#fdf2f8] rounded-2xl border border-dashed border-[#ED96D7]/40">
-              ???? ???????? ????? ??????
+              কোনো ইনকোয়ারি পাওয়া যায়নি।
             </div>
 
           </div>
@@ -537,19 +537,19 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#ED96D7]/20 pb-4">
               <div>
                 <h3 class="text-xl font-bold font-bangla text-[#2b0e23] flex items-center gap-2">
-                  <i class="fa-solid fa-users text-[#db2777]"></i> ???? ? ???????? ?????????
+                  <i class="fa-solid fa-users text-[#db2777]"></i> মডেল ও আর্টিস্ট ডিরেক্টরি
                 </h3>
                 <p class="text-xs text-[#8c4f75] font-bangla mt-0.5">
-                  ????????? ????????? ??????? ???????? ???????? ?????
+                  ওয়েবসাইটে প্রদর্শিত মডেলদের প্রোফাইল পরিচালনা করুন।
                 </p>
               </div>
 
               <div class="flex items-center gap-2.5 flex-wrap">
                 <button type="button" id="models-toggle-all-btn" onclick="toggleSelectAllModels()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#572449] text-xs font-bold font-bangla transition-all shadow-xs flex items-center gap-1.5">
-                  <i class="fa-regular fa-square-check text-[#db2777]"></i> ?? ???????
+                  <i class="fa-regular fa-square-check text-[#db2777]"></i> সব সিলেক্ট
                 </button>
                 <button id="open-add-model-btn" class="px-4 py-2 rounded-xl btn-pink-outline text-xs font-bold flex items-center gap-1.5 shadow-sm">
-                  <i class="fa-solid fa-user-plus"></i> ???? ???? ??? ????
+                  <i class="fa-solid fa-user-plus"></i> নতুন মডেল যোগ করুন
                 </button>
               </div>
             </div>
@@ -562,7 +562,7 @@
                 </span>
                 <div>
                   <span id="models-selected-count" class="font-bold text-sm text-[#ED96D7]">0</span>
-                  <span class="text-xs text-white/90">?? ???? ?????????</span>
+                  <span class="text-xs text-white/90">জন মডেল সিলেক্টেড</span>
                 </div>
               </div>
 
@@ -570,11 +570,11 @@
                 <!-- Bulk Delete -->
                 <button type="button" onclick="applyBulkModelsDelete()" class="px-3.5 py-1.5 rounded-xl bg-rose-600/90 hover:bg-rose-700 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs">
                   <i class="fa-solid fa-trash-can text-[11px]"></i>
-                  <span>?????? ????? ????</span>
+                  <span>একসাথে ডিলিট করুন</span>
                 </button>
 
                 <!-- Deselect All -->
-                <button type="button" onclick="deselectAllModels()" class="px-2.5 py-1.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all text-xs" title="??????? ?????">
+                <button type="button" onclick="deselectAllModels()" class="px-2.5 py-1.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all text-xs" title="সিলেকশন বাতিল">
                   <i class="fa-solid fa-xmark"></i>
                 </button>
               </div>
@@ -597,44 +597,44 @@
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#ED96D7]/20 pb-4">
               <div>
                 <h3 class="text-xl font-bold font-bangla text-[#2b0e23] flex items-center gap-2">
-                  <i class="fa-solid fa-film text-[#db2777]"></i> ???? ? ????? ?????????? ?????
+                  <i class="fa-solid fa-film text-[#db2777]"></i> রিলস ও ভিডিও পোর্টফোলিও আপলোড
                 </h3>
                 <p class="text-xs text-[#8c4f75] font-bangla mt-0.5">
-                  ??????? ??? ? ???????????? ????????? ?:?? ????? ???? ?????, ???? ? ????? ?????
+                  সার্ভিস পেজ ও পোর্টফোলিওতে প্রদর্শিত ৯:১৬ ভিডিও রিলস আপলোড, এডিট ও ডিলিট করুন।
                 </p>
               </div>
 
               <div class="flex items-center gap-2.5 flex-wrap">
                 <!-- View Mode Toggle (Grid vs List) -->
                 <div class="inline-flex items-center p-0.5 rounded-xl bg-slate-100 border border-[#ED96D7]/40 shadow-xs">
-                  <button type="button" id="reel-view-list-btn" onclick="setReelViewMode('list')" class="px-2.5 py-1.5 rounded-lg text-xs font-bold font-bangla transition-all bg-[#db2777] text-white shadow-xs flex items-center gap-1.5" title="????? ???">
+                  <button type="button" id="reel-view-list-btn" onclick="setReelViewMode('list')" class="px-2.5 py-1.5 rounded-lg text-xs font-bold font-bangla transition-all bg-[#db2777] text-white shadow-xs flex items-center gap-1.5" title="লিস্ট ভিউ">
                     <i class="fa-solid fa-list-ul"></i>
-                    <span>?????</span>
+                    <span>লিস্ট</span>
                   </button>
-                  <button type="button" id="reel-view-grid-btn" onclick="setReelViewMode('grid')" class="px-2.5 py-1.5 rounded-lg text-xs font-bold font-bangla transition-all text-[#572449] hover:text-[#db2777] flex items-center gap-1.5" title="????? ???">
+                  <button type="button" id="reel-view-grid-btn" onclick="setReelViewMode('grid')" class="px-2.5 py-1.5 rounded-lg text-xs font-bold font-bangla transition-all text-[#572449] hover:text-[#db2777] flex items-center gap-1.5" title="গ্রিড ভিউ">
                     <i class="fa-solid fa-grip"></i>
-                    <span>?????</span>
+                    <span>গ্রিড</span>
                   </button>
                 </div>
 
                 <!-- Filter by service -->
                 <select id="admin-reel-filter" class="bg-white border border-[#ED96D7]/50 rounded-xl px-3 py-2 text-xs text-[#2b0e23] font-medium focus:outline-none focus:border-[#db2777] cursor-pointer">
-                  <option value="all">?? ???? (All Services)</option>
-                  <option value="cinema-ads">?K ?????? ????? (Cinema Ads)</option>
-                  <option value="saree-shoot">???? ? ????? ????? (Saree Shoot)</option>
-                  <option value="viral-reels">?????? ????????? ???? (Viral Reels)</option>
-                  <option value="facebook-ads">?????? ?????? (Facebook Ads)</option>
-                  <option value="jewellery">???????? ? ???????? (Jewellery)</option>
+                  <option value="all">সব রিলস (All Services)</option>
+                  <option value="cinema-ads">৪K সিনেমা অ্যাড (Cinema Ads)</option>
+                  <option value="saree-shoot">শাড়ি ও বোল্ড শ্যুট (Saree Shoot)</option>
+                  <option value="viral-reels">ভাইরাল প্রোডাক্ট রিলস (Viral Reels)</option>
+                  <option value="facebook-ads">ফেসবুক অ্যাডস (Facebook Ads)</option>
+                  <option value="jewellery">জুয়েলারি ও লাক্সারি (Jewellery)</option>
                 </select>
 
                 <!-- Reset to Defaults Button -->
                 <button id="admin-reset-reels-btn" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#572449] text-xs font-bold transition-all shadow-sm">
-                  <i class="fa-solid fa-rotate-left mr-1"></i> ?????? ???????
+                  <i class="fa-solid fa-rotate-left mr-1"></i> ডিফল্ট রিস্টোর
                 </button>
 
                 <!-- Add Reel Trigger -->
                 <button id="open-add-reel-btn" class="px-4 py-2 rounded-xl btn-pink-primary text-xs font-bold flex items-center gap-1.5 shadow-md">
-                  <i class="fa-solid fa-cloud-arrow-up"></i> ???? ???? ????? ????
+                  <i class="fa-solid fa-cloud-arrow-up"></i> নতুন রিলস আপলোড করুন
                 </button>
               </div>
             </div>
@@ -647,34 +647,34 @@
                 </span>
                 <div>
                   <span id="reels-selected-count" class="font-bold text-sm text-[#ED96D7]">0</span>
-                  <span class="text-xs text-white/90">?? ???? ?????????</span>
+                  <span class="text-xs text-white/90">টি রিলস সিলেক্টেড</span>
                 </div>
               </div>
 
               <div class="flex items-center gap-2 flex-wrap text-xs">
                 <!-- Bulk Category Change -->
                 <div class="flex items-center gap-1.5 bg-white/10 rounded-xl px-2 py-1 border border-white/20">
-                  <span class="text-[11px] text-pink-200">?????????:</span>
+                  <span class="text-[11px] text-pink-200">ক্যাটাগরি:</span>
                   <select id="reels-bulk-category-select" class="bg-white text-[#2b0e23] text-xs font-semibold rounded-lg px-2 py-1 focus:outline-none">
-                    <option value="cinema-ads">?K ?????? ?????</option>
-                    <option value="saree-shoot">???? ? ????? ?????</option>
-                    <option value="viral-reels">?????? ????????? ????</option>
-                    <option value="facebook-ads">?????? ??????</option>
-                    <option value="jewellery">???????? ? ????????</option>
+                    <option value="cinema-ads">৪K সিনেমা অ্যাড</option>
+                    <option value="saree-shoot">শাড়ি ও বোল্ড শ্যুট</option>
+                    <option value="viral-reels">ভাইরাল প্রোডাক্ট রিলস</option>
+                    <option value="facebook-ads">ফেসবুক অ্যাডস</option>
+                    <option value="jewellery">জুয়েলারি ও লাক্সারি</option>
                   </select>
                   <button type="button" onclick="applyBulkReelsCategory()" class="px-2.5 py-1 rounded-lg bg-[#db2777] hover:bg-[#be185d] text-white font-bold transition-all shadow-xs">
-                    ????????
+                    পরিবর্তন
                   </button>
                 </div>
 
                 <!-- Bulk Delete -->
                 <button type="button" onclick="applyBulkReelsDelete()" class="px-3.5 py-1.5 rounded-xl bg-rose-600/90 hover:bg-rose-700 text-white font-bold transition-all flex items-center gap-1.5 shadow-xs">
                   <i class="fa-solid fa-trash-can text-[11px]"></i>
-                  <span>?????? ?????</span>
+                  <span>একসাথে ডিলিট</span>
                 </button>
 
                 <!-- Deselect All -->
-                <button type="button" onclick="deselectAllReels()" class="px-2.5 py-1.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all" title="??????? ?????">
+                <button type="button" onclick="deselectAllReels()" class="px-2.5 py-1.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all" title="সিলেকশন বাতিল">
                   <i class="fa-solid fa-xmark"></i>
                 </button>
               </div>
@@ -686,15 +686,15 @@
                 <thead class="text-[11px] text-[#572449] font-bold uppercase bg-[#fdf2f8] border-b border-[#ED96D7]/30 font-bangla">
                   <tr>
                     <th class="py-3.5 px-3 w-10 text-center">
-                      <input type="checkbox" id="reels-select-all" class="w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer" title="?? ??????? ????">
+                      <input type="checkbox" id="reels-select-all" class="w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer" title="সব সিলেক্ট করুন">
                     </th>
-                    <th class="py-3.5 px-4 w-16">???????</th>
-                    <th class="py-3.5 px-4">??????? ? ??????????</th>
-                    <th class="py-3.5 px-4">??????? ?????????</th>
-                    <th class="py-3.5 px-4">????? / ?????????</th>
-                    <th class="py-3.5 px-4">??? ??????</th>
-                    <th class="py-3.5 px-4">?????</th>
-                    <th class="py-3.5 px-4 text-right">???????</th>
+                    <th class="py-3.5 px-4 w-16">প্রিভিউ</th>
+                    <th class="py-3.5 px-4">শিরোনাম ও ক্লায়েন্ট</th>
+                    <th class="py-3.5 px-4">সার্ভিস ক্যাটাগরি</th>
+                    <th class="py-3.5 px-4">ট্যাগ / রেজোলিউশন</th>
+                    <th class="py-3.5 px-4">ভিউ সংখ্যা</th>
+                    <th class="py-3.5 px-4">তারিখ</th>
+                    <th class="py-3.5 px-4 text-right">অ্যাকশন</th>
                   </tr>
                 </thead>
                 <tbody id="admin-reels-list-body" class="divide-y divide-[#ED96D7]/15 font-bangla text-[#2b0e23]">
@@ -710,7 +710,7 @@
 
             <!-- Empty state placeholder -->
             <div id="reels-empty-state" class="hidden text-center py-12 text-[#8c4f75] text-sm font-bangla bg-[#fdf2f8] rounded-2xl border border-dashed border-[#ED96D7]/40">
-              ???? ???? ????? ??????
+              কোনো রিলস পাওয়া যায়নি।
             </div>
 
           </div>
@@ -725,22 +725,22 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#ED96D7]/20 pb-4">
               <div>
                 <h3 class="text-xl font-bold font-bangla text-[#2b0e23] flex items-center gap-2">
-                  <i class="fa-solid fa-images text-[#db2777]"></i> ???? ????? ??????? ? ???? ????????
+                  <i class="fa-solid fa-images text-[#db2777]"></i> হিরো সেকশন স্লাইডস ও ইমেজ পরিচালনা
                 </h3>
                 <p class="text-xs text-[#8c4f75] font-bangla mt-0.5">
-                  ???????? ?? ???? ??????? ?:?? ????????????? ????? ? ???? ?????, ???????? ? ????? ?????
+                  হোমপেজের টপ হিরো সেকশনের ৯:১৬ ব্যাকগ্রাউন্ড কার্ড ও ইমেজ যুক্ত, পরিচালনা ও ডিলিট করুন।
                 </p>
               </div>
 
               <div class="flex items-center gap-2.5 flex-wrap">
                 <button type="button" id="hero-slides-toggle-all-btn" onclick="toggleSelectAllHeroSlides()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#572449] text-xs font-bold font-bangla transition-all shadow-xs flex items-center gap-1.5">
-                  <i class="fa-regular fa-square-check text-[#db2777]"></i> ?? ???????
+                  <i class="fa-regular fa-square-check text-[#db2777]"></i> সব সিলেক্ট
                 </button>
-                <button type="button" onclick="clearAllHeroSlides()" class="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold font-bangla transition-all shadow-xs flex items-center gap-1.5" title="?? ???? ???? ???? ?????">
-                  <i class="fa-solid fa-trash-can"></i> ?? ???? ????
+                <button type="button" onclick="clearAllHeroSlides()" class="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold font-bangla transition-all shadow-xs flex items-center gap-1.5" title="সব হিরো ইমেজ মুছে ফেলুন">
+                  <i class="fa-solid fa-trash-can"></i> সব খালি করুন
                 </button>
                 <button id="open-add-hero-slide-btn" class="px-4 py-2 rounded-xl btn-pink-outline text-xs font-bold flex items-center gap-1.5 shadow-sm">
-                  <i class="fa-solid fa-plus"></i> ???? ???? ???? ??? ????
+                  <i class="fa-solid fa-plus"></i> নতুন হিরো ইমেজ যোগ করুন
                 </button>
               </div>
             </div>
@@ -753,17 +753,17 @@
                 </span>
                 <div>
                   <span id="hero-slides-selected-count" class="font-bold text-sm text-[#ED96D7]">0</span>
-                  <span class="text-xs text-white/90">?? ???? ?????????</span>
+                  <span class="text-xs text-white/90">টি ইমেজ সিলেক্টেড</span>
                 </div>
               </div>
 
               <div class="flex items-center gap-2">
                 <button type="button" onclick="applyBulkHeroSlidesDelete()" class="px-3.5 py-1.5 rounded-xl bg-rose-600/90 hover:bg-rose-700 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs">
                   <i class="fa-solid fa-trash-can text-[11px]"></i>
-                  <span>?????? ????? ????</span>
+                  <span>একসাথে ডিলিট করুন</span>
                 </button>
 
-                <button type="button" onclick="deselectAllHeroSlides()" class="px-2.5 py-1.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all text-xs" title="??????? ?????">
+                <button type="button" onclick="deselectAllHeroSlides()" class="px-2.5 py-1.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all text-xs" title="সিলেকশন বাতিল">
                   <i class="fa-solid fa-xmark"></i>
                 </button>
               </div>
@@ -779,8 +779,8 @@
               <div class="w-14 h-14 mx-auto rounded-2xl bg-white text-[#db2777] flex items-center justify-center text-xl mb-3 shadow-xs">
                 <i class="fa-solid fa-images"></i>
               </div>
-              <h4 class="font-bold text-base text-[#2b0e23]">???????? ???? ???? ???? ????? ???</h4>
-              <p class="text-xs text-[#8c4f75] mt-1">???????? ???? ?????? ??? ?????? ????? <strong>"???? ???? ???? ??? ????"</strong> ???? ??????? ?????</p>
+              <h4 class="font-bold text-base text-[#2b0e23]">বর্তমানে কোনো হিরো ইমেজ যুক্ত নেই</h4>
+              <p class="text-xs text-[#8c4f75] mt-1">হোমপেজের হিরো সেকশনে ছবি দেখাতে ওপরের <strong>"নতুন হিরো ইমেজ যোগ করুন"</strong> বাটন ব্যবহার করুন।</p>
             </div>
 
           </div>
@@ -790,7 +790,7 @@
 
       <!-- Footer -->
       <footer class="glass-panel border-t border-[#ED96D7]/25 py-4 px-8 text-center text-xs text-[#8c4f75] font-bangla">
-        BongBangla Creative Lab � ???????? ???????? ??????? � ?????? ??????? ???????? ??? � ?????? ?????? ?????
+        BongBangla Creative Lab • অ্যাডমিন কন্ট্রোল সিস্টেম • হোয়াইট পিঙ্কিশ লাক্সারি থিম • সিকিউর ক্লাউড সিঙ্ক
       </footer>
 
     </div>
@@ -803,45 +803,45 @@
   <div id="add-lead-modal" class="fixed inset-0 z-50 hidden bg-[#2b0e23]/60 backdrop-blur-md flex items-center justify-center p-4">
     <div class="max-w-md w-full glass-panel p-6 sm:p-8 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
-        <h4 class="text-base font-bold text-[#2b0e23] font-bangla">???? ?????????? ???????? ???????</h4>
+        <h4 class="text-base font-bold text-[#2b0e23] font-bangla">নতুন ক্লায়েন্ট ইনকোয়ারি এন্ট্রি</h4>
         <button id="close-add-lead-btn" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
       </div>
 
       <form id="add-lead-form" class="space-y-3.5 text-xs font-bangla">
         <div>
-          <label class="block text-[#572449] font-bold mb-1">???????????? ??? *</label>
+          <label class="block text-[#572449] font-bold mb-1">ক্লায়েন্টের নাম *</label>
           <input type="text" name="name" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
         </div>
         <div>
-          <label class="block text-[#572449] font-bold mb-1">??????????? ??? *</label>
+          <label class="block text-[#572449] font-bold mb-1">ব্র্যান্ডের নাম *</label>
           <input type="text" name="brand" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
         </div>
         <div>
-          <label class="block text-[#572449] font-bold mb-1">??? / WhatsApp ????? *</label>
+          <label class="block text-[#572449] font-bold mb-1">ফোন / WhatsApp নম্বর *</label>
           <input type="tel" name="phone" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
         </div>
         <div>
-          <label class="block text-[#572449] font-bold mb-1">???????</label>
+          <label class="block text-[#572449] font-bold mb-1">সার্ভিস</label>
           <select name="service" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
-            <option value="?????? ????? ????? (??????)">?????? ????? ????? (??????)</option>
-            <option value="?????? ????????? ???? ?????">?????? ????????? ???? ?????</option>
-            <option value="????, ??????? ? ????? ?????">????, ??????? ? ????? ?????</option>
-            <option value="?????? ????????? ? ???????">?????? ????????? ? ???????</option>
-            <option value="???????? ? ???????? ?????">???????? ? ???????? ?????</option>
-            <option value="????????? ???????? ? ????????? ???">????????? ???????? ? ????????? ???</option>
+            <option value="সিনেমা অ্যাড ফিল্ম (মডেলসহ)">সিনেমা অ্যাড ফিল্ম (মডেলসহ)</option>
+            <option value="ভাইরাল প্রোডাক্ট রিলস প্যাক">ভাইরাল প্রোডাক্ট রিলস প্যাক</option>
+            <option value="শাড়ি, জামদানি ও বোল্ড শ্যুট">শাড়ি, জামদানি ও বোল্ড শ্যুট</option>
+            <option value="ফেসবুক মার্কেটিং ও বুস্টিং">ফেসবুক মার্কেটিং ও বুস্টিং</option>
+            <option value="জুয়েলারি ও লাক্সারি শ্যুট">জুয়েলারি ও লাক্সারি শ্যুট</option>
+            <option value="ব্র্যান্ড ওয়েবসাইট ও ল্যান্ডিং পেজ">ব্র্যান্ড ওয়েবসাইট ও ল্যান্ডিং পেজ</option>
           </select>
         </div>
         <div>
-          <label class="block text-[#572449] font-bold mb-1">?????????? ?????</label>
-          <input type="text" name="budget" placeholder="???? ? ??,???" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          <label class="block text-[#572449] font-bold mb-1">প্রাক্কলিত বাজেট</label>
+          <input type="text" name="budget" placeholder="উদাঃ ৳ ৩৫,০০০" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
         </div>
         <div>
-          <label class="block text-[#572449] font-bold mb-1">???????? ???? / ????????????</label>
+          <label class="block text-[#572449] font-bold mb-1">প্রজেক্ট নোটস / রিকোয়ারমেন্ট</label>
           <textarea name="notes" rows="2" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]"></textarea>
         </div>
 
         <button type="submit" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2">
-          ???????? ??????? ????
+          ইনকোয়ারি সংরক্ষণ করুন
         </button>
       </form>
     </div>
@@ -854,7 +854,7 @@
     <div class="max-w-xl w-full glass-panel p-6 sm:p-7 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar bg-white">
       <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
         <h4 class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
-          <i class="fa-solid fa-user-plus text-[#db2777]"></i> ???? ???? ??????? ???????? ??? ????
+          <i class="fa-solid fa-user-plus text-[#db2777]"></i> নতুন মডেল কাস্টিং প্রোফাইল যোগ করুন
         </h4>
         <button id="close-add-model-btn" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
       </div>
@@ -863,32 +863,32 @@
         <!-- 1. Basic Info -->
         <div class="p-3 bg-pink-50/40 rounded-2xl border border-[#ED96D7]/30 space-y-2.5">
           <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider block flex items-center gap-1.5">
-            <i class="fa-solid fa-id-card"></i> ?. ??? ???????
+            <i class="fa-solid fa-id-card"></i> ১. মূল পরিচিতি
           </span>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
-              <label class="block text-[#572449] font-bold mb-1">?????? ??? *</label>
-              <input type="text" name="name" required placeholder="???? ?????? ??? / Neha Jaman" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">মডেলের নাম *</label>
+              <input type="text" name="name" required placeholder="উদাঃ অনন্যা রায় / Neha Jaman" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">????????? / ?????? *</label>
-              <input type="text" name="category" required placeholder="???? ????, ???????? ? ????? ??????" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">ক্যাটাগরি / স্টাইল *</label>
+              <input type="text" name="category" required placeholder="উদাঃ শাড়ি, ব্রাইডাল ও বোল্ড ফ্যাশন" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
             </div>
           </div>
           <div class="grid grid-cols-3 gap-2">
             <div>
-              <label class="block text-[#572449] font-bold mb-1">?????? (Height)</label>
-              <input type="text" name="height" placeholder="?'?&quot;" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-2 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">উচ্চতা (Height)</label>
+              <input type="text" name="height" placeholder="৫'৭&quot;" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-2 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">??? ?????</label>
-              <input type="text" name="shoots" placeholder="??+" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-2 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">মোট শ্যুট</label>
+              <input type="text" name="shoots" placeholder="৪০+" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-2 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">????? ?????????</label>
+              <label class="block text-[#572449] font-bold mb-1">বুকিং স্ট্যাটাস</label>
               <select name="available" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2 py-2 text-[#2b0e23]">
-                <option value="true">Active (??????)</option>
-                <option value="false">Booked (????)</option>
+                <option value="true">Active (উপলব্ধ)</option>
+                <option value="false">Booked (বুকড)</option>
               </select>
             </div>
           </div>
@@ -897,32 +897,32 @@
         <!-- 2. Physical Stats & Measurements -->
         <div class="p-3 bg-pink-50/40 rounded-2xl border border-[#ED96D7]/30 space-y-2.5">
           <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider block flex items-center gap-1.5">
-            <i class="fa-solid fa-ruler-combined"></i> ?. ??????? ????? ? ?????? (Stats)
+            <i class="fa-solid fa-ruler-combined"></i> ২. শারীরিক বিবরণ ও পরিমাপ (Stats)
           </span>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             <div>
-              <label class="block text-[#572449] font-bold mb-1">??? (Age)</label>
-              <input type="text" name="age" placeholder="?? ???" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">বয়স (Age)</label>
+              <input type="text" name="age" placeholder="২২ বছর" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">??????? ??? (B-W-H)</label>
-              <input type="text" name="measurements" placeholder="??-??-??" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">শারীরিক মাপ (B-W-H)</label>
+              <input type="text" name="measurements" placeholder="৩৪-২৬-৩৬" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">????? ?? (Skin)</label>
-              <input type="text" name="skinTone" placeholder="??????? ??????? / Fair" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">গায়ের রঙ (Skin)</label>
+              <input type="text" name="skinTone" placeholder="উজ্জ্বল শ্যামলা / Fair" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">????? ?? (Eyes)</label>
-              <input type="text" name="eyeColor" placeholder="????? ?????? / ????" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">চোখের রঙ (Eyes)</label>
+              <input type="text" name="eyeColor" placeholder="ডার্ক ব্রাউন / কালো" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">????? ?? (Hair)</label>
-              <input type="text" name="hairColor" placeholder="???? ?????? ?????" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">চুলের রঙ (Hair)</label>
+              <input type="text" name="hairColor" placeholder="কালো সিল্কি লম্বা" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">??? / ??????</label>
-              <input type="text" name="location" placeholder="????, ????????" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">শহর / লোকেশন</label>
+              <input type="text" name="location" placeholder="ঢাকা, বাংলাদেশ" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
             </div>
           </div>
         </div>
@@ -930,39 +930,39 @@
         <!-- 3. Professional Profile & Bio -->
         <div class="p-3 bg-pink-50/40 rounded-2xl border border-[#ED96D7]/30 space-y-2.5">
           <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider block flex items-center gap-1.5">
-            <i class="fa-solid fa-star"></i> ?. ????? ???????? ? ????????? ????
+            <i class="fa-solid fa-star"></i> ৩. কাজের অভিজ্ঞতা ও বিস্তারিত বায়ো
           </span>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
-              <label class="block text-[#572449] font-bold mb-1">???????? (Experience)</label>
-              <input type="text" name="experience" placeholder="?+ ????? ????????? ??????" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">অভিজ্ঞতা (Experience)</label>
+              <input type="text" name="experience" placeholder="৩+ বছরের প্রফেশনাল মডেলিং" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">??????????? / ??????? ?????????</label>
+              <label class="block text-[#572449] font-bold mb-1">ইনস্টাগ্রাম / সোশ্যাল হ্যান্ডেল</label>
               <input type="text" name="instagram" placeholder="@ananya_jaman" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
             </div>
           </div>
           <div>
-            <label class="block text-[#572449] font-bold mb-1">?????????? / ?????????? (??? ???? ?????)</label>
-            <input type="text" name="specialties" placeholder="??????? ???? ?????, ???????? ???????, ????? ????????, ?K ????????? ?????, ???????? ????" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
+            <label class="block text-[#572449] font-bold mb-1">পারদর্শিতা / স্পেশালিটি (কমা দিয়ে লিখুন)</label>
+            <input type="text" name="specialties" placeholder="জামদানি শাড়ি শ্যুট, ব্রাইডাল মেকওভার, বোল্ড ক্যাটালগ, ৪K সিনেমাটিক অ্যাড, র‌্যাম্প ওয়াক" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
           </div>
           <div>
-            <label class="block text-[#572449] font-bold mb-1">?????? ????????? ??????? (About / Bio)</label>
-            <textarea name="bio" rows="2" placeholder="?????? ?????????, ????? ??????, ???????? ????????????? ???????? ???? ???? ?????..." class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] resize-none"></textarea>
+            <label class="block text-[#572449] font-bold mb-1">মডেলের বিস্তারিত পরিচিতি (About / Bio)</label>
+            <textarea name="bio" rows="2" placeholder="মডেলের ক্যারিয়ার, কাজের স্টাইল, ফটোশ্যুট এক্সপেরিয়েন্স সম্পর্কে কিছু তথ্য লিখুন..." class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] resize-none"></textarea>
           </div>
         </div>
 
         <!-- 4. Model Photo: Direct Upload & URL Dual Mode -->
         <div class="space-y-2 pt-1 border-t border-[#ED96D7]/20">
           <div class="flex items-center justify-between">
-            <label class="block text-[#572449] font-bold">?????? ???????? ??? (Photo) *</label>
+            <label class="block text-[#572449] font-bold">মডেলের প্রোফাইল ছবি (Photo) *</label>
             <!-- Mode Tabs -->
             <div class="inline-flex rounded-lg bg-pink-50 p-0.5 border border-[#ED96D7]/30 text-[10px]">
               <button type="button" id="model-tab-file-btn" onclick="setModelPhotoInputMode('file')" class="px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs">
-                <i class="fa-solid fa-cloud-arrow-up mr-1"></i>???? ?????
+                <i class="fa-solid fa-cloud-arrow-up mr-1"></i>ফাইল আপলোড
               </button>
               <button type="button" id="model-tab-url-btn" onclick="setModelPhotoInputMode('url')" class="px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]">
-                <i class="fa-solid fa-link mr-1"></i>?????
+                <i class="fa-solid fa-link mr-1"></i>লিঙ্ক
               </button>
             </div>
           </div>
@@ -975,8 +975,8 @@
               <div class="w-10 h-10 rounded-full bg-pink-100 text-[#db2777] flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-image"></i>
               </div>
-              <p class="font-bold text-[#2b0e23] text-xs">??? ???????? ???? ????? ????? ????</p>
-              <p class="text-[10px] text-[#8c4f75]">?? ???? ??????? ??? ???? ??? (JPG, PNG, WEBP)</p>
+              <p class="font-bold text-[#2b0e23] text-xs">ছবি নির্বাচন করতে এখানে ক্লিক করুন</p>
+              <p class="text-[10px] text-[#8c4f75]">বা ফাইল ড্র্যাগ করে ছেড়ে দিন (JPG, PNG, WEBP)</p>
             </div>
 
             <!-- Live Photo Preview Container -->
@@ -989,7 +989,7 @@
                   vault.bongbangla.top/models/
                 </span>
               </div>
-              <button type="button" id="model-file-remove-btn" onclick="clearModelFileSelection()" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors shrink-0" title="??? ?????">
+              <button type="button" id="model-file-remove-btn" onclick="clearModelFileSelection()" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors shrink-0" title="ছবি বাতিল">
                 <i class="fa-solid fa-trash-can text-xs"></i>
               </button>
             </div>
@@ -998,7 +998,7 @@
           <!-- URL Input View -->
           <div id="model-url-view" class="hidden space-y-1">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] text-[#8c4f75]">Vault CDN ???? ?? ?????? ???? URL:</span>
+              <span class="text-[10px] text-[#8c4f75]">Vault CDN লিংক বা অনলাইন ছবির URL:</span>
               <button type="button" onclick="setVaultHelperInput('model-image-input', 'models/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
                 <i class="fa-solid fa-cloud-arrow-up mr-0.5"></i> Vault (+models/)
               </button>
@@ -1011,9 +1011,9 @@
         <div class="p-3.5 bg-pink-50/50 rounded-2xl border border-[#ED96D7]/40 space-y-3">
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-photo-film"></i> ?. ???? ???????? (??? ? ????? ????? / ????)
+              <i class="fa-solid fa-photo-film"></i> ৫. মডেল গ্যালারি (ফটো ও ভিডিও আপলোড / লিংক)
             </span>
-            <span id="add-model-gallery-count" class="text-[10px] text-[#8c4f75] font-bold">? ?? ?????</span>
+            <span id="add-model-gallery-count" class="text-[10px] text-[#8c4f75] font-bold">০ টি আইটেম</span>
           </div>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1021,18 +1021,18 @@
             <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
-                  <i class="fa-solid fa-camera text-[#db2777]"></i> ???????? ??? (Photos)
+                  <i class="fa-solid fa-camera text-[#db2777]"></i> অতিরিক্ত ছবি (Photos)
                 </span>
-                <span class="text-[9px] text-[#8c4f75]">????? ?? ????</span>
+                <span class="text-[9px] text-[#8c4f75]">আপলোড বা লিংক</span>
               </div>
               <input type="file" id="add-model-gallery-files" accept="image/*" multiple class="hidden">
               <button type="button" onclick="document.getElementById('add-model-gallery-files').click()" class="w-full py-1.5 rounded-lg bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] transition-colors flex items-center justify-center gap-1 border border-[#ED96D7]/40">
-                <i class="fa-solid fa-cloud-arrow-up"></i> ?????? ???? ??? ?????
+                <i class="fa-solid fa-cloud-arrow-up"></i> ডিভাইস থেকে ছবি আপলোড
               </button>
               <div class="flex gap-1">
-                <input type="text" id="add-model-gallery-photo-url-input" placeholder="???? URL / ???? ????? ????" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
+                <input type="text" id="add-model-gallery-photo-url-input" placeholder="ছবির URL / লিংক পেস্ট করুন" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
                 <button type="button" onclick="addModelGalleryPhotoUrl('add')" class="px-2.5 py-1 rounded-lg bg-pink-100 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] border border-[#ED96D7]/40">
-                  + ???
+                  + যোগ
                 </button>
               </div>
             </div>
@@ -1041,18 +1041,18 @@
             <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
-                  <i class="fa-solid fa-video text-[#db2777]"></i> ????? ? ???? (Videos)
+                  <i class="fa-solid fa-video text-[#db2777]"></i> ভিডিও ও রিলস (Videos)
                 </span>
-                <span class="text-[9px] text-[#8c4f75]">????? ?? ????</span>
+                <span class="text-[9px] text-[#8c4f75]">আপলোড বা লিংক</span>
               </div>
               <input type="file" id="add-model-gallery-video-files" accept="video/mp4,video/quicktime,video/webm,video/*" multiple class="hidden">
               <button type="button" onclick="document.getElementById('add-model-gallery-video-files').click()" class="w-full py-1.5 rounded-lg bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] transition-colors flex items-center justify-center gap-1 border border-[#ED96D7]/40">
-                <i class="fa-solid fa-file-video"></i> ?????? ???? ????? ?????
+                <i class="fa-solid fa-file-video"></i> ডিভাইস থেকে ভিডিও আপলোড
               </button>
               <div class="flex gap-1">
-                <input type="text" id="add-model-gallery-video-input" placeholder="????? URL / Vault ????" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
+                <input type="text" id="add-model-gallery-video-input" placeholder="ভিডিও URL / Vault লিংক" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
                 <button type="button" onclick="addModelGalleryVideo('add')" class="px-2.5 py-1 rounded-lg bg-[#db2777] hover:bg-[#be185d] text-white font-bold text-[10px] shadow-xs">
-                  + ???
+                  + যোগ
                 </button>
               </div>
             </div>
@@ -1066,7 +1066,7 @@
 
         <button type="submit" id="model-submit-btn" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2 flex items-center justify-center gap-2 shadow-md">
           <i class="fa-solid fa-check"></i>
-          <span>???? ???????? ??? ????</span>
+          <span>মডেল প্রোফাইল সেভ করুন</span>
         </button>
       </form>
     </div>
@@ -1079,7 +1079,7 @@
     <div class="max-w-md w-full glass-panel p-6 sm:p-7 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-3.5 max-h-[92vh] overflow-y-auto custom-scrollbar">
       <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
         <h4 class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
-          <i class="fa-solid fa-video text-[#db2777]"></i> ???? ?:?? ???? ????? ?????
+          <i class="fa-solid fa-video text-[#db2777]"></i> নতুন ৯:১৬ রিলস ভিডিও আপলোড
         </h4>
         <button id="close-add-reel-btn" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
       </div>
@@ -1087,7 +1087,7 @@
       <!-- Vault CDN Badge Alert -->
       <div class="p-2.5 bg-pink-50/80 rounded-xl border border-[#ED96D7]/40 flex items-center justify-between text-[11px] text-[#8c4f75] font-bangla">
         <span class="flex items-center gap-1.5 font-semibold text-[#be185d]">
-          <i class="fa-solid fa-hard-drive"></i> Vault CDN ???????:
+          <i class="fa-solid fa-hard-drive"></i> Vault CDN স্টোরেজ:
         </span>
         <span class="font-mono text-[10px] text-emerald-700 font-bold bg-white px-2 py-0.5 rounded-md border border-emerald-300">
           vault.bongbangla.top
@@ -1096,49 +1096,49 @@
 
       <form id="add-reel-form" class="space-y-3 text-xs font-bangla">
         <div>
-          <label class="block text-[#572449] font-bold mb-1">???? ?????? *</label>
-          <input type="text" name="title" required placeholder="???? ??????? ???????? ????????? ???" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          <label class="block text-[#572449] font-bold mb-1">রিলস টাইটেল *</label>
+          <input type="text" name="title" required placeholder="উদাঃ জামদানি ব্রাইডাল সিনেমাটিক রিল" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-[#572449] font-bold mb-1">????????? / ????????? ??? *</label>
-            <input type="text" name="client" required placeholder="???? ??? ???????" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+            <label class="block text-[#572449] font-bold mb-1">ক্লায়েন্ট / ব্র্যান্ড নেম *</label>
+            <input type="text" name="client" required placeholder="উদাঃ আড়ং হেরিটেজ" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
           </div>
           <div>
-            <label class="block text-[#572449] font-bold mb-1">??????? ????????? *</label>
+            <label class="block text-[#572449] font-bold mb-1">সার্ভিস ক্যাটাগরি *</label>
             <select name="category" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
-              <option value="cinema-ads">?K ?????? ????? (Cinema Ads)</option>
-              <option value="saree-shoot">???? ? ????? ????? (Saree Shoot)</option>
-              <option value="viral-reels">?????? ????????? ???? (Viral Reels)</option>
-              <option value="facebook-ads">?????? ?????? (Facebook Ads)</option>
-              <option value="jewellery">???????? ? ???????? (Jewellery)</option>
+              <option value="cinema-ads">৪K সিনেমা অ্যাড (Cinema Ads)</option>
+              <option value="saree-shoot">শাড়ি ও বোল্ড শ্যুট (Saree Shoot)</option>
+              <option value="viral-reels">ভাইরাল প্রোডাক্ট রিলস (Viral Reels)</option>
+              <option value="facebook-ads">ফেসবুক অ্যাডস (Facebook Ads)</option>
+              <option value="jewellery">জুয়েলারি ও লাক্সারি (Jewellery)</option>
             </select>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-[#572449] font-bold mb-1">????? / ???????</label>
-            <input type="text" name="tag" placeholder="???? 4K CINEMA, VIRAL" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+            <label class="block text-[#572449] font-bold mb-1">ট্যাগ / ফরম্যাট</label>
+            <input type="text" name="tag" placeholder="উদাঃ 4K CINEMA, VIRAL" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
           </div>
           <div>
-            <label class="block text-[#572449] font-bold mb-1">??? ?????? / ???????</label>
-            <input type="text" name="views" placeholder="???? ?.?M ????" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+            <label class="block text-[#572449] font-bold mb-1">ভিউ কাউন্ট / মেটিক্স</label>
+            <input type="text" name="views" placeholder="উদাঃ ২.৫M ভিউজ" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
           </div>
         </div>
 
         <!-- 1. Video Source: File Upload vs URL -->
         <div class="space-y-2 pt-1 border-t border-[#ED96D7]/20">
           <div class="flex items-center justify-between">
-            <label class="block text-[#572449] font-bold">????? ???? (?:?? Video) *</label>
+            <label class="block text-[#572449] font-bold">ভিডিও ফাইল (৯:১৬ Video) *</label>
             <!-- Mode Tabs -->
             <div class="inline-flex rounded-lg bg-pink-50 p-0.5 border border-[#ED96D7]/30 text-[10px]">
               <button type="button" id="reel-video-tab-file-btn" onclick="setReelVideoInputMode('file')" class="px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs">
-                <i class="fa-solid fa-file-video mr-1"></i>???? ?????
+                <i class="fa-solid fa-file-video mr-1"></i>ফাইল আপলোড
               </button>
               <button type="button" id="reel-video-tab-url-btn" onclick="setReelVideoInputMode('url')" class="px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]">
-                <i class="fa-solid fa-link mr-1"></i>?????
+                <i class="fa-solid fa-link mr-1"></i>লিঙ্ক
               </button>
             </div>
           </div>
@@ -1151,8 +1151,8 @@
               <div class="w-10 h-10 rounded-full bg-pink-100 text-[#db2777] flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-film"></i>
               </div>
-              <p class="font-bold text-[#2b0e23] text-xs">????? ???? ???????? ???? (MP4, MOV)</p>
-              <p class="text-[10px] text-[#8c4f75]">?????? ???? ?:?? ???? ????? ???? ???</p>
+              <p class="font-bold text-[#2b0e23] text-xs">ভিডিও ফাইল নির্বাচন করুন (MP4, MOV)</p>
+              <p class="text-[10px] text-[#8c4f75]">ডিভাইস থেকে ৯:১৬ রিলস ভিডিও ফাইল দিন</p>
             </div>
 
             <!-- Live Video Preview Container -->
@@ -1162,7 +1162,7 @@
                   <div id="reel-video-file-name" class="font-bold text-[#2b0e23] text-[11px] truncate">video.mp4</div>
                   <div id="reel-video-file-size" class="text-[10px] text-[#8c4f75]">0 MB</div>
                 </div>
-                <button type="button" onclick="clearReelVideoSelection()" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors" title="????? ?????">
+                <button type="button" onclick="clearReelVideoSelection()" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors" title="ভিডিও বাতিল">
                   <i class="fa-solid fa-trash-can text-xs"></i>
                 </button>
               </div>
@@ -1173,7 +1173,7 @@
           <!-- Video URL View -->
           <div id="reel-video-url-view" class="hidden space-y-1">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] text-[#8c4f75]">Vault CDN ?? ?????? MP4 ????? URL:</span>
+              <span class="text-[10px] text-[#8c4f75]">Vault CDN বা সরাসরি MP4 ভিডিও URL:</span>
               <button type="button" onclick="setVaultHelperInput('reel-video-input', 'reels/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
                 <i class="fa-solid fa-bolt mr-0.5"></i> Vault (+reels/)
               </button>
@@ -1185,14 +1185,14 @@
         <!-- 2. Thumbnail Source: File Upload vs URL -->
         <div class="space-y-2 pt-1 border-t border-[#ED96D7]/20">
           <div class="flex items-center justify-between">
-            <label class="block text-[#572449] font-bold">??????? / ????????? ??? *</label>
+            <label class="block text-[#572449] font-bold">পোস্টার / থাম্বনেইল ছবি *</label>
             <!-- Mode Tabs -->
             <div class="inline-flex rounded-lg bg-pink-50 p-0.5 border border-[#ED96D7]/30 text-[10px]">
               <button type="button" id="reel-thumb-tab-file-btn" onclick="setReelThumbInputMode('file')" class="px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs">
-                <i class="fa-solid fa-image mr-1"></i>???? ?????
+                <i class="fa-solid fa-image mr-1"></i>ফাইল আপলোড
               </button>
               <button type="button" id="reel-thumb-tab-url-btn" onclick="setReelThumbInputMode('url')" class="px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]">
-                <i class="fa-solid fa-link mr-1"></i>?????
+                <i class="fa-solid fa-link mr-1"></i>লিঙ্ক
               </button>
             </div>
           </div>
@@ -1206,8 +1206,8 @@
                 <i class="fa-solid fa-camera"></i>
               </div>
               <div class="text-left">
-                <p class="font-bold text-[#2b0e23] text-xs">????????? ??? ???????? ????</p>
-                <p class="text-[10px] text-[#8c4f75]">JPG, PNG ?? WEBP ???</p>
+                <p class="font-bold text-[#2b0e23] text-xs">থাম্বনেইল ছবি নির্বাচন করুন</p>
+                <p class="text-[10px] text-[#8c4f75]">JPG, PNG বা WEBP ছবি</p>
               </div>
             </div>
 
@@ -1218,7 +1218,7 @@
                 <div id="reel-thumb-file-name" class="font-bold text-[#2b0e23] text-[11px] truncate">thumb.jpg</div>
                 <div id="reel-thumb-file-size" class="text-[10px] text-[#8c4f75]">0 KB</div>
               </div>
-              <button type="button" onclick="clearReelThumbSelection()" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors shrink-0" title="????????? ?????">
+              <button type="button" onclick="clearReelThumbSelection()" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors shrink-0" title="থাম্বনেইল বাতিল">
                 <i class="fa-solid fa-trash-can text-xs"></i>
               </button>
             </div>
@@ -1227,7 +1227,7 @@
           <!-- Thumb URL View -->
           <div id="reel-thumb-url-view" class="hidden space-y-1">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] text-[#8c4f75]">??????? ?????? URL:</span>
+              <span class="text-[10px] text-[#8c4f75]">পোস্টার ইমেজের URL:</span>
               <button type="button" onclick="setVaultHelperInput('reel-thumb-input', 'thumbnails/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
                 <i class="fa-solid fa-image mr-0.5"></i> Vault (+thumbnails/)
               </button>
@@ -1238,7 +1238,7 @@
 
         <button type="submit" id="reel-submit-btn" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2 flex items-center justify-center gap-2">
           <i class="fa-solid fa-cloud-arrow-up"></i>
-          <span>???? ????? ??? ? ???? ????</span>
+          <span>রিলস ভিডিও সেভ ও লাইভ করুন</span>
         </button>
       </form>
     </div>
@@ -1251,7 +1251,7 @@
     <div class="max-w-md w-full glass-panel p-6 sm:p-7 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4 bg-white max-h-[90vh] overflow-y-auto custom-scrollbar">
       <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
         <h4 class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
-          <i class="fa-solid fa-image text-[#db2777]"></i> ???? ???? ???? / ????? ??? ????
+          <i class="fa-solid fa-image text-[#db2777]"></i> নতুন হিরো ইমেজ / কার্ড যোগ করুন
         </h4>
         <button id="close-add-hero-slide-btn" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
       </div>
@@ -1260,14 +1260,14 @@
         <!-- Hero Photo: Direct Upload & URL Dual Mode -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
-            <label class="block text-[#572449] font-bold">???? ???? (?:?? Photo) *</label>
+            <label class="block text-[#572449] font-bold">হিরো ইমেজ (৯:১৬ Photo) *</label>
             <!-- Mode Tabs -->
             <div class="inline-flex rounded-lg bg-pink-50 p-0.5 border border-[#ED96D7]/30 text-[10px]">
               <button type="button" id="hero-slide-tab-file-btn" onclick="setHeroSlideInputMode('file')" class="px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs">
-                <i class="fa-solid fa-cloud-arrow-up mr-1"></i>???? ?????
+                <i class="fa-solid fa-cloud-arrow-up mr-1"></i>ফাইল আপলোড
               </button>
               <button type="button" id="hero-slide-tab-url-btn" onclick="setHeroSlideInputMode('url')" class="px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]">
-                <i class="fa-solid fa-link mr-1"></i>?????
+                <i class="fa-solid fa-link mr-1"></i>লিঙ্ক
               </button>
             </div>
           </div>
@@ -1280,8 +1280,8 @@
               <div class="w-10 h-10 rounded-full bg-pink-100 text-[#db2777] flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-images"></i>
               </div>
-              <p class="font-bold text-[#2b0e23] text-xs">?:?? ??? ???????? ???? ????? ????? ????</p>
-              <p class="text-[10px] text-[#8c4f75]">JPG, PNG, WEBP (?????? ?? ?????)</p>
+              <p class="font-bold text-[#2b0e23] text-xs">৯:১৬ ছবি নির্বাচন করতে এখানে ক্লিক করুন</p>
+              <p class="text-[10px] text-[#8c4f75]">JPG, PNG, WEBP (হোমপেজ টপ কার্ড)</p>
             </div>
 
             <!-- Live Photo Preview Container -->
@@ -1294,7 +1294,7 @@
                   vault.bongbangla.top/hero/
                 </span>
               </div>
-              <button type="button" onclick="clearHeroSlideFileSelection()" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors shrink-0" title="??? ?????">
+              <button type="button" onclick="clearHeroSlideFileSelection()" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors shrink-0" title="ছবি বাতিল">
                 <i class="fa-solid fa-trash-can text-xs"></i>
               </button>
             </div>
@@ -1303,7 +1303,7 @@
           <!-- URL Input View -->
           <div id="hero-slide-url-view" class="hidden space-y-1">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] text-[#8c4f75]">?????? URL (Vault CDN ?? Unsplash):</span>
+              <span class="text-[10px] text-[#8c4f75]">ইমেজের URL (Vault CDN বা Unsplash):</span>
               <button type="button" onclick="setVaultHelperInput('hero-slide-image-input', 'hero/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
                 <i class="fa-solid fa-cloud-arrow-up mr-0.5"></i> Vault (+hero/)
               </button>
@@ -1313,18 +1313,18 @@
         </div>
 
         <div>
-          <label class="block text-[#572449] font-bold mb-1">??????? ??????? / ????? *</label>
-          <input type="text" name="title" required placeholder="???? ??????? ????????, ???????? ????????" class="w-full bg-[#fdf2f8] border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          <label class="block text-[#572449] font-bold mb-1">কার্ডের শিরোনাম / লেবেল *</label>
+          <input type="text" name="title" required placeholder="উদাঃ জামদানি ব্রাইডাল, লাক্সারি জুয়েলারি" class="w-full bg-[#fdf2f8] border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
         </div>
 
         <div>
-          <label class="block text-[#572449] font-bold mb-1">????? / ?????</label>
-          <input type="text" name="tag" placeholder="???? 4K REC, TRENDING, TOP MODEL" class="w-full bg-[#fdf2f8] border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          <label class="block text-[#572449] font-bold mb-1">ব্যাজ / ট্যাগ</label>
+          <input type="text" name="tag" placeholder="উদাঃ 4K REC, TRENDING, TOP MODEL" class="w-full bg-[#fdf2f8] border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
         </div>
 
         <button type="submit" id="hero-slide-submit-btn" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2 flex items-center justify-center gap-2">
           <i class="fa-solid fa-check"></i>
-          <span>???? ???? ??? ????</span>
+          <span>হিরো ইমেজ সেভ করুন</span>
         </button>
       </form>
     </div>
@@ -1337,7 +1337,7 @@
     <div class="max-w-xl w-full glass-panel p-6 sm:p-7 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto custom-scrollbar bg-white">
       <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
         <h4 class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
-          <i class="fa-solid fa-user-pen text-[#db2777]"></i> ???? ???????? ? ????????? ???? ???? ????
+          <i class="fa-solid fa-user-pen text-[#db2777]"></i> মডেল প্রোফাইল ও বিস্তারিত তথ্য এডিট করুন
         </h4>
         <button id="close-edit-model-btn" onclick="closeEditModelModal()" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
       </div>
@@ -1348,32 +1348,32 @@
         <!-- 1. Basic Info -->
         <div class="p-3 bg-pink-50/40 rounded-2xl border border-[#ED96D7]/30 space-y-2.5">
           <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider block flex items-center gap-1.5">
-            <i class="fa-solid fa-id-card"></i> ?. ??? ???????
+            <i class="fa-solid fa-id-card"></i> ১. মূল পরিচিতি
           </span>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
-              <label class="block text-[#572449] font-bold mb-1">?????? ??? *</label>
+              <label class="block text-[#572449] font-bold mb-1">মডেলের নাম *</label>
               <input type="text" id="edit-model-name" name="name" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">????????? / ?????? *</label>
+              <label class="block text-[#572449] font-bold mb-1">ক্যাটাগরি / স্টাইল *</label>
               <input type="text" id="edit-model-category" name="category" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
             </div>
           </div>
           <div class="grid grid-cols-3 gap-2">
             <div>
-              <label class="block text-[#572449] font-bold mb-1">?????? (Height)</label>
+              <label class="block text-[#572449] font-bold mb-1">উচ্চতা (Height)</label>
               <input type="text" id="edit-model-height" name="height" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-2 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">??? ?????</label>
+              <label class="block text-[#572449] font-bold mb-1">মোট শ্যুট</label>
               <input type="text" id="edit-model-shoots" name="shoots" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-2 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">????????? / ???????</label>
+              <label class="block text-[#572449] font-bold mb-1">স্ট্যাটাস / কাস্টিং</label>
               <select id="edit-model-available" name="available" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2 py-2 text-[#2b0e23]">
-                <option value="true">Active (??????)</option>
-                <option value="false">Booked (????)</option>
+                <option value="true">Active (উপলব্ধ)</option>
+                <option value="false">Booked (বুকড)</option>
               </select>
             </div>
           </div>
@@ -1382,32 +1382,32 @@
         <!-- 2. Physical Stats & Measurements -->
         <div class="p-3 bg-pink-50/40 rounded-2xl border border-[#ED96D7]/30 space-y-2.5">
           <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider block flex items-center gap-1.5">
-            <i class="fa-solid fa-ruler-combined"></i> ?. ??????? ????? ? ?????? (Stats)
+            <i class="fa-solid fa-ruler-combined"></i> ২. শারীরিক বিবরণ ও পরিমাপ (Stats)
           </span>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             <div>
-              <label class="block text-[#572449] font-bold mb-1">??? (Age)</label>
-              <input type="text" id="edit-model-age" name="age" placeholder="?? ???" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">বয়স (Age)</label>
+              <input type="text" id="edit-model-age" name="age" placeholder="২২ বছর" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">??????? ??? (B-W-H)</label>
-              <input type="text" id="edit-model-measurements" name="measurements" placeholder="??-??-??" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">শারীরিক মাপ (B-W-H)</label>
+              <input type="text" id="edit-model-measurements" name="measurements" placeholder="৩৪-২৬-৩৬" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">????? ?? (Skin)</label>
-              <input type="text" id="edit-model-skinTone" name="skinTone" placeholder="??????? ??????? / Fair" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">গায়ের রঙ (Skin)</label>
+              <input type="text" id="edit-model-skinTone" name="skinTone" placeholder="উজ্জ্বল শ্যামলা / Fair" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">????? ?? (Eyes)</label>
-              <input type="text" id="edit-model-eyeColor" name="eyeColor" placeholder="????? ?????? / ????" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">চোখের রঙ (Eyes)</label>
+              <input type="text" id="edit-model-eyeColor" name="eyeColor" placeholder="ডার্ক ব্রাউন / কালো" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">????? ?? (Hair)</label>
-              <input type="text" id="edit-model-hairColor" name="hairColor" placeholder="???? ?????? ?????" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">চুলের রঙ (Hair)</label>
+              <input type="text" id="edit-model-hairColor" name="hairColor" placeholder="কালো সিল্কি লম্বা" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">??? / ??????</label>
-              <input type="text" id="edit-model-location" name="location" placeholder="????, ????????" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">শহর / লোকেশন</label>
+              <input type="text" id="edit-model-location" name="location" placeholder="ঢাকা, বাংলাদেশ" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-2.5 py-1.5 text-[#2b0e23]">
             </div>
           </div>
         </div>
@@ -1415,39 +1415,39 @@
         <!-- 3. Professional Profile & Bio -->
         <div class="p-3 bg-pink-50/40 rounded-2xl border border-[#ED96D7]/30 space-y-2.5">
           <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider block flex items-center gap-1.5">
-            <i class="fa-solid fa-star"></i> ?. ????? ???????? ? ????????? ????
+            <i class="fa-solid fa-star"></i> ৩. কাজের অভিজ্ঞতা ও বিস্তারিত বায়ো
           </span>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
-              <label class="block text-[#572449] font-bold mb-1">???????? (Experience)</label>
-              <input type="text" id="edit-model-experience" name="experience" placeholder="?+ ????? ????????? ??????" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
+              <label class="block text-[#572449] font-bold mb-1">অভিজ্ঞতা (Experience)</label>
+              <input type="text" id="edit-model-experience" name="experience" placeholder="৩+ বছরের প্রফেশনাল মডেলিং" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
             </div>
             <div>
-              <label class="block text-[#572449] font-bold mb-1">??????????? / ??????? ?????????</label>
+              <label class="block text-[#572449] font-bold mb-1">ইনস্টাগ্রাম / সোশ্যাল হ্যান্ডেল</label>
               <input type="text" id="edit-model-instagram" name="instagram" placeholder="@ananya_jaman" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
             </div>
           </div>
           <div>
-            <label class="block text-[#572449] font-bold mb-1">?????????? / ?????????? (??? ???? ?????)</label>
-            <input type="text" id="edit-model-specialties" name="specialties" placeholder="??????? ???? ?????, ???????? ???????, ????? ????????, ?K ????????? ?????, ???????? ????" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
+            <label class="block text-[#572449] font-bold mb-1">পারদর্শিতা / স্পেশালিটি (কমা দিয়ে লিখুন)</label>
+            <input type="text" id="edit-model-specialties" name="specialties" placeholder="জামদানি শাড়ি শ্যুট, ব্রাইডাল মেকওভার, বোল্ড ক্যাটালগ, ৪K সিনেমাটিক অ্যাড, র‌্যাম্প ওয়াক" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-1.5 text-[#2b0e23]">
           </div>
           <div>
-            <label class="block text-[#572449] font-bold mb-1">?????? ????????? ??????? (About / Bio)</label>
-            <textarea id="edit-model-bio" name="bio" rows="2" placeholder="?????? ?????????, ????? ??????, ???????? ????????????? ???????? ???? ?????..." class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] resize-none"></textarea>
+            <label class="block text-[#572449] font-bold mb-1">মডেলের বিস্তারিত পরিচিতি (About / Bio)</label>
+            <textarea id="edit-model-bio" name="bio" rows="2" placeholder="মডেলের ক্যারিয়ার, কাজের স্টাইল, ফটোশ্যুট এক্সপেরিয়েন্স সম্পর্কে তথ্য লিখুন..." class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] resize-none"></textarea>
           </div>
         </div>
 
         <!-- 4. Model Photo: Direct Upload & URL Dual Mode in Edit Modal -->
         <div class="space-y-2 pt-1 border-t border-[#ED96D7]/20">
           <div class="flex items-center justify-between">
-            <label class="block text-[#572449] font-bold">?????? ??? ???????? ???? *</label>
+            <label class="block text-[#572449] font-bold">মডেলের ছবি পরিবর্তন করুন *</label>
             <!-- Mode Tabs -->
             <div class="inline-flex rounded-lg bg-pink-50 p-0.5 border border-[#ED96D7]/30 text-[10px]">
               <button type="button" id="edit-model-tab-file-btn" onclick="setEditModelPhotoInputMode('file')" class="px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs">
-                <i class="fa-solid fa-cloud-arrow-up mr-1"></i>???? ????
+                <i class="fa-solid fa-cloud-arrow-up mr-1"></i>নতুন ফাইল
               </button>
               <button type="button" id="edit-model-tab-url-btn" onclick="setEditModelPhotoInputMode('url')" class="px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]">
-                <i class="fa-solid fa-link mr-1"></i>?????
+                <i class="fa-solid fa-link mr-1"></i>লিঙ্ক
               </button>
             </div>
           </div>
@@ -1460,18 +1460,18 @@
               <div class="w-9 h-9 rounded-full bg-pink-100 text-[#db2777] flex items-center justify-center text-base group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-camera"></i>
               </div>
-              <p class="font-bold text-[#2b0e23] text-xs">???? ??? ????? ???? ????? ????</p>
-              <p class="text-[10px] text-[#8c4f75]">?????? ???? ?????? ??? ???????? ????</p>
+              <p class="font-bold text-[#2b0e23] text-xs">নতুন ছবি আপলোড করতে ক্লিক করুন</p>
+              <p class="text-[10px] text-[#8c4f75]">ডিভাইস থেকে যেকোনো ছবি নির্বাচন করুন</p>
             </div>
 
             <!-- Current Photo Preview Container -->
             <div id="edit-model-file-preview-box" class="p-2.5 bg-pink-50/70 border border-[#ED96D7]/40 rounded-xl flex items-center gap-3">
               <img id="edit-model-file-preview-img" src="" alt="Model Current Preview" class="w-14 h-18 object-cover rounded-xl border border-[#ED96D7]/50 shadow-xs shrink-0">
               <div class="flex-1 min-w-0">
-                <div class="font-bold text-[#2b0e23] text-xs">??????? ???????? ???</div>
+                <div class="font-bold text-[#2b0e23] text-xs">বর্তমান প্রোফাইল ফটো</div>
                 <div id="edit-model-file-name" class="text-[10px] text-[#8c4f75] mt-0.5 truncate">model_photo.jpg</div>
                 <button type="button" onclick="document.getElementById('edit-model-image-file').click()" class="mt-1 px-2 py-0.5 rounded-lg bg-white border border-[#ED96D7]/50 text-[#db2777] text-[10px] font-bold hover:bg-pink-50">
-                  <i class="fa-solid fa-arrows-rotate mr-0.5"></i> ??? ???????
+                  <i class="fa-solid fa-arrows-rotate mr-0.5"></i> ছবি পাল্টান
                 </button>
               </div>
             </div>
@@ -1480,7 +1480,7 @@
           <!-- URL Input View -->
           <div id="edit-model-url-view" class="hidden space-y-1">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] text-[#8c4f75]">???? ?????? ???? ?? Vault URL:</span>
+              <span class="text-[10px] text-[#8c4f75]">ছবির অনলাইন লিংক বা Vault URL:</span>
               <button type="button" onclick="setVaultHelperInput('edit-model-image-input', 'models/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
                 <i class="fa-solid fa-cloud-arrow-up mr-0.5"></i> Vault (+models/)
               </button>
@@ -1493,9 +1493,9 @@
         <div class="p-3.5 bg-pink-50/50 rounded-2xl border border-[#ED96D7]/40 space-y-3">
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-photo-film"></i> ?. ???? ???????? (??? ? ????? ????? / ????)
+              <i class="fa-solid fa-photo-film"></i> ৫. মডেল গ্যালারি (ফটো ও ভিডিও আপলোড / লিংক)
             </span>
-            <span id="edit-model-gallery-count" class="text-[10px] text-[#8c4f75] font-bold">? ?? ?????</span>
+            <span id="edit-model-gallery-count" class="text-[10px] text-[#8c4f75] font-bold">০ টি আইটেম</span>
           </div>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1503,18 +1503,18 @@
             <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
-                  <i class="fa-solid fa-camera text-[#db2777]"></i> ???????? ??? (Photos)
+                  <i class="fa-solid fa-camera text-[#db2777]"></i> অতিরিক্ত ছবি (Photos)
                 </span>
-                <span class="text-[9px] text-[#8c4f75]">????? ?? ????</span>
+                <span class="text-[9px] text-[#8c4f75]">আপলোড বা লিংক</span>
               </div>
               <input type="file" id="edit-model-gallery-files" accept="image/*" multiple class="hidden">
               <button type="button" onclick="document.getElementById('edit-model-gallery-files').click()" class="w-full py-1.5 rounded-lg bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] transition-colors flex items-center justify-center gap-1 border border-[#ED96D7]/40">
-                <i class="fa-solid fa-cloud-arrow-up"></i> ?????? ???? ??? ?????
+                <i class="fa-solid fa-cloud-arrow-up"></i> ডিভাইস থেকে ছবি আপলোড
               </button>
               <div class="flex gap-1">
-                <input type="text" id="edit-model-gallery-photo-url-input" placeholder="???? URL / ???? ????? ????" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
+                <input type="text" id="edit-model-gallery-photo-url-input" placeholder="ছবির URL / লিংক পেস্ট করুন" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
                 <button type="button" onclick="addModelGalleryPhotoUrl('edit')" class="px-2.5 py-1 rounded-lg bg-pink-100 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] border border-[#ED96D7]/40">
-                  + ???
+                  + যোগ
                 </button>
               </div>
             </div>
@@ -1523,18 +1523,18 @@
             <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
-                  <i class="fa-solid fa-video text-[#db2777]"></i> ????? ? ???? (Videos)
+                  <i class="fa-solid fa-video text-[#db2777]"></i> ভিডিও ও রিলস (Videos)
                 </span>
-                <span class="text-[9px] text-[#8c4f75]">????? ?? ????</span>
+                <span class="text-[9px] text-[#8c4f75]">আপলোড বা লিংক</span>
               </div>
               <input type="file" id="edit-model-gallery-video-files" accept="video/mp4,video/quicktime,video/webm,video/*" multiple class="hidden">
               <button type="button" onclick="document.getElementById('edit-model-gallery-video-files').click()" class="w-full py-1.5 rounded-lg bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] transition-colors flex items-center justify-center gap-1 border border-[#ED96D7]/40">
-                <i class="fa-solid fa-file-video"></i> ?????? ???? ????? ?????
+                <i class="fa-solid fa-file-video"></i> ডিভাইস থেকে ভিডিও আপলোড
               </button>
               <div class="flex gap-1">
-                <input type="text" id="edit-model-gallery-video-input" placeholder="????? URL / Vault ????" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
+                <input type="text" id="edit-model-gallery-video-input" placeholder="ভিডিও URL / Vault লিংক" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
                 <button type="button" onclick="addModelGalleryVideo('edit')" class="px-2.5 py-1 rounded-lg bg-[#db2777] hover:bg-[#be185d] text-white font-bold text-[10px] shadow-xs">
-                  + ???
+                  + যোগ
                 </button>
               </div>
             </div>
@@ -1548,11 +1548,11 @@
 
         <div class="flex items-center gap-2 pt-2 border-t border-[#ED96D7]/20">
           <button type="button" onclick="closeEditModelModal()" class="w-1/3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#572449] font-bold text-xs">
-            ?????
+            বাতিল
           </button>
           <button type="submit" id="edit-model-submit-btn" class="w-2/3 py-2.5 rounded-xl btn-pink-primary font-bold text-xs shadow-md flex items-center justify-center gap-2">
             <i class="fa-solid fa-check"></i>
-            <span>????? ??????? ????</span>
+            <span>আপডেট সংরক্ষণ করুন</span>
           </button>
         </div>
       </form>
@@ -1566,7 +1566,7 @@
     <div class="max-w-md w-full glass-panel p-6 sm:p-7 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-3.5 max-h-[92vh] overflow-y-auto custom-scrollbar bg-white">
       <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
         <h4 class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
-          <i class="fa-solid fa-pen-to-square text-[#db2777]"></i> ???? ????? ???? ????
+          <i class="fa-solid fa-pen-to-square text-[#db2777]"></i> রিলস ভিডিও এডিট করুন
         </h4>
         <button onclick="closeEditReelModal()" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
       </div>
@@ -1575,47 +1575,47 @@
         <input type="hidden" id="edit-reel-id" name="id">
 
         <div>
-          <label class="block text-[#572449] font-bold mb-1">???? ?????? *</label>
+          <label class="block text-[#572449] font-bold mb-1">রিলস টাইটেল *</label>
           <input type="text" id="edit-reel-title" name="title" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-[#572449] font-bold mb-1">????????? / ????????? *</label>
+            <label class="block text-[#572449] font-bold mb-1">ক্লায়েন্ট / ব্র্যান্ড *</label>
             <input type="text" id="edit-reel-client" name="client" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
           </div>
           <div>
-            <label class="block text-[#572449] font-bold mb-1">??????? ????????? *</label>
+            <label class="block text-[#572449] font-bold mb-1">সার্ভিস ক্যাটাগরি *</label>
             <select id="edit-reel-category" name="category" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
-              <option value="cinema-ads">?K ?????? ????? (Cinema Ads)</option>
-              <option value="saree-shoot">???? ? ????? ????? (Saree Shoot)</option>
-              <option value="viral-reels">?????? ????????? ???? (Viral Reels)</option>
-              <option value="facebook-ads">?????? ?????? (Facebook Ads)</option>
-              <option value="jewellery">???????? ? ???????? (Jewellery)</option>
+              <option value="cinema-ads">৪K সিনেমা অ্যাড (Cinema Ads)</option>
+              <option value="saree-shoot">শাড়ি ও বোল্ড শ্যুট (Saree Shoot)</option>
+              <option value="viral-reels">ভাইরাল প্রোডাক্ট রিলস (Viral Reels)</option>
+              <option value="facebook-ads">ফেসবুক অ্যাডস (Facebook Ads)</option>
+              <option value="jewellery">জুয়েলারি ও লাক্সারি (Jewellery)</option>
             </select>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-[#572449] font-bold mb-1">????? / ???????</label>
+            <label class="block text-[#572449] font-bold mb-1">ট্যাগ / ফরম্যাট</label>
             <input type="text" id="edit-reel-tag" name="tag" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
           </div>
           <div>
-            <label class="block text-[#572449] font-bold mb-1">??? ??????</label>
+            <label class="block text-[#572449] font-bold mb-1">ভিউ সংখ্যা</label>
             <input type="text" id="edit-reel-views" name="views" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
           </div>
         </div>
 
         <!-- Video Source in Edit Modal -->
         <div class="space-y-2 pt-1 border-t border-[#ED96D7]/20">
-          <label class="block text-[#572449] font-bold">????? ???? / ???? *</label>
+          <label class="block text-[#572449] font-bold">ভিডিও ফাইল / লিংক *</label>
           <div id="edit-reel-video-preview-box" class="p-2 bg-pink-50/70 border border-[#ED96D7]/40 rounded-xl space-y-2">
             <video id="edit-reel-video-preview-player" class="w-full max-h-32 rounded-lg bg-black object-contain" controls muted></video>
             <div class="flex items-center justify-between">
               <input type="file" id="edit-reel-video-file" accept="video/mp4,video/quicktime,video/webm" class="hidden">
               <button type="button" onclick="document.getElementById('edit-reel-video-file').click()" class="px-2.5 py-1 rounded-lg bg-white border border-[#ED96D7]/50 text-[#db2777] font-bold text-[10px]">
-                <i class="fa-solid fa-arrows-rotate mr-1"></i>???? ????? ?????
+                <i class="fa-solid fa-arrows-rotate mr-1"></i>নতুন ভিডিও আপলোড
               </button>
               <span class="text-[10px] text-[#8c4f75] font-mono" id="edit-reel-video-name">video.mp4</span>
             </div>
@@ -1625,13 +1625,13 @@
 
         <!-- Thumbnail Source in Edit Modal -->
         <div class="space-y-2 pt-1 border-t border-[#ED96D7]/20">
-          <label class="block text-[#572449] font-bold">????????? / ??????? ??? *</label>
+          <label class="block text-[#572449] font-bold">থাম্বনেইল / পোস্টার ছবি *</label>
           <div id="edit-reel-thumb-preview-box" class="p-2 bg-pink-50/70 border border-[#ED96D7]/40 rounded-xl flex items-center gap-3">
             <img id="edit-reel-thumb-preview-img" src="" alt="Thumb Preview" class="w-10 h-14 object-cover rounded-lg border border-[#ED96D7]/50 shadow-xs shrink-0">
             <div class="flex-1 min-w-0">
               <input type="file" id="edit-reel-thumb-file" accept="image/*" class="hidden">
               <button type="button" onclick="document.getElementById('edit-reel-thumb-file').click()" class="px-2.5 py-1 rounded-lg bg-white border border-[#ED96D7]/50 text-[#db2777] font-bold text-[10px]">
-                <i class="fa-solid fa-arrows-rotate mr-1"></i>???? ??? ???
+                <i class="fa-solid fa-arrows-rotate mr-1"></i>নতুন ছবি দিন
               </button>
             </div>
           </div>
@@ -1640,11 +1640,11 @@
 
         <div class="flex items-center gap-2 pt-2 border-t border-[#ED96D7]/20">
           <button type="button" onclick="closeEditReelModal()" class="w-1/3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#572449] font-bold text-xs">
-            ?????
+            বাতিল
           </button>
           <button type="submit" id="edit-reel-submit-btn" class="w-2/3 py-2.5 rounded-xl btn-pink-primary font-bold text-xs shadow-md flex items-center justify-center gap-2">
             <i class="fa-solid fa-check"></i>
-            <span>????? ??? ????</span>
+            <span>আপডেট সেভ করুন</span>
           </button>
         </div>
       </form>
@@ -1658,7 +1658,7 @@
     <div class="max-w-lg w-full glass-panel p-6 sm:p-8 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
         <h4 class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
-          <i class="fa-solid fa-cloud text-emerald-600"></i> ?????? ??????? ? Vault CDN ???????????
+          <i class="fa-solid fa-cloud text-emerald-600"></i> ক্লাউড ডাটাবেস ও Vault CDN ইন্টিগ্রেশন
         </h4>
         <button id="close-supabase-settings-btn" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
       </div>
@@ -1670,20 +1670,20 @@
             <i class="fa-solid fa-server text-sm"></i> High-Speed Media Vault CDN
           </span>
           <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-indicator"></span> ????????? (Active)
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-indicator"></span> কানেক্টেড (Active)
           </span>
         </div>
         <p class="text-[11px] text-[#572449] leading-relaxed">
-          Supabase ?? ????? ??????? ?????? ?? ?K ????? ? ?????? ???? ?????? <strong>vault.bongbangla.top</strong> ???? ????? ????? ??????? ???
+          Supabase এর সীমিত স্টোরেজ বাচিয়ে সব ৪K ভিডিও ও মিডিয়া ফাইল সরাসরি <strong>vault.bongbangla.top</strong> থেকে দ্রুত গতিতে স্ট্রিম হয়।
         </p>
       </div>
 
       <div class="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs text-emerald-800 font-bangla space-y-1">
         <div class="font-bold flex items-center gap-1.5">
-          <i class="fa-solid fa-circle-check text-emerald-600"></i> Lovable, GitHub & Supabase ????? ????
+          <i class="fa-solid fa-circle-check text-emerald-600"></i> Lovable, GitHub & Supabase সিঙ্ক রেডি
         </div>
         <p class="text-[11px] leading-relaxed text-emerald-700">
-          Supabase ???????????? <strong>Project Settings > API</strong> ???? Project URL ??? Anon Key ???? ????? ?????
+          Supabase ড্যাশবোর্ডের <strong>Project Settings > API</strong> থেকে Project URL এবং Anon Key নিচে পেস্ট করুন।
         </p>
       </div>
 
@@ -1720,10 +1720,10 @@
 
         <div class="pt-2 border-t border-[#ED96D7]/20 flex items-center justify-between gap-3">
           <a href="supabase-schema.sql" target="_blank" class="text-[11px] text-[#db2777] hover:underline font-bold flex items-center gap-1">
-            <i class="fa-solid fa-file-code"></i> SQL Schema ???? ?????
+            <i class="fa-solid fa-file-code"></i> SQL Schema ফাইল দেখুন
           </a>
           <button type="submit" class="px-5 py-2.5 rounded-xl btn-pink-primary font-bold text-xs shadow-md">
-            ??????? ??? ? ????? ????
+            কানেকশন সেভ ও টেস্ট করুন
           </button>
         </div>
       </form>
@@ -1732,11 +1732,11 @@
 
   <!-- JavaScript Logics with Vault & Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/vault-config.js?v=20261004_v12"></script>
-  <script src="js/supabase-config.js?v=20261004_v12"></script>
-  <script src="js/supabase-client.js?v=20261004_v12"></script>
-  <script src="js/reels.js?v=20261004_v12"></script>
-  <script src="js/admin.js?v=20261004_v12"></script>
+  <script src="js/vault-config.js?v=20261004_v13"></script>
+  <script src="js/supabase-config.js?v=20261004_v13"></script>
+  <script src="js/supabase-client.js?v=20261004_v13"></script>
+  <script src="js/reels.js?v=20261004_v13"></script>
+  <script src="js/admin.js?v=20261004_v13"></script>
 </body>
 </html>
 
