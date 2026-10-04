@@ -408,6 +408,41 @@
   }
 
   /* ==========================================================================
+     4a. Hero Slides Sync
+     ========================================================================== */
+  async function fetchHeroSlides() {
+    if (supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient
+          .from('hero_slides')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          const mapped = data.map(d => ({
+            id: d.id,
+            title: d.title || '',
+            tag: d.tag || '4K REC',
+            image: d.image_url || d.image || ''
+          }));
+          try {
+            localStorage.setItem('bongbangla_hero_slides', JSON.stringify(mapped));
+          } catch(e) {}
+          return mapped;
+        }
+      } catch (err) {
+        console.warn('Error fetching hero slides from Supabase:', err);
+      }
+    }
+    // Fallback to localStorage
+    try {
+      const local = JSON.parse(localStorage.getItem('bongbangla_hero_slides') || '[]');
+      if (Array.isArray(local)) return local;
+    } catch(e) {}
+    return [];
+  }
+
+  /* ==========================================================================
      4. Automatic Local-to-Cloud Sync Migration Engine
      ========================================================================== */
   async function syncLocalDataToSupabase() {
@@ -553,6 +588,7 @@
     addModel,
     updateModel,
     deleteModel,
+    fetchHeroSlides,
     syncLocalDataToSupabase,
     uploadStorageFile,
     subscribeToLeads,

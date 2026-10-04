@@ -9,9 +9,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   cleanupMockData();
   initLogoSwitcher();
   initNavbar();
-  renderFrontendHeroSlides();
-  renderFrontendPortfolio('all');
-  renderFrontendModels();
   initPortfolioFilter();
   initLightbox();
   initEstimator();
@@ -19,14 +16,42 @@ document.addEventListener('DOMContentLoaded', async () => {
   initModals();
   initContactForm();
 
-  // Supabase real-time sync for frontend if configured
-  if (window.BongBanglaSupabase) {
-    if (window.BongBanglaSupabase.isConfigured()) {
-      try {
-        await window.BongBanglaSupabase.fetchModels();
-        renderFrontendModels();
-      } catch(e) {}
+  // Show cached data immediately (for returning visitors)
+  renderFrontendHeroSlides();
+  renderFrontendPortfolio('all');
+  renderFrontendModels();
+
+  // Always fetch fresh data from Supabase cloud (works on any device)
+  if (window.BongBanglaSupabase && window.BongBanglaSupabase.isConfigured()) {
+    try {
+      // Fetch models from Supabase and re-render with fresh cloud data
+      const cloudModels = await window.BongBanglaSupabase.fetchModels();
+      if (Array.isArray(cloudModels) && cloudModels.length > 0) {
+        renderFrontendModels(cloudModels);
+      }
+
+      // Fetch hero slides from Supabase
+      if (typeof window.BongBanglaSupabase.fetchHeroSlides === 'function') {
+        const cloudSlides = await window.BongBanglaSupabase.fetchHeroSlides();
+        if (Array.isArray(cloudSlides) && cloudSlides.length > 0) {
+          renderFrontendHeroSlides(cloudSlides);
+        }
+      } else {
+        // Re-render hero slides from localStorage (was cached by models fetch)
+        renderFrontendHeroSlides();
+      }
+
+      // Fetch reels from Supabase
+      if (typeof window.BongBanglaSupabase.fetchReels === 'function') {
+        await window.BongBanglaSupabase.fetchReels();
+        const activeFilter = document.querySelector('.filter-btn.bg-gradient-to-r');
+        renderFrontendPortfolio(activeFilter ? activeFilter.getAttribute('data-filter') : 'all');
+      }
+    } catch(e) {
+      console.warn('Supabase fetch error on homepage:', e);
     }
+
+    // Real-time subscriptions for live updates
     if (typeof window.BongBanglaSupabase.subscribeToReels === 'function') {
       window.BongBanglaSupabase.subscribeToReels(() => {
         const activeFilter = document.querySelector('.filter-btn.bg-gradient-to-r');
@@ -35,8 +60,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (typeof window.BongBanglaSupabase.subscribeToModels === 'function') {
       window.BongBanglaSupabase.subscribeToModels(() => {
-        window.BongBanglaSupabase.fetchModels().then(() => {
-          renderFrontendModels();
+        window.BongBanglaSupabase.fetchModels().then(models => {
+          if (Array.isArray(models) && models.length > 0) renderFrontendModels(models);
         });
       });
     }
@@ -141,19 +166,24 @@ function initNavbar() {
    2. Dynamic Frontend Hero Slides, Portfolio & Model Roster System
    ========================================================================== */
 
-function renderFrontendHeroSlides() {
+function renderFrontendHeroSlides(directData) {
   const container = document.getElementById('hero-slideshow-container');
   const track = document.getElementById('hero-slideshow-track');
   if (!track || !container) return;
 
   let slides = [];
-  try {
-    const raw = localStorage.getItem('bongbangla_hero_slides');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) slides = parsed;
-    }
-  } catch(e) {}
+  // If direct cloud data passed, use it; otherwise fall back to localStorage
+  if (Array.isArray(directData) && directData.length > 0) {
+    slides = directData;
+  } else {
+    try {
+      const raw = localStorage.getItem('bongbangla_hero_slides');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) slides = parsed;
+      }
+    } catch(e) {}
+  }
 
   if (slides.length === 0) {
     track.innerHTML = '';
@@ -285,20 +315,25 @@ function renderFrontendPortfolio(filter = 'all') {
   }).join('');
 }
 
-function renderFrontendModels() {
+function renderFrontendModels(directData) {
   const container = document.getElementById('frontend-models-grid');
   if (!container) return;
 
   let models = [];
-  try {
-    const raw = localStorage.getItem('bongbangla_models');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        models = parsed.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
+  // If direct cloud data passed, use it; otherwise fall back to localStorage cache
+  if (Array.isArray(directData) && directData.length > 0) {
+    models = directData.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
+  } else {
+    try {
+      const raw = localStorage.getItem('bongbangla_models');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          models = parsed.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
+        }
       }
-    }
-  } catch(e) {}
+    } catch(e) {}
+  }
 
   if (!Array.isArray(models) || models.length === 0) {
     container.className = 'col-span-full w-full';
