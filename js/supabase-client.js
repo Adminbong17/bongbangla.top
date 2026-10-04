@@ -239,7 +239,7 @@
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!error && data !== null) {
+        if (!error && Array.isArray(data) && data.length > 0) {
           let localModels = [];
           try {
             localModels = JSON.parse(localStorage.getItem('bongbangla_models') || '[]');
@@ -253,7 +253,7 @@
               category: d.category,
               height: d.height || local.height || "৫'৭\"",
               shoots: d.shoots || local.shoots || "২০+",
-              image: d.image_url || local.image,
+              image: d.image_url || d.image || local.image,
               available: d.available !== false,
               age: d.age || local.age || '',
               measurements: d.measurements || local.measurements || '',
@@ -268,6 +268,16 @@
               gallery: d.gallery || local.gallery || []
             };
           });
+
+          // Merge with any custom local models that were added on this device
+          if (Array.isArray(localModels) && localModels.length > 0) {
+            localModels.forEach(lm => {
+              if (!mapped.some(m => m.id === lm.id) && !['M-1', 'M-2', 'M-3', 'M-4'].includes(lm.id)) {
+                mapped.push(lm);
+              }
+            });
+          }
+
           localStorage.setItem('bongbangla_models', JSON.stringify(mapped));
           return mapped;
         }
@@ -277,30 +287,61 @@
     }
 
     try {
-      return JSON.parse(localStorage.getItem('bongbangla_models') || '[]');
-    } catch (e) {
-      return [];
-    }
+      const local = JSON.parse(localStorage.getItem('bongbangla_models') || '[]');
+      if (Array.isArray(local) && local.length > 0) return local;
+    } catch (e) {}
+    return [];
   }
 
   async function addModel(model) {
     if (supabaseClient) {
       try {
-        await supabaseClient
+        const payload = {
+          id: model.id,
+          name: model.name,
+          category: model.category,
+          height: model.height || "৫'৭\"",
+          shoots: model.shoots || "২০+",
+          image_url: model.image || '',
+          available: model.available !== false,
+          created_at: new Date().toISOString()
+        };
+        const { error } = await supabaseClient
           .from('models')
-          .insert([{
-            id: model.id,
-            name: model.name,
-            category: model.category,
-            height: model.height,
-            shoots: model.shoots,
-            image_url: model.image,
-            available: model.available !== false,
-            created_at: new Date().toISOString()
-          }]);
-        console.log('✅ Model synced to Supabase:', model.id);
+          .upsert([payload]);
+        if (error) {
+          console.error('Supabase addModel error:', error);
+        } else {
+          console.log('✅ Model synced to Supabase:', model.id);
+        }
       } catch (err) {
         console.error('Error adding model to Supabase:', err);
+      }
+    }
+  }
+
+  async function updateModel(model) {
+    if (supabaseClient) {
+      try {
+        const payload = {
+          name: model.name,
+          category: model.category,
+          height: model.height,
+          shoots: model.shoots,
+          image_url: model.image,
+          available: model.available !== false
+        };
+        const { error } = await supabaseClient
+          .from('models')
+          .update(payload)
+          .eq('id', model.id);
+        if (error) {
+          console.error('Supabase updateModel error:', error);
+        } else {
+          console.log('✅ Model updated in Supabase:', model.id);
+        }
+      } catch (err) {
+        console.error('Error updating model in Supabase:', err);
       }
     }
   }
@@ -410,6 +451,7 @@
     deleteReel,
     fetchModels,
     addModel,
+    updateModel,
     deleteModel,
     uploadStorageFile,
     subscribeToLeads,

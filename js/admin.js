@@ -1175,19 +1175,11 @@ function initDashboard() {
 
         saveModels(models);
 
-        if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.getClient === 'function') {
-          const client = window.BongBanglaSupabase.getClient();
-          if (client) {
-            try {
-              await client.from('models').update({
-                name: model.name,
-                category: model.category,
-                height: model.height,
-                shoots: model.shoots,
-                available: model.available,
-                image: model.image
-              }).eq('id', model.id);
-            } catch (e) { console.warn('Supabase model update error:', e); }
+        if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.updateModel === 'function') {
+          try {
+            await window.BongBanglaSupabase.updateModel(model);
+          } catch (e) {
+            console.warn('Supabase model update error:', e);
           }
         }
 
@@ -1647,7 +1639,16 @@ function initSupabaseAdmin() {
         renderLeadsTable(leadFilter ? leadFilter.value : 'all');
       }).catch(() => {});
 
-      window.BongBanglaSupabase.fetchModels().then(() => {
+      window.BongBanglaSupabase.fetchModels().then((models) => {
+        // Automatically sync any local admin models to Supabase cloud
+        const local = getModels();
+        if (Array.isArray(local) && local.length > 0) {
+          local.forEach(m => {
+            if (!['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id)) {
+              window.BongBanglaSupabase.addModel(m).catch(() => {});
+            }
+          });
+        }
         renderModelsGrid();
       }).catch(() => {});
 
