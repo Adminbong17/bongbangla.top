@@ -835,38 +835,34 @@ function initDashboard() {
 
     if (!url && !file) return '';
 
-    // If already a permanent web URL, return
-    if (url.startsWith('https://') && !url.includes('localhost') && !url.startsWith('blob:')) {
-      return url;
-    }
-
-    const bucket = defaultFolder === 'reels' ? 'reels' : 'models';
-
-    // 1. Upload File directly to Supabase Storage
-    if (file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
-      try {
-        const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(file, bucket);
-        if (cloudUrl) return cloudUrl;
-      } catch(e) {}
-    }
-
-    // 2. Upload DataURL to Supabase Storage as Blob
-    if (url.startsWith('data:') && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
-      try {
-        const blob = dataUrlToBlob(url);
-        if (blob) {
-          const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(blob, bucket);
-          if (cloudUrl) return cloudUrl;
-        }
-      } catch(e) {}
-    }
-
-    // 3. Fallback to Vault CDN
+    // 1. If File object is provided, upload directly via Vault CDN
     if (file && window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
       try {
         const res = await window.BongBanglaVault.uploadMedia(file, defaultFolder);
         if (res && res.url) return res.url;
       } catch(e) {}
+    }
+
+    // 2. If data URL, convert to Blob and upload via Vault CDN & Supabase
+    if (url.startsWith('data:')) {
+      const blob = dataUrlToBlob(url);
+      if (blob && window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
+        try {
+          const res = await window.BongBanglaVault.uploadMedia(blob, defaultFolder);
+          if (res && res.url) return res.url;
+        } catch(e) {}
+      }
+      if (blob && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+        try {
+          const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(blob, defaultFolder === 'reels' ? 'reels' : 'models');
+          if (cloudUrl) return cloudUrl;
+        } catch(e) {}
+      }
+    }
+
+    // 3. Format as Vault CDN URL if relative or local
+    if (window.BongBanglaVault && typeof window.BongBanglaVault.formatMediaUrl === 'function') {
+      return window.BongBanglaVault.formatMediaUrl(url, defaultFolder);
     }
 
     return url;

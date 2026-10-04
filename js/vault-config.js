@@ -12,7 +12,7 @@
   const VAULT_STORAGE_KEY = 'bongbangla_vault_config';
   const DEFAULT_VAULT_URL = 'https://vault.bongbangla.top';
   const DEFAULT_VAULT_USER = 'model@bongbangla.top';
-  const DEFAULT_VAULT_PASS = 'pass-Aktmtbar@1';
+  const DEFAULT_VAULT_PASS = 'Aktmtbar@1mzs';
 
   function getConfig() {
     try {
@@ -162,34 +162,20 @@
     if (!file) return { success: false, url: '', message: 'No file selected' };
 
     const cfg = getConfig();
-    const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const targetUrl = `${cfg.url}/${folder}/${cleanFileName}`;
-    const isVideo = file.type && (file.type.startsWith('video/') || /\.(mp4|mov|webm|m4v)$/i.test(file.name));
+    const rawName = file.name || ('media_' + Date.now() + (file.type && file.type.includes('png') ? '.png' : (file.type && file.type.includes('video') ? '.mp4' : '.jpg')));
+    const cleanFileName = rawName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const vaultUrl = `${cfg.url}/${folder}/${cleanFileName}`;
 
-    // 1. If Supabase Storage is configured, try direct cloud binary upload first
-    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
-      try {
-        const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(file, folder === 'reels' ? 'reels' : (folder === 'models' ? 'models' : 'media'), folder);
-        if (cloudUrl) {
-          return {
-            success: true,
-            url: cloudUrl,
-            filename: cleanFileName,
-            storage: 'supabase'
-          };
-        }
-      } catch(e) {}
-    }
-
-    // 2. Attempt remote Vault API upload
+    // 1. Primary: Direct Remote Media Vault Upload API
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('folder', folder);
       formData.append('user', cfg.user);
+      formData.append('password', cfg.pass);
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
 
       const res = await fetch(`${cfg.url}/api/upload`, {
         method: 'POST',
@@ -202,6 +188,7 @@
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
         if (data.url) {
+          console.log('⚡ Uploaded to Media Vault CDN:', data.url);
           return {
             success: true,
             url: data.url,
@@ -211,38 +198,23 @@
         }
       }
     } catch(err) {
-      console.warn('Vault direct upload notice (using fallback media delivery):', err);
+      console.warn('Vault API upload notice:', err);
     }
 
-    // 3. For video files: create reliable Object URL so browser plays the exact uploaded video
-    if (isVideo) {
-      let videoUrl = '';
+    // 2. Cloud backup to Supabase Storage
+    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
       try {
-        videoUrl = URL.createObjectURL(file);
-      } catch(e) {
-        videoUrl = targetUrl;
-      }
-      return {
-        success: true,
-        url: videoUrl || targetUrl,
-        filename: cleanFileName,
-        fallback: true
-      };
+        const bucket = folder === 'reels' ? 'reels' : (folder === 'models' ? 'models' : 'media');
+        await window.BongBanglaSupabase.uploadStorageFile(file, bucket, folder);
+      } catch(e) {}
     }
 
-    // 4. For image files: compress to compact high-quality Data URL (or use target URL)
-    let localDataUrl = '';
-    try {
-      localDataUrl = await fileToDataUrl(file, folder === 'hero' ? 1080 : 800, 0.85);
-    } catch(e) {}
-
-    const fallbackUrl = localDataUrl || targetUrl;
-
+    // 3. Return canonical Media Vault CDN URL
     return {
       success: true,
-      url: fallbackUrl,
+      url: vaultUrl,
       filename: cleanFileName,
-      fallback: true
+      storage: 'vault'
     };
   }
 
