@@ -1471,18 +1471,115 @@ window.deleteAdminLead = function(id) {
   }
 };
 
+const DEFAULT_INITIAL_MODELS = [
+  {
+    id: 'M-101',
+    name: 'তানজিলা হক রিয়া',
+    category: 'শাড়ি ও ফ্যাশন',
+    height: "৫'৭\"",
+    shoots: '৪৫+',
+    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
+    available: true,
+    age: '২২ বছর',
+    measurements: '৩৪-২৬-৩৬',
+    skinTone: 'উজ্জ্বল শ্যামলা',
+    eyeColor: 'ডার্ক ব্রাউন',
+    hairColor: 'কালো সিল্কি লম্বা',
+    location: 'গুলশান ও ধানমন্ডি, ঢাকা',
+    experience: '৪+ বছরের অভিজ্ঞতা',
+    instagram: '@tanzila_riya_official',
+    specialties: 'জামদানি ও সিল্ক শাড়ি শ্যুট, ব্রাইডাল মেকওভার পোর্টফোলিও, ৪K সিনেমাটিক ভিডিও বিজ্ঞাপন',
+    bio: 'বাংলাদেশের শীর্ষস্থানীয় ফ্যাশন ও শাড়ি মডেল। দেশসেরা ব্র্যান্ডের ক্যাটালগ শ্যুট, বিলবোর্ড এবং ৪K সিনেমাটিক কমার্শিয়াল বিজ্ঞাপনে সফলভাবে কাজ করার অভিজ্ঞতা রয়েছে।',
+    gallery: [
+      { type: 'photo', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80', title: 'জামদানি শাড়ি শ্যুট' },
+      { type: 'photo', url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80', title: 'ব্রাইডাল ক্লোজআপ' },
+      { type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-studio-setting-41793-large.mp4', title: '৪K ফ্যাশন রিলস', thumbnail: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80' },
+      { type: 'photo', url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80', title: 'ওয়েস্টার্ন ক্যাটালগ' }
+    ]
+  },
+  {
+    id: 'M-102',
+    name: 'ফারহানা চৌধুরী মেহা',
+    category: 'ব্রাইডাল ও লাক্সারি',
+    height: "৫'৬\"",
+    shoots: '৩৮+',
+    image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
+    available: true,
+    age: '২৩ বছর',
+    measurements: '৩৪-২৫-৩৫',
+    skinTone: 'ফর্সা',
+    eyeColor: 'হ্যারজেল ব্রাউন',
+    hairColor: 'ডার্ক ব্রাউন ওয়েভি',
+    location: 'বনানী, ঢাকা',
+    experience: '৩+ বছরের অভিজ্ঞতা',
+    instagram: '@meha_chowdhury',
+    specialties: 'ব্রাইডাল মেকআপ ক্যাটালগ, জুয়েলারি শ্যুট, কমার্শিয়াল অ্যাড',
+    bio: 'ব্রাইডাল ও লাক্সারি জুয়েলারি শ্যুটের জন্য অন্যতম সেরা মডেল। এক্সপ্রেশন এবং ক্লাসিক লুকের জন্য সুপরিচিত।',
+    gallery: [
+      { type: 'photo', url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80', title: 'ব্রাইডাল শ্যুট' },
+      { type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-model-posing-in-a-studio-41794-large.mp4', title: 'ভাইরাল রিলস', thumbnail: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80' }
+    ]
+  },
+  {
+    id: 'M-103',
+    name: 'নাদিয়া আফরিন স্মৃতি',
+    category: 'বোল্ড ও ওয়েস্টার্ন',
+    height: "৫'৮\"",
+    shoots: '৫২+',
+    image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80',
+    available: true,
+    age: '২৪ বছর',
+    measurements: '৩৬-২৬-৩৬',
+    skinTone: 'উজ্জ্বল শ্যামলা',
+    eyeColor: 'কালো',
+    hairColor: 'কালো সিল্কি',
+    location: 'মিরপুর ডিওএইচএস, ঢাকা',
+    experience: '৫+ বছরের অভিজ্ঞতা',
+    instagram: '@nadia_afrin_official',
+    specialties: 'বোল্ড ওয়েস্টার্ন ফ্যাশন ক্যাটালগ, র‌্যাম্প ওয়াক, টিভি কমার্শিয়াল',
+    bio: 'আন্তর্জাতিক মানের ফ্যাশন ফটোগ্রাফি ও হাই-কনসেপ্ট বোল্ড ক্যাটালগ শ্যুটে অভিজ্ঞ শীর্ষ মডেল।',
+    gallery: [
+      { type: 'photo', url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80', title: 'হাই ফ্যাশন' },
+      { type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-studio-setting-41793-large.mp4', title: 'র‌্যাম্প শোরিল', thumbnail: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80' }
+    ]
+  },
+  {
+    id: 'M-104',
+    name: 'আরিয়ান আহমেদ শুভ',
+    category: 'মেনস ফ্যাশন ও পাঞ্জাবি',
+    height: "৬'০\"",
+    shoots: '৩০+',
+    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80',
+    available: true,
+    age: '২৫ বছর',
+    measurements: '৪০-৩২-৩৮',
+    skinTone: 'উজ্জ্বল শ্যামলা',
+    eyeColor: 'ডার্ক ব্রাউন',
+    hairColor: 'কালো স্টাইলিশ',
+    location: 'উত্তরা, ঢাকা',
+    experience: '৩+ বছরের অভিজ্ঞতা',
+    instagram: '@ariyan_shuvo',
+    specialties: 'পাঞ্জাবি ও কাবলি শ্যুট, মেনস ওয়্যার ক্যাটালগ, লাইফস্টাইল অ্যাডস',
+    bio: 'পুরুষদের প্রিমিয়াম পাঞ্জাবি, স্যুট এবং কমার্শিয়াল ফিটনেস ক্যাটালগ শ্যুটের নির্ভরযোগ্য কাস্টিং মডেল।',
+    gallery: [
+      { type: 'photo', url: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80', title: 'পাঞ্জাবি শ্যুট' }
+    ]
+  }
+];
+
 function getModels() {
   try {
     const saved = localStorage.getItem('bongbangla_models');
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) {
-        // filter out any mock sample models
-        return parsed.filter(m => !['M-1', 'M-2', 'M-3', 'M-4'].includes(m.id));
+        const filtered = parsed.filter(m => !['M-1', 'M-2', 'M-3', 'M-4'].includes(m.id));
+        if (filtered.length > 0) return filtered;
       }
     }
   } catch (e) {}
-  return [];
+  saveModels(DEFAULT_INITIAL_MODELS);
+  return DEFAULT_INITIAL_MODELS;
 }
 
 function saveModels(models) {
