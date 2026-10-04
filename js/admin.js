@@ -3408,73 +3408,126 @@ window.openCurrentInFastDL = function() {
   window.open(fastDlUrl, '_blank');
 };
 
-function parseJinaInstagramMarkdown(markdown) {
-  const mediaList = [];
-  const seenKeys = new Set();
-
-  // Extract all markdown images: ![alt](url)
-  const mdImgRegex = /!\[([^\]]*)\]\((https?:\/\/[^\s\)]+)\)/gi;
-  let match;
-  while ((match = mdImgRegex.exec(markdown)) !== null) {
-    const alt = match[1] || '';
-    let url = match[2];
-
-    // Filter out profile avatar / icons
-    if (url.includes('s100x100') || url.includes('s150x150') || url.includes('/t51.82787-19/') || url.includes('rsrc.php')) {
-      continue;
-    }
-
-    // Must be a CDN image
-    if (!url.includes('cdninstagram.com') && !url.includes('fbcdn.net')) {
-      continue;
-    }
-
-    // Unique key
-    const keyMatch = url.match(/\/([0-9]+_[0-9]+_[0-9]+_n\.[a-z0-9]+)/i);
-    const key = keyMatch ? keyMatch[1] : url.split('?')[0];
-
-    if (!seenKeys.has(key)) {
-      seenKeys.add(key);
-      mediaList.push({
-        type: 'photo',
-        url: url,
-        thumbnail: url,
-        title: alt || 'Instagram Photo',
-        key: key
-      });
-    }
-  }
-
-  // Also check for direct MP4 URLs
-  const videoRegex = /(https?:\/\/[^\s\)\"\']+\.mp4[^\s\)\"\']*)/gi;
-  let vMatch;
-  while ((vMatch = videoRegex.exec(markdown)) !== null) {
-    const vUrl = vMatch[1];
-    if (!seenKeys.has(vUrl)) {
-      seenKeys.add(vUrl);
-      mediaList.push({
-        type: 'video',
-        url: vUrl,
-        thumbnail: mediaList[0] ? mediaList[0].url : '',
-        title: 'Instagram Video / Reel'
-      });
-    }
-  }
-
-  // Extract caption from markdown text
+function extractInstagramMediaFromHtml(html, textFallback = '') {
+  const extracted = [];
+  const seenUrls = new Set();
   let caption = '';
-  const lines = markdown.split('\n');
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed && !trimmed.startsWith('!') && !trimmed.startsWith('[') && !trimmed.startsWith('#') && !trimmed.startsWith('Title:') && !trimmed.startsWith('URL Source:')) {
-      if (trimmed.length > 5 && !trimmed.includes('followers') && !trimmed.includes('likes,') && !trimmed.includes('View profile')) {
-        caption = trimmed;
-        break;
+
+  // 1. Primary: Extract from embedded JSON script tags (parses carousels & full videos)
+  const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
+  let match;
+
+  while ((match = scriptRegex.exec(html)) !== null) {
+    const content = match[1].trim();
+    if (!content.includes('carousel_media') && !content.includes('video_versions') && !content.includes('image_versions2')) {
+      continue;
+    }
+
+    try {
+      const data = JSON.parse(content);
+      
+      function searchObj(obj) {
+        if (!obj || typeof obj !== 'object') return;
+
+        if (!caption && obj.caption && typeof obj.caption.text === 'string') {
+          caption = obj.caption.text;
+        }
+
+        // Check for Video
+        if (obj.video_versions && Array.isArray(obj.video_versions) && obj.video_versions.length > 0) {
+          const bestVideo = obj.video_versions[0];
+          if (bestVideo && bestVideo.url && !seenUrls.has(bestVideo.url)) {
+            seenUrls.add(bestVideo.url);
+            let thumb = '';
+            if (obj.image_versions2 && obj.image_versions2.candidates && obj.image_versions2.candidates[0]) {
+              thumb = obj.image_versions2.candidates[0].url;
+            }
+            extracted.push({
+              type: 'video',
+              url: bestVideo.url,
+              thumbnail: thumb,
+              title: obj.accessibility_caption || 'Instagram Reel / Video'
+            });
+          }
+        }
+
+        // Check for Photo (only if not already video)
+        if (obj.image_versions2 && obj.image_versions2.candidates && Array.isArray(obj.image_versions2.candidates) && obj.image_versions2.candidates.length > 0) {
+          if (!obj.video_versions || obj.video_versions.length === 0) {
+            const bestImg = obj.image_versions2.candidates[0];
+            if (bestImg && bestImg.url && !seenUrls.has(bestImg.url)) {
+              if (!bestImg.url.includes('s150x150') && !bestImg.url.includes('/t51.82787-19/')) {
+                seenUrls.add(bestImg.url);
+                extracted.push({
+                  type: 'photo',
+                  url: bestImg.url,
+                  thumbnail: bestImg.url,
+                  title: obj.accessibility_caption || 'Instagram Photo'
+                });
+              }
+            }
+          }
+        }
+
+        for (const k of Object.keys(obj)) {
+          if (typeof obj[k] === 'object') {
+            searchObj(obj[k]);
+          }
+        }
+      }
+
+      searchObj(data);
+    } catch(jsonErr) {}
+  }
+
+  // 2. Secondary Regex Fallback: Scan for all high-res photos
+  if (extracted.length === 0) {
+    const combined = html + '\n' + textFallback;
+    const mdImgRegex = /!\[([^\]]*)\]\((https?:\/\/[^\s\)]+)\)/gi;
+    let imgMatch;
+    while ((imgMatch = mdImgRegex.exec(combined)) !== null) {
+      const alt = imgMatch[1] || '';
+      let url = imgMatch[2];
+      if (url.includes('s150x150') || url.includes('/t51.82787-19/') || url.includes('rsrc.php')) continue;
+      if (!url.includes('cdninstagram.com') && !url.includes('fbcdn.net')) continue;
+      const keyMatch = url.match(/\/([0-9]+_[0-9]+_[0-9]+_n\.[a-z0-9]+)/i);
+      const key = keyMatch ? keyMatch[1] : url.split('?')[0];
+      if (!seenUrls.has(key)) {
+        seenUrls.add(key);
+        extracted.push({
+          type: 'photo',
+          url: url,
+          thumbnail: url,
+          title: alt || 'Instagram Photo'
+        });
+      }
+    }
+
+    const videoRegex = /(https?:\/\/[^\s\)\"\']+\.mp4[^\s\)\"\']*)/gi;
+    let vMatch;
+    while ((vMatch = videoRegex.exec(combined)) !== null) {
+      const vUrl = vMatch[1];
+      if (!seenUrls.has(vUrl)) {
+        seenUrls.add(vUrl);
+        extracted.push({
+          type: 'video',
+          url: vUrl,
+          thumbnail: extracted[0] ? extracted[0].url : '',
+          title: 'Instagram Video / Reel'
+        });
       }
     }
   }
 
-  return { mediaList, caption };
+  // 3. Caption fallback
+  if (!caption) {
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    if (titleMatch && titleMatch[1]) {
+      caption = titleMatch[1].replace('Instagram:', '').trim();
+    }
+  }
+
+  return { mediaList: extracted, caption };
 }
 
 window.executeInstagramGrab = async function() {
@@ -3522,26 +3575,50 @@ window.executeInstagramGrab = async function() {
     let extracted = [];
     let caption = '';
 
-    // Strategy 1: Jina AI Markdown Scraper for Instagram Embed
+    // Strategy 1: Full Post HTML Parser via Jina AI (Extracts all 20 carousel items, photos & videos)
     try {
-      const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
-      const jinaRes = await fetch(`https://r.jina.ai/${embedUrl}`, {
-        headers: { 'Accept': 'text/plain' },
-        signal: AbortSignal.timeout(12000)
+      const postUrl = `https://www.instagram.com/p/${shortcode}/`;
+      const jinaRes = await fetch(`https://r.jina.ai/${postUrl}`, {
+        headers: {
+          'Accept': 'text/html',
+          'X-Return-Format': 'html'
+        },
+        signal: AbortSignal.timeout(18000)
       });
       if (jinaRes.ok) {
-        const text = await jinaRes.text();
-        const res = parseJinaInstagramMarkdown(text);
+        const html = await jinaRes.text();
+        const res = extractInstagramMediaFromHtml(html);
         if (res.mediaList && res.mediaList.length > 0) {
           extracted = res.mediaList;
           caption = res.caption;
         }
       }
     } catch(err1) {
-      console.warn('Jina grab error:', err1);
+      console.warn('Jina HTML grab error:', err1);
     }
 
-    // Strategy 2: Microlink API fallback
+    // Strategy 2: Plain Markdown Scraper fallback if HTML returned empty
+    if (extracted.length === 0) {
+      try {
+        const postUrl = `https://www.instagram.com/p/${shortcode}/`;
+        const jinaTextRes = await fetch(`https://r.jina.ai/${postUrl}`, {
+          headers: { 'Accept': 'text/plain' },
+          signal: AbortSignal.timeout(12000)
+        });
+        if (jinaTextRes.ok) {
+          const txt = await jinaTextRes.text();
+          const res = extractInstagramMediaFromHtml('', txt);
+          if (res.mediaList && res.mediaList.length > 0) {
+            extracted = res.mediaList;
+            caption = res.caption;
+          }
+        }
+      } catch(err2) {
+        console.warn('Jina plain text grab error:', err2);
+      }
+    }
+
+    // Strategy 3: Microlink API fallback for single photo/reel
     if (extracted.length === 0) {
       try {
         const postUrl = `https://www.instagram.com/p/${shortcode}/`;
@@ -3569,8 +3646,8 @@ window.executeInstagramGrab = async function() {
             }
           }
         }
-      } catch(err2) {
-        console.warn('Microlink grab error:', err2);
+      } catch(err3) {
+        console.warn('Microlink grab error:', err3);
       }
     }
 
@@ -3799,13 +3876,13 @@ async function executeUploadAndAttach(items, modelId, destination = 'gallery') {
       if (destination === 'avatar') {
         model.image = permanentUrl;
         successCount++;
-      } else if (destination === 'reel') {
+      } else if (destination === 'reel' || item.type === 'video') {
         model.gallery.unshift({
           type: 'video',
           url: permanentUrl,
           thumbnail: item.thumbnail || permanentUrl
         });
-        saveNewReelFromInsta(permanentUrl, model);
+        saveNewReelFromInsta(permanentUrl, model, item.thumbnail || model.image || '');
         successCount++;
       } else {
         model.gallery.unshift({
@@ -3841,32 +3918,31 @@ async function executeUploadAndAttach(items, modelId, destination = 'gallery') {
   alert(`অভিনন্দন! ${model.name}-এর প্রোফাইলে ${successCount} টি মিডিয়া সফলভাবে Media Vault CDN ও গ্যালারিতে যুক্ত করা হয়েছে।`);
 }
 
-function saveNewReelFromInsta(videoUrl, model) {
+function saveNewReelFromInsta(videoUrl, model, customThumbnail = '') {
   try {
-    let reels = [];
-    const saved = localStorage.getItem('bongbangla_reels');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) reels = parsed;
-    }
     const newReel = {
       id: 'reel-' + Date.now(),
-      title: `${model.name} Instagram Reel`,
-      model_id: model.id,
-      category: model.category || 'Fashion',
-      video: videoUrl,
-      thumbnail: model.image || '',
+      title: `${model.name || 'BongBangla'} Instagram Reel`,
+      category: 'viral-reels',
+      client: model.name || 'BongBangla Model',
+      tag: 'INSTA REEL',
       views: '১.২K',
-      likes: '৪৫০+'
+      videoUrl: videoUrl,
+      thumbnail: customThumbnail || model.image || '',
+      created_at: new Date().toISOString()
     };
-    reels.unshift(newReel);
-    localStorage.setItem('bongbangla_reels', JSON.stringify(reels));
 
-    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.getClient === 'function') {
-      const client = window.BongBanglaSupabase.getClient();
-      if (client) {
-        client.from('reels').insert([newReel]).then(() => {}).catch(() => {});
+    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.addReel === 'function') {
+      window.BongBanglaSupabase.addReel(newReel).catch(e => console.warn('addReel error:', e));
+    } else {
+      let reels = [];
+      const saved = localStorage.getItem('bongbangla_reels');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) reels = parsed;
       }
+      reels.unshift(newReel);
+      localStorage.setItem('bongbangla_reels', JSON.stringify(reels));
     }
   } catch(e) {
     console.warn('saveNewReelFromInsta error:', e);
