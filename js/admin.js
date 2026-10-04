@@ -752,7 +752,8 @@ function initDashboard() {
           experience: (formData.get('experience') || '').toString().trim(),
           instagram: (formData.get('instagram') || '').toString().trim(),
           specialties: (formData.get('specialties') || '').toString().trim(),
-          bio: (formData.get('bio') || '').toString().trim()
+          bio: (formData.get('bio') || '').toString().trim(),
+          gallery: [...addModelGalleryItems]
         };
         models.push(newModel);
         saveModels(models);
@@ -767,9 +768,11 @@ function initDashboard() {
 
         addModelForm.reset();
         clearModelFileSelection();
+        addModelGalleryItems = [];
+        renderModelGalleryPreview('add');
         addModelModal.classList.add('hidden');
         renderModelsGrid();
-        alert('নতুন মডেলের বিস্তারিত প্রোফাইল সফলভাবে যোগ ও লাইভ করা হয়েছে!');
+        alert('নতুন মডেলের বিস্তারিত প্রোফাইল ও গ্যালারি সফলভাবে যোগ করা হয়েছে!');
       } catch (err) {
         console.error('Error saving model:', err);
         alert('মডেল সেভ করতে সমস্যা হয়েছে: ' + (err.message || ''));
@@ -778,6 +781,122 @@ function initDashboard() {
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalText;
         }
+      }
+    });
+  }
+
+  // =========================================================================
+  // Model Gallery Handlers (Multiple Photos & Videos)
+  // =========================================================================
+  let addModelGalleryItems = [];
+  let editModelGalleryItems = [];
+
+  window.renderModelGalleryPreview = function(mode) {
+    const isEdit = mode === 'edit';
+    const items = isEdit ? editModelGalleryItems : addModelGalleryItems;
+    const container = document.getElementById(isEdit ? 'edit-model-gallery-preview-container' : 'add-model-gallery-preview-container');
+    const countEl = document.getElementById(isEdit ? 'edit-model-gallery-count' : 'add-model-gallery-count');
+
+    if (countEl) countEl.textContent = `${items.length} টি আইটেম`;
+    if (!container) return;
+
+    if (items.length === 0) {
+      container.innerHTML = `
+        <div class="col-span-full py-2.5 text-center text-[10px] text-gray-400 bg-white/60 rounded-xl border border-dashed border-[#ED96D7]/30">
+          কোনো অতিরিক্ত ছবি বা ভিডিও যুক্ত করা হয়নি
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = items.map((item, idx) => {
+      const isVideo = item.type === 'video';
+      const thumb = isVideo ? (item.thumbnail || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=300&q=80') : item.url;
+      return `
+        <div class="aspect-square relative rounded-xl overflow-hidden bg-black border border-[#ED96D7]/50 group shadow-xs">
+          <img src="${thumb}" alt="Gallery Item" class="w-full h-full object-cover">
+          <div class="absolute top-1 left-1">
+            <span class="px-1 py-0.2 rounded text-[8px] font-bold text-white ${isVideo ? 'bg-indigo-600' : 'bg-[#db2777]'}">
+              ${isVideo ? 'VIDEO' : 'PHOTO'}
+            </span>
+          </div>
+          <button type="button" onclick="removeModelGalleryItem('${mode}', ${idx})" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-[9px] shadow-sm transition-colors" title="মুছে ফেলুন">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      `;
+    }).join('');
+  };
+
+  window.removeModelGalleryItem = function(mode, index) {
+    if (mode === 'edit') {
+      editModelGalleryItems.splice(index, 1);
+      renderModelGalleryPreview('edit');
+    } else {
+      addModelGalleryItems.splice(index, 1);
+      renderModelGalleryPreview('add');
+    }
+  };
+
+  window.addModelGalleryVideo = function(mode) {
+    const isEdit = mode === 'edit';
+    const input = document.getElementById(isEdit ? 'edit-model-gallery-video-input' : 'add-model-gallery-video-input');
+    if (!input || !input.value.trim()) {
+      alert('অনুগ্রহ করে ভিডিও ফাইলের URL বা লিঙ্ক লিখুন!');
+      return;
+    }
+    const url = input.value.trim();
+    const item = {
+      type: 'video',
+      url: url,
+      thumbnail: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=400&q=80',
+      title: 'ভিডিও রিলস'
+    };
+    if (isEdit) {
+      editModelGalleryItems.push(item);
+      renderModelGalleryPreview('edit');
+    } else {
+      addModelGalleryItems.push(item);
+      renderModelGalleryPreview('add');
+    }
+    input.value = '';
+  };
+
+  // Gallery multi-file input listeners
+  const addGalleryFileInput = document.getElementById('add-model-gallery-files');
+  if (addGalleryFileInput && !addGalleryFileInput.dataset.initialized) {
+    addGalleryFileInput.dataset.initialized = 'true';
+    addGalleryFileInput.addEventListener('change', async (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        for (const file of Array.from(e.target.files)) {
+          let url = '';
+          if (window.BongBanglaVault && typeof window.BongBanglaVault.fileToDataUrl === 'function') {
+            url = await window.BongBanglaVault.fileToDataUrl(file, 900, 0.85);
+          } else {
+            url = URL.createObjectURL(file);
+          }
+          addModelGalleryItems.push({ type: 'photo', url: url });
+        }
+        renderModelGalleryPreview('add');
+      }
+    });
+  }
+
+  const editGalleryFileInput = document.getElementById('edit-model-gallery-files');
+  if (editGalleryFileInput && !editGalleryFileInput.dataset.initialized) {
+    editGalleryFileInput.dataset.initialized = 'true';
+    editGalleryFileInput.addEventListener('change', async (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        for (const file of Array.from(e.target.files)) {
+          let url = '';
+          if (window.BongBanglaVault && typeof window.BongBanglaVault.fileToDataUrl === 'function') {
+            url = await window.BongBanglaVault.fileToDataUrl(file, 900, 0.85);
+          } else {
+            url = URL.createObjectURL(file);
+          }
+          editModelGalleryItems.push({ type: 'photo', url: url });
+        }
+        renderModelGalleryPreview('edit');
       }
     });
   }
@@ -841,6 +960,8 @@ function initDashboard() {
 
     editSelectedModelFile = null;
     editSelectedModelDataUrl = '';
+    editModelGalleryItems = Array.isArray(model.gallery) ? [...model.gallery] : [];
+    renderModelGalleryPreview('edit');
 
     if (idInput) idInput.value = model.id;
     if (nameInput) nameInput.value = model.name || '';
@@ -959,6 +1080,7 @@ function initDashboard() {
         model.instagram = (formData.get('instagram') || '').toString().trim();
         model.specialties = (formData.get('specialties') || '').toString().trim();
         model.bio = (formData.get('bio') || '').toString().trim();
+        model.gallery = [...editModelGalleryItems];
 
         saveModels(models);
 

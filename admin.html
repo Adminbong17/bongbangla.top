@@ -1003,12 +1003,50 @@
           </div>
         </div>
 
+        <!-- 5. Model Gallery: Extra Photos & Videos -->
+        <div class="p-3.5 bg-pink-50/50 rounded-2xl border border-[#ED96D7]/40 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-photo-film"></i> ৫. মডেল গ্যালারি (অতিরিক্ত ফটো ও ভিডিও)
+            </span>
+            <span id="add-model-gallery-count" class="text-[10px] text-[#8c4f75] font-bold">০ টি আইটেম</span>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <!-- Add Photo Button / File Input -->
+            <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 flex flex-col justify-between gap-2">
+              <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
+                <i class="fa-solid fa-camera text-[#db2777]"></i> অতিরিক্ত ছবি যোগ করুন
+              </span>
+              <input type="file" id="add-model-gallery-files" accept="image/*" multiple class="hidden">
+              <button type="button" onclick="document.getElementById('add-model-gallery-files').click()" class="w-full py-1.5 rounded-lg bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] transition-colors flex items-center justify-center gap-1 border border-[#ED96D7]/40">
+                <i class="fa-solid fa-cloud-arrow-up"></i> ডিভাইস থেকে ছবি সিলেক্ট করুন
+              </button>
+            </div>
+
+            <!-- Add Video / Reel URL -->
+            <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 flex flex-col justify-between gap-1.5">
+              <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
+                <i class="fa-solid fa-video text-[#db2777]"></i> ভিডিও / রিলস লিংক যোগ করুন
+              </span>
+              <div class="flex gap-1">
+                <input type="text" id="add-model-gallery-video-input" placeholder="https://...mp4 বা Vault লিংক" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
+                <button type="button" onclick="addModelGalleryVideo('add')" class="px-2.5 py-1 rounded-lg bg-[#db2777] text-white font-bold text-[10px] shadow-xs hover:bg-[#be185d]">
+                  + যোগ
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Visual Gallery Grid / Items Container -->
+          <div id="add-model-gallery-preview-container" class="grid grid-cols-4 sm:grid-cols-6 gap-2 pt-1 min-h-[40px]">
+            <!-- Dynamic thumbnails will be rendered here -->
+          </div>
+        </div>
+
         <button type="submit" id="model-submit-btn" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2 flex items-center justify-center gap-2 shadow-md">
           <i class="fa-solid fa-check"></i>
           <span>মডেল প্রোফাইল সেভ করুন</span>
-        </button>
-      </form>
-    </div>
         </button>
       </form>
     </div>
@@ -1428,6 +1466,47 @@
               </button>
             </div>
             <input type="text" id="edit-model-image-input" name="image" placeholder="https://..." class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          </div>
+        </div>
+
+        <!-- 5. Model Gallery: Extra Photos & Videos in Edit Modal -->
+        <div class="p-3.5 bg-pink-50/50 rounded-2xl border border-[#ED96D7]/40 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-photo-film"></i> ৫. মডেল গ্যালারি (অতিরিক্ত ফটো ও ভিডিও)
+            </span>
+            <span id="edit-model-gallery-count" class="text-[10px] text-[#8c4f75] font-bold">০ টি আইটেম</span>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <!-- Add Photo Button / File Input -->
+            <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 flex flex-col justify-between gap-2">
+              <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
+                <i class="fa-solid fa-camera text-[#db2777]"></i> অতিরিক্ত ছবি যোগ করুন
+              </span>
+              <input type="file" id="edit-model-gallery-files" accept="image/*" multiple class="hidden">
+              <button type="button" onclick="document.getElementById('edit-model-gallery-files').click()" class="w-full py-1.5 rounded-lg bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] transition-colors flex items-center justify-center gap-1 border border-[#ED96D7]/40">
+                <i class="fa-solid fa-cloud-arrow-up"></i> ডিভাইস থেকে ছবি সিলেক্ট করুন
+              </button>
+            </div>
+
+            <!-- Add Video / Reel URL -->
+            <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 flex flex-col justify-between gap-1.5">
+              <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
+                <i class="fa-solid fa-video text-[#db2777]"></i> ভিডিও / রিলস লিংক যোগ করুন
+              </span>
+              <div class="flex gap-1">
+                <input type="text" id="edit-model-gallery-video-input" placeholder="https://...mp4 বা Vault লিংক" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
+                <button type="button" onclick="addModelGalleryVideo('edit')" class="px-2.5 py-1 rounded-lg bg-[#db2777] text-white font-bold text-[10px] shadow-xs hover:bg-[#be185d]">
+                  + যোগ
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Visual Gallery Grid / Items Container -->
+          <div id="edit-model-gallery-preview-container" class="grid grid-cols-4 sm:grid-cols-6 gap-2 pt-1 min-h-[40px]">
+            <!-- Dynamic thumbnails will be rendered here -->
           </div>
         </div>
 

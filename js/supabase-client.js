@@ -264,7 +264,8 @@
               experience: d.experience || local.experience || '',
               instagram: d.instagram || local.instagram || '',
               specialties: d.specialties || local.specialties || '',
-              bio: d.bio || local.bio || ''
+              bio: d.bio || local.bio || '',
+              gallery: d.gallery || local.gallery || []
             };
           });
           localStorage.setItem('bongbangla_models', JSON.stringify(mapped));
