@@ -771,6 +771,179 @@ function initDashboard() {
       }
     });
   }
+
+  // =========================================================================
+  // Model Edit Handlers & Photo Switcher
+  // =========================================================================
+  let editSelectedModelFile = null;
+  let editSelectedModelDataUrl = '';
+
+  window.setEditModelPhotoInputMode = function(mode) {
+    const tabFileBtn = document.getElementById('edit-model-tab-file-btn');
+    const tabUrlBtn = document.getElementById('edit-model-tab-url-btn');
+    const fileView = document.getElementById('edit-model-file-upload-view');
+    const urlView = document.getElementById('edit-model-url-view');
+
+    if (mode === 'file') {
+      if (tabFileBtn) tabFileBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs';
+      if (tabUrlBtn) tabUrlBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]';
+      if (fileView) fileView.classList.remove('hidden');
+      if (urlView) urlView.classList.add('hidden');
+    } else {
+      if (tabUrlBtn) tabUrlBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs';
+      if (tabFileBtn) tabFileBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]';
+      if (urlView) urlView.classList.remove('hidden');
+      if (fileView) fileView.classList.add('hidden');
+    }
+  };
+
+  window.openEditModelModal = function(id) {
+    const models = getModels();
+    const model = models.find(m => m.id === id);
+    if (!model) {
+      alert('মডেল প্রোফাইল খুঁজে পাওয়া যায়নি!');
+      return;
+    }
+
+    const modal = document.getElementById('edit-model-modal');
+    const idInput = document.getElementById('edit-model-id');
+    const nameInput = document.getElementById('edit-model-name');
+    const categoryInput = document.getElementById('edit-model-category');
+    const heightInput = document.getElementById('edit-model-height');
+    const shootsInput = document.getElementById('edit-model-shoots');
+    const availableSelect = document.getElementById('edit-model-available');
+    const previewImg = document.getElementById('edit-model-file-preview-img');
+    const fileNameEl = document.getElementById('edit-model-file-name');
+    const urlInput = document.getElementById('edit-model-image-input');
+
+    editSelectedModelFile = null;
+    editSelectedModelDataUrl = '';
+
+    if (idInput) idInput.value = model.id;
+    if (nameInput) nameInput.value = model.name || '';
+    if (categoryInput) categoryInput.value = model.category || '';
+    if (heightInput) heightInput.value = model.height || "৫'৭\"";
+    if (shootsInput) shootsInput.value = model.shoots || '২০+';
+    if (availableSelect) availableSelect.value = model.available !== false ? 'true' : 'false';
+
+    const currentImg = model.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+    if (previewImg) previewImg.src = currentImg;
+    if (fileNameEl) fileNameEl.textContent = model.name ? `${model.name} photo` : 'photo.jpg';
+    if (urlInput) urlInput.value = currentImg.startsWith('data:') ? '' : currentImg;
+
+    setEditModelPhotoInputMode('file');
+    if (modal) modal.classList.remove('hidden');
+  };
+
+  window.closeEditModelModal = function() {
+    const modal = document.getElementById('edit-model-modal');
+    if (modal) modal.classList.add('hidden');
+    editSelectedModelFile = null;
+    editSelectedModelDataUrl = '';
+  };
+
+  const editModelFileInput = document.getElementById('edit-model-image-file');
+  if (editModelFileInput && !editModelFileInput.dataset.initialized) {
+    editModelFileInput.dataset.initialized = 'true';
+    editModelFileInput.addEventListener('change', async (e) => {
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        editSelectedModelFile = file;
+        const previewImg = document.getElementById('edit-model-file-preview-img');
+        const fileNameEl = document.getElementById('edit-model-file-name');
+        const urlInput = document.getElementById('edit-model-image-input');
+
+        if (fileNameEl) fileNameEl.textContent = file.name + ' (' + (file.size / (1024 * 1024)).toFixed(2) + ' MB)';
+        
+        if (window.BongBanglaVault && typeof window.BongBanglaVault.fileToDataUrl === 'function') {
+          editSelectedModelDataUrl = await window.BongBanglaVault.fileToDataUrl(file, 800, 0.85);
+        } else {
+          editSelectedModelDataUrl = URL.createObjectURL(file);
+        }
+
+        if (previewImg) previewImg.src = editSelectedModelDataUrl;
+        if (urlInput) urlInput.value = editSelectedModelDataUrl;
+      }
+    });
+  }
+
+  const editModelForm = document.getElementById('edit-model-form');
+  if (editModelForm && !editModelForm.dataset.initialized) {
+    editModelForm.dataset.initialized = 'true';
+    editModelForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById('edit-model-submit-btn');
+      const originalText = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> আপডেট হচ্ছে...';
+      }
+
+      try {
+        const formData = new FormData(editModelForm);
+        const id = formData.get('id');
+        const models = getModels();
+        const model = models.find(m => m.id === id);
+
+        if (!model) {
+          alert('মডেল পাওয়া যায়নি!');
+          return;
+        }
+
+        let photoUrl = (formData.get('image') || '').toString().trim();
+
+        if (editSelectedModelFile && window.BongBanglaVault) {
+          const uploadRes = await window.BongBanglaVault.uploadMedia(editSelectedModelFile, 'models');
+          if (uploadRes && uploadRes.url) {
+            photoUrl = uploadRes.url;
+          }
+        }
+
+        if (!photoUrl && editSelectedModelDataUrl) {
+          photoUrl = editSelectedModelDataUrl;
+        }
+
+        if (!photoUrl) {
+          photoUrl = model.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+        }
+
+        model.name = formData.get('name');
+        model.category = formData.get('category');
+        model.height = formData.get('height') || "৫'৭\"";
+        model.shoots = formData.get('shoots') || '২০+';
+        model.available = formData.get('available') === 'true';
+        model.image = photoUrl;
+
+        saveModels(models);
+
+        if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.getClient === 'function') {
+          const client = window.BongBanglaSupabase.getClient();
+          if (client) {
+            client.from('models').update({
+              name: model.name,
+              category: model.category,
+              height: model.height,
+              shoots: model.shoots,
+              available: model.available,
+              image: model.image
+            }).eq('id', model.id).catch(() => {});
+          }
+        }
+
+        closeEditModelModal();
+        renderModelsGrid();
+        alert('মডেলের তথ্য ও ছবি সফলভাবে আপডেট করা হয়েছে!');
+      } catch (err) {
+        console.error('Error updating model:', err);
+        alert('মডেল আপডেট করতে সমস্যা হয়েছে: ' + (err.message || ''));
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+        }
+      }
+    });
+  }
 }
 
 function getLeads() {
@@ -1498,6 +1671,208 @@ function initReelsAdmin() {
       }
     });
   }
+
+  // =========================================================================
+  // Reel Edit Handlers
+  // =========================================================================
+  let editSelectedReelVideoFile = null;
+  let editSelectedReelThumbFile = null;
+  let editSelectedReelThumbDataUrl = '';
+
+  window.openEditReelModal = function(id) {
+    if (!window.BongBanglaReels) return;
+    const reels = window.BongBanglaReels.getReels('all');
+    const reel = reels.find(r => r.id === id);
+    if (!reel) {
+      alert('রিলস ভিডিও খুঁজে পাওয়া যায়নি!');
+      return;
+    }
+
+    const modal = document.getElementById('edit-reel-modal');
+    const idInput = document.getElementById('edit-reel-id');
+    const titleInput = document.getElementById('edit-reel-title');
+    const clientInput = document.getElementById('edit-reel-client');
+    const categorySelect = document.getElementById('edit-reel-category');
+    const tagInput = document.getElementById('edit-reel-tag');
+    const viewsInput = document.getElementById('edit-reel-views');
+    const videoInput = document.getElementById('edit-reel-video-input');
+    const thumbInput = document.getElementById('edit-reel-thumb-input');
+    const videoPlayer = document.getElementById('edit-reel-video-preview-player');
+    const videoName = document.getElementById('edit-reel-video-name');
+    const thumbImg = document.getElementById('edit-reel-thumb-preview-img');
+
+    editSelectedReelVideoFile = null;
+    editSelectedReelThumbFile = null;
+    editSelectedReelThumbDataUrl = '';
+
+    if (idInput) idInput.value = reel.id;
+    if (titleInput) titleInput.value = reel.title || '';
+    if (clientInput) clientInput.value = reel.client || '';
+    if (categorySelect) categorySelect.value = reel.category || 'cinema-ads';
+    if (tagInput) tagInput.value = reel.tag || '4K CINEMA';
+    if (viewsInput) viewsInput.value = reel.views || '১.৫M ভিউজ';
+
+    const videoSrc = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(reel.videoUrl, 'reels') : reel.videoUrl;
+    const thumbSrc = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(reel.thumbnail, 'thumbnails') : reel.thumbnail;
+
+    if (videoInput) videoInput.value = reel.videoUrl || '';
+    if (thumbInput) thumbInput.value = reel.thumbnail || '';
+    if (videoPlayer) {
+      videoPlayer.src = videoSrc;
+      videoPlayer.load();
+    }
+    if (videoName) videoName.textContent = reel.title ? `${reel.title}.mp4` : 'video.mp4';
+    if (thumbImg) thumbImg.src = thumbSrc;
+
+    if (modal) modal.classList.remove('hidden');
+  };
+
+  window.closeEditReelModal = function() {
+    const modal = document.getElementById('edit-reel-modal');
+    const videoPlayer = document.getElementById('edit-reel-video-preview-player');
+    if (videoPlayer) {
+      videoPlayer.pause();
+      videoPlayer.src = '';
+    }
+    if (modal) modal.classList.add('hidden');
+    editSelectedReelVideoFile = null;
+    editSelectedReelThumbFile = null;
+    editSelectedReelThumbDataUrl = '';
+  };
+
+  const editReelVideoFileInput = document.getElementById('edit-reel-video-file');
+  if (editReelVideoFileInput && !editReelVideoFileInput.dataset.initialized) {
+    editReelVideoFileInput.dataset.initialized = 'true';
+    editReelVideoFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        editSelectedReelVideoFile = file;
+        const videoPlayer = document.getElementById('edit-reel-video-preview-player');
+        const videoName = document.getElementById('edit-reel-video-name');
+        const videoInput = document.getElementById('edit-reel-video-input');
+        if (videoName) videoName.textContent = file.name + ' (' + (file.size / (1024 * 1024)).toFixed(2) + ' MB)';
+        const localBlob = URL.createObjectURL(file);
+        if (videoPlayer) {
+          videoPlayer.src = localBlob;
+          videoPlayer.load();
+        }
+        if (videoInput) videoInput.value = localBlob;
+      }
+    });
+  }
+
+  const editReelThumbFileInput = document.getElementById('edit-reel-thumb-file');
+  if (editReelThumbFileInput && !editReelThumbFileInput.dataset.initialized) {
+    editReelThumbFileInput.dataset.initialized = 'true';
+    editReelThumbFileInput.addEventListener('change', async (e) => {
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        editSelectedReelThumbFile = file;
+        const thumbImg = document.getElementById('edit-reel-thumb-preview-img');
+        const thumbInput = document.getElementById('edit-reel-thumb-input');
+        if (window.BongBanglaVault && typeof window.BongBanglaVault.fileToDataUrl === 'function') {
+          editSelectedReelThumbDataUrl = await window.BongBanglaVault.fileToDataUrl(file, 720, 0.85);
+        } else {
+          editSelectedReelThumbDataUrl = URL.createObjectURL(file);
+        }
+        if (thumbImg) thumbImg.src = editSelectedReelThumbDataUrl;
+        if (thumbInput) thumbInput.value = editSelectedReelThumbDataUrl;
+      }
+    });
+  }
+
+  const editReelForm = document.getElementById('edit-reel-form');
+  if (editReelForm && !editReelForm.dataset.initialized) {
+    editReelForm.dataset.initialized = 'true';
+    editReelForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById('edit-reel-submit-btn');
+      const originalText = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> আপডেট হচ্ছে...';
+      }
+
+      try {
+        const formData = new FormData(editReelForm);
+        const id = formData.get('id');
+        let reels = window.BongBanglaReels ? window.BongBanglaReels.getReels('all') : [];
+        const reel = reels.find(r => r.id === id);
+
+        if (!reel) {
+          alert('রিলস খুঁজে পাওয়া যায়নি!');
+          return;
+        }
+
+        let rawVideoUrl = (formData.get('videoUrl') || '').toString().trim();
+        let rawThumb = (formData.get('thumbnail') || '').toString().trim();
+
+        if (editSelectedReelVideoFile && window.BongBanglaVault) {
+          const videoRes = await window.BongBanglaVault.uploadMedia(editSelectedReelVideoFile, 'reels');
+          if (videoRes && videoRes.url) {
+            rawVideoUrl = videoRes.url;
+          }
+        }
+
+        if (editSelectedReelThumbFile && window.BongBanglaVault) {
+          const thumbRes = await window.BongBanglaVault.uploadMedia(editSelectedReelThumbFile, 'thumbnails');
+          if (thumbRes && thumbRes.url) {
+            rawThumb = thumbRes.url;
+          }
+        }
+
+        if (!rawThumb && editSelectedReelThumbDataUrl) {
+          rawThumb = editSelectedReelThumbDataUrl;
+        }
+
+        if (!rawVideoUrl) rawVideoUrl = reel.videoUrl;
+        if (!rawThumb) rawThumb = reel.thumbnail;
+
+        const videoUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawVideoUrl, 'reels') : rawVideoUrl;
+        const thumbnail = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawThumb, 'thumbnails') : rawThumb;
+
+        reel.title = formData.get('title');
+        reel.client = formData.get('client');
+        reel.category = formData.get('category');
+        reel.tag = formData.get('tag') || '4K CINEMA';
+        reel.views = formData.get('views') || '১.৫M ভিউজ';
+        reel.videoUrl = videoUrl;
+        reel.thumbnail = thumbnail;
+
+        if (window.BongBanglaReels) {
+          window.BongBanglaReels.saveReels(reels);
+        }
+
+        if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.getClient === 'function') {
+          const client = window.BongBanglaSupabase.getClient();
+          if (client) {
+            client.from('reels').update({
+              title: reel.title,
+              client: reel.client,
+              category: reel.category,
+              tag: reel.tag,
+              views: reel.views,
+              video_url: reel.videoUrl,
+              thumbnail: reel.thumbnail
+            }).eq('id', reel.id).catch(() => {});
+          }
+        }
+
+        closeEditReelModal();
+        const reelFilter = document.getElementById('admin-reel-filter');
+        renderAdminReels(reelFilter ? reelFilter.value : 'all');
+        alert('রিলস ভিডিও সফলভাবে আপডেট করা হয়েছে!');
+      } catch (err) {
+        console.error('Error updating reel:', err);
+        alert('রিলস আপডেট করতে সমস্যা হয়েছে: ' + (err.message || ''));
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+        }
+      }
+    });
+  }
 }
 
 let currentReelViewMode = localStorage.getItem('bongbangla_reel_view_mode') || 'list';
@@ -1805,14 +2180,21 @@ function renderAdminReels(category = 'all') {
             ${r.date || '২০২৬'}
           </td>
 
-          <!-- Actions (View Video / Delete) -->
+          <!-- Actions (View Video / Edit / Delete) -->
           <td class="py-3 px-4 text-right">
             <div class="flex items-center justify-end gap-1.5">
               <button onclick="window.BongBanglaReels.openReelVideoModal('${video}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')"
-                      class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#db2777] to-[#be185d] text-white text-xs font-bold flex items-center gap-1 shadow-xs hover:opacity-95 transition-all"
+                      class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-[#db2777] to-[#be185d] text-white text-xs font-bold flex items-center gap-1 shadow-xs hover:opacity-95 transition-all"
                       title="ভিডিও ভিউ ও প্লে করুন">
                 <i class="fa-solid fa-eye text-[11px]"></i>
-                <span>ভিউ (View)</span>
+                <span>ভিউ</span>
+              </button>
+
+              <button onclick="openEditReelModal('${r.id}')"
+                      class="px-2.5 py-1.5 rounded-xl bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white text-xs font-bold flex items-center gap-1 transition-all"
+                      title="রিলস এডিট করুন">
+                <i class="fa-solid fa-pen-to-square text-[11px]"></i>
+                <span>এডিট</span>
               </button>
 
               <button onclick="deleteAdminReel('${r.id}')"
@@ -1873,11 +2255,19 @@ function renderAdminReels(category = 'all') {
               <span class="text-[#db2777] font-semibold">${categoryNames[r.category] || r.category}</span>
               <span class="font-medium">${r.views || ''}</span>
             </div>
-            <button onclick="window.BongBanglaReels.openReelVideoModal('${video}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')"
-                    class="w-full mt-2 py-1.5 rounded-xl bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
-              <i class="fa-solid fa-eye text-xs"></i>
-              <span>ভিডিও ভিউ করুন</span>
-            </button>
+            <div class="flex items-center gap-1.5 mt-2">
+              <button onclick="window.BongBanglaReels.openReelVideoModal('${video}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')"
+                      class="flex-1 py-1.5 rounded-xl bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
+                <i class="fa-solid fa-eye text-xs"></i>
+                <span>ভিউ</span>
+              </button>
+              <button onclick="openEditReelModal('${r.id}')"
+                      class="px-3 py-1.5 rounded-xl bg-[#fdf2f8] hover:bg-[#db2777] text-[#be185d] hover:text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors"
+                      title="এডিট">
+                <i class="fa-solid fa-pen-to-square text-xs"></i>
+                <span>এডিট</span>
+              </button>
+            </div>
           </div>
         </div>
       `;
@@ -1972,6 +2362,15 @@ function renderModelsGrid() {
           <div class="flex items-center justify-between text-[#8c4f75] text-[11px] pt-2 border-t border-[#ED96D7]/20">
             <span>উচ্চতা: ${m.height}</span>
             <span>শ্যুট: ${m.shoots}</span>
+          </div>
+          <div class="pt-2 flex items-center gap-2">
+            <button onclick="openEditModelModal('${m.id}')" class="flex-1 py-1.5 rounded-xl bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs">
+              <i class="fa-solid fa-pen-to-square text-xs"></i>
+              <span>এডিট করুন</span>
+            </button>
+            <button onclick="deleteModel('${m.id}')" class="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 inline-flex items-center justify-center transition-colors shadow-xs" title="মডেল রিমুভ করুন">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
           </div>
         </div>
       </div>
