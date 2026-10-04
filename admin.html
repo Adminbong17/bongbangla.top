@@ -48,10 +48,12 @@
     .btn-pink-primary:hover { opacity: 0.95; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(219, 39, 119, 0.35); }
     .btn-pink-outline { background: #ffffff; border: 1.5px solid #ED96D7; color: #be185d; font-weight: 700; }
     .btn-pink-outline:hover { background: #fdf2f8; border-color: #db2777; color: #9d174d; }
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #fdf2f8; }
-    ::-webkit-scrollbar-thumb { background: #ED96D7; border-radius: 4px; border: 2px solid #fff8fa; }
+    ::-webkit-scrollbar-thumb { background: #ED96D7; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #db2777; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #ED96D7]/60; border-radius: 3px; }
   </style>
 </head>
 <body class="min-h-screen bg-[#fff8fa] text-[#572449] antialiased">
@@ -128,237 +130,434 @@
   <!-- ========================================================================
        Authenticated Admin Dashboard
        ======================================================================== -->
-  <div id="dashboard-screen" class="hidden min-h-screen flex flex-col">
+  <div id="dashboard-screen" class="hidden min-h-screen flex bg-[#fff8fa]">
     
-    <!-- Top Navigation Bar -->
-    <header class="glass-panel sticky top-0 z-40 border-b border-[#ED96D7]/30 px-4 sm:px-8 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <img id="admin-nav-logo" src="assets/logo-bn.png" alt="BongBangla Admin" class="h-10 sm:h-12 w-auto max-w-[240px] sm:max-w-[280px] object-contain">
-      </div>
-
-      <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-        <!-- Supabase Cloud Connection Indicator / Button -->
-        <button id="open-supabase-settings-btn" class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-bold text-[#572449] hover:border-[#db2777] flex items-center gap-1.5 transition-all shadow-sm" title="Supabase ডাটাবেস সেটিংস">
-          <span id="supabase-status-dot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-          <span id="supabase-status-text" class="font-bangla text-[11px]">লোকাল মোড</span>
-          <i class="fa-solid fa-gear text-[10px] text-[#db2777]"></i>
-        </button>
-
-        <!-- Logged-in Real Auth Badge -->
-        <div id="admin-user-badge" class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-bold text-[#2b0e23] hidden sm:flex items-center gap-1.5 shadow-sm" title="লগইনকৃত অ্যাডমিন">
-          <i class="fa-solid fa-circle-user text-[#db2777]"></i>
-          <span id="admin-user-email" class="font-mono text-[11px] max-w-[140px] truncate">admin</span>
-        </div>
-
-        <!-- BN / EN Logo Toggle on the right -->
-        <div class="inline-flex items-center p-0.5 rounded-full bg-white border border-[#ED96D7]/50 text-[10px] font-bold shadow-sm">
-          <button type="button" id="admin-nav-btn-bn" class="px-2 py-0.5 rounded-full bg-[#db2777] text-white shadow-sm transition-all" onclick="setAdminLogoLang('bn')">বাং</button>
-          <button type="button" id="admin-nav-btn-en" class="px-2 py-0.5 rounded-full text-[#572449] hover:text-[#db2777] transition-all" onclick="setAdminLogoLang('en')">EN</button>
-        </div>
-
-        <a href="index.html" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs text-[#572449] hover:text-[#db2777] hover:border-[#db2777] hover:bg-[#fdf2f8] flex items-center gap-1.5 transition-all font-semibold shadow-sm">
-          <i class="fa-solid fa-external-link text-[10px] text-[#db2777]"></i> লাইভ ওয়েবসাইট
-        </a>
-        <button id="admin-logout-btn" onclick="handleAdminLogout()" class="px-3.5 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i> লগআউট
-        </button>
-      </div>
-    </header>
-
-    <!-- Main Content Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <!-- ====================================================================
+         1. Left Collapsible / Accordion Sidebar Navigation
+         ==================================================================== -->
+    <aside id="admin-sidebar" class="w-64 fixed inset-y-0 left-0 z-50 bg-white border-r border-[#ED96D7]/30 flex flex-col justify-between transition-all duration-300 shadow-sm -translate-x-full lg:translate-x-0">
       
-      <!-- Top Metrics Overview Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Top Brand Header & Toggle Button -->
+      <div class="h-16 px-4 border-b border-[#ED96D7]/20 flex items-center justify-between shrink-0 bg-white/80 backdrop-blur-md">
+        <div class="flex items-center gap-2.5 overflow-hidden">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#db2777] to-[#ED96D7] flex items-center justify-center text-white shrink-0 shadow-sm">
+            <i class="fa-solid fa-shop text-sm"></i>
+          </div>
+          <div class="sidebar-label transition-opacity duration-300">
+            <span class="font-heading font-black text-base text-[#2b0e23] tracking-wide block leading-none">BongBangla</span>
+            <span class="text-[9px] uppercase tracking-wider text-[#db2777] font-bold">Admin Portal</span>
+          </div>
+        </div>
         
-        <div class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/35 flex items-center justify-between">
-          <div>
-            <span class="text-xs text-[#8c4f75] font-bangla font-medium">মোট ইনকোয়ারি</span>
-            <div id="stat-total-leads" class="text-3xl font-extrabold text-[#2b0e23] mt-1 font-heading">০</div>
-            <span class="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">ওয়েবসাইট থেকে প্রাপ্ত</span>
-          </div>
-          <div class="w-12 h-12 rounded-2xl bg-[#ED96D7]/25 text-[#be185d] flex items-center justify-center text-xl shadow-sm">
-            <i class="fa-solid fa-users"></i>
-          </div>
-        </div>
-
-        <div class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/35 flex items-center justify-between">
-          <div>
-            <span class="text-xs text-[#8c4f75] font-bangla font-medium">নতুন লিড (Pending)</span>
-            <div id="stat-new-leads" class="text-3xl font-extrabold text-[#db2777] mt-1 font-heading">০</div>
-            <span class="text-[10px] text-amber-700 font-semibold bg-amber-50 px-1.5 py-0.5 rounded">যোগাযোগ করতে হবে</span>
-          </div>
-          <div class="w-12 h-12 rounded-2xl bg-pink-100 text-[#db2777] flex items-center justify-center text-xl shadow-sm">
-            <i class="fa-solid fa-bell"></i>
-          </div>
-        </div>
-
-        <div class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/35 flex items-center justify-between">
-          <div>
-            <span class="text-xs text-[#8c4f75] font-bangla font-medium">কনফার্মড শ্যুট</span>
-            <div id="stat-booked-leads" class="text-3xl font-extrabold text-emerald-700 mt-1 font-heading">০</div>
-            <span class="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">বুকিং কমপ্লিট</span>
-          </div>
-          <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shadow-sm">
-            <i class="fa-solid fa-calendar-check"></i>
-          </div>
-        </div>
-
-        <div class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/35 flex items-center justify-between">
-          <div>
-            <span class="text-xs text-[#8c4f75] font-bangla font-medium">আনুমানিক পাইপলাইন</span>
-            <div id="stat-pipeline-value" class="text-2xl font-extrabold text-[#be185d] mt-1 font-heading">৳ ০</div>
-            <span class="text-[10px] text-[#8c4f75] font-semibold bg-purple-50 px-1.5 py-0.5 rounded">পটেনশিয়াল রেভিনিউ</span>
-          </div>
-          <div class="w-12 h-12 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center text-xl shadow-sm">
-            <i class="fa-solid fa-chart-line"></i>
-          </div>
-        </div>
-
+        <!-- Collapse / Fold Button (Desktop) -->
+        <button type="button" onclick="toggleSidebar()" class="w-7 h-7 rounded-lg hover:bg-pink-50 text-[#8c4f75] hover:text-[#db2777] flex items-center justify-center transition-colors" title="সাইডবার ছোট / বড় করুন">
+          <i id="sidebar-collapse-icon" class="fa-solid fa-chevron-left text-xs"></i>
+        </button>
       </div>
 
-      <!-- Section: Leads & Client Inquiries Management -->
-      <div class="glass-panel rounded-3xl border border-[#ED96D7]/35 p-6 space-y-6">
-        
-        <!-- Section Header with Search & Actions -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#ED96D7]/20 pb-4">
-          <div>
-            <h3 class="text-xl font-bold font-bangla text-[#2b0e23] flex items-center gap-2">
-              <i class="fa-solid fa-inbox text-[#db2777]"></i> ক্লায়েন্ট ইনকোয়ারি ও লিডস
-            </h3>
-            <p class="text-xs text-[#8c4f75] font-bangla mt-0.5">
-              ওয়েবসাইটে ফর্ম সাবমিট হওয়া সব কাস্টমারের তথ্য সরাসরি এখানে প্রদর্শিত ও সংরক্ষিত হয়।
-            </p>
-          </div>
+      <!-- Navigation Tree / Accordion Menu -->
+      <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 custom-scrollbar text-xs font-bangla">
 
-          <div class="flex items-center gap-2.5 flex-wrap">
-            <!-- Filter Tabs -->
-            <select id="lead-filter-status" class="bg-white border border-[#ED96D7]/50 rounded-xl px-3 py-2 text-xs text-[#2b0e23] font-medium focus:outline-none focus:border-[#db2777] cursor-pointer">
-              <option value="all">সব লিড (All)</option>
-              <option value="New">নতুন (New)</option>
-              <option value="Contacted">যোগাযোগকৃত (Contacted)</option>
-              <option value="Booked">বুকড (Booked)</option>
-              <option value="Completed">সম্পন্ন (Completed)</option>
-            </select>
-
-            <!-- Export to CSV -->
-            <button id="export-csv-btn" class="px-3.5 py-2 rounded-xl bg-white hover:bg-[#fdf2f8] border border-[#ED96D7]/50 text-xs text-[#be185d] font-bold flex items-center gap-1.5 transition-all shadow-sm">
-              <i class="fa-solid fa-download text-[11px]"></i> CSV এক্সপোর্ট
+        <!-- GROUP: DASHBOARD -->
+        <div>
+          <button type="button" onclick="toggleSubmenu('submenu-dashboard', 'arrow-dashboard')" class="w-full flex items-center justify-between px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[#8c4f75] hover:text-[#db2777] transition-colors rounded-xl">
+            <span class="flex items-center gap-2">
+              <i class="fa-solid fa-border-all text-xs w-4"></i>
+              <span class="sidebar-label">DASHBOARD</span>
+            </span>
+            <i id="arrow-dashboard" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200"></i>
+          </button>
+          
+          <div id="submenu-dashboard" class="mt-1 space-y-1 pl-2">
+            <button type="button" onclick="switchSection('section-overview', this)" class="admin-nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gradient-to-r from-[#db2777] to-[#be185d] text-white font-bold shadow-md transition-all text-left">
+              <i class="fa-solid fa-chart-pie w-4 text-center"></i>
+              <span class="sidebar-label">ওভারভিউ (Overview)</span>
             </button>
-
-            <!-- Manual Add Lead Trigger -->
-            <button id="open-add-lead-btn" class="px-4 py-2 rounded-xl btn-pink-primary text-xs font-bold flex items-center gap-1.5 shadow-md">
-              <i class="fa-solid fa-plus"></i> নতুন লিড যুক্ত করুন
+            <button type="button" onclick="switchSection('section-leads', this)" class="admin-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
+              <span class="flex items-center gap-2.5">
+                <i class="fa-solid fa-clock-rotate-left w-4 text-center"></i>
+                <span class="sidebar-label">অ্যাক্টিভিটি লগ & লিডস</span>
+              </span>
+              <span id="badge-nav-leads" class="px-1.5 py-0.5 rounded-full bg-pink-100 text-[#db2777] text-[10px] font-bold">New</span>
             </button>
           </div>
         </div>
 
-        <!-- Leads Table -->
-        <div class="overflow-x-auto rounded-2xl border border-[#ED96D7]/25">
-          <table class="w-full text-left text-xs bg-white">
-            <thead class="text-[11px] text-[#572449] font-bold uppercase bg-[#fdf2f8] border-b border-[#ED96D7]/30 font-bangla">
-              <tr>
-                <th class="py-3.5 px-4">তারিখ ও আইডি</th>
-                <th class="py-3.5 px-4">ক্লায়েন্ট ও ব্র্যান্ড</th>
-                <th class="py-3.5 px-4">ফোন / WhatsApp</th>
-                <th class="py-3.5 px-4">সার্ভিস</th>
-                <th class="py-3.5 px-4">বাজেট</th>
-                <th class="py-3.5 px-4">স্ট্যাটাস</th>
-                <th class="py-3.5 px-4 text-right">অ্যাকশন</th>
-              </tr>
-            </thead>
-            <tbody id="leads-table-body" class="divide-y divide-[#ED96D7]/15 font-bangla text-[#2b0e23]">
-              <!-- Dynamically populated via JS -->
-            </tbody>
-          </table>
-        </div>
+        <div class="pt-2 border-t border-[#ED96D7]/15"></div>
 
-        <!-- Empty state placeholder -->
-        <div id="leads-empty-state" class="hidden text-center py-12 text-[#8c4f75] text-sm font-bangla bg-[#fdf2f8] rounded-2xl border border-dashed border-[#ED96D7]/40">
-          কোনো ইনকোয়ারি পাওয়া যায়নি।
-        </div>
+        <!-- GROUP: CATALOG / SERVICES -->
+        <div>
+          <button type="button" onclick="toggleSubmenu('submenu-catalog', 'arrow-catalog')" class="w-full flex items-center justify-between px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[#8c4f75] hover:text-[#db2777] transition-colors rounded-xl">
+            <span class="flex items-center gap-2">
+              <i class="fa-solid fa-box-open text-xs w-4"></i>
+              <span class="sidebar-label">CATALOG & ASSETS</span>
+            </span>
+            <i id="arrow-catalog" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200"></i>
+          </button>
 
-      </div>
-
-      <!-- Section: Model Roster Management -->
-      <div class="glass-panel rounded-3xl border border-[#ED96D7]/35 p-6 space-y-6">
-        
-        <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-4">
-          <div>
-            <h3 class="text-xl font-bold font-bangla text-[#2b0e23] flex items-center gap-2">
-              <i class="fa-solid fa-users text-[#db2777]"></i> মডেল ও আর্টিস্ট ডিরেক্টরি
-            </h3>
-            <p class="text-xs text-[#8c4f75] font-bangla mt-0.5">
-              ওয়েবসাইটে প্রদর্শিত মডেলদের প্রোফাইল পরিচালনা করুন।
-            </p>
+          <div id="submenu-catalog" class="mt-1 space-y-1 pl-2">
+            <button type="button" onclick="switchSection('section-models', this)" class="admin-nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
+              <i class="fa-solid fa-users w-4 text-center"></i>
+              <span class="sidebar-label">মডেল ও আর্টিস্ট ডিরেক্টরি</span>
+            </button>
+            <button type="button" onclick="switchSection('section-reels', this)" class="admin-nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
+              <i class="fa-solid fa-film w-4 text-center"></i>
+              <span class="sidebar-label">রিলস ও ভিডিও পোর্টফোলিও</span>
+            </button>
           </div>
+        </div>
 
-          <button id="open-add-model-btn" class="px-4 py-2 rounded-xl btn-pink-outline text-xs font-bold flex items-center gap-1.5 shadow-sm">
-            <i class="fa-solid fa-user-plus"></i> নতুন মডেল যোগ করুন
+        <div class="pt-2 border-t border-[#ED96D7]/15"></div>
+
+        <!-- GROUP: ORDERS & SALES -->
+        <div>
+          <button type="button" onclick="toggleSubmenu('submenu-orders', 'arrow-orders')" class="w-full flex items-center justify-between px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[#8c4f75] hover:text-[#db2777] transition-colors rounded-xl">
+            <span class="flex items-center gap-2">
+              <i class="fa-solid fa-cart-shopping text-xs w-4"></i>
+              <span class="sidebar-label">ORDERS & LEADS</span>
+            </span>
+            <i id="arrow-orders" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200"></i>
+          </button>
+
+          <div id="submenu-orders" class="mt-1 space-y-1 pl-2">
+            <button type="button" onclick="switchSection('section-leads', this)" class="admin-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
+              <span class="flex items-center gap-2.5">
+                <i class="fa-solid fa-inbox w-4 text-center"></i>
+                <span class="sidebar-label">ইনকোয়ারি ও অর্ডার (Orders)</span>
+              </span>
+            </button>
+            <button type="button" onclick="openAddLeadModal()" class="admin-nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
+              <i class="fa-solid fa-plus-circle w-4 text-center text-[#db2777]"></i>
+              <span class="sidebar-label">ম্যানুয়াল অর্ডার এন্ট্রি</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-[#ED96D7]/15"></div>
+
+        <!-- GROUP: SETTINGS & CLOUD -->
+        <div>
+          <button type="button" onclick="document.getElementById('open-supabase-settings-btn').click()" class="admin-nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
+            <i class="fa-solid fa-cloud w-4 text-center text-emerald-600"></i>
+            <span class="sidebar-label">Supabase ক্লাউড সিঙ্ক</span>
           </button>
         </div>
 
-        <!-- Models Grid -->
-        <div id="admin-models-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <!-- Dynamically populated via JS -->
-        </div>
+      </nav>
 
-      </div>
-
-      <!-- Section: Reels & Video Portfolio Management (Admin Upload & Sync) -->
-      <div class="glass-panel rounded-3xl border border-[#ED96D7]/35 p-6 space-y-6">
+      <!-- Bottom User Controls & Links -->
+      <div class="p-3 border-t border-[#ED96D7]/20 bg-pink-50/50 space-y-1 text-xs font-bangla">
         
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#ED96D7]/20 pb-4">
-          <div>
-            <h3 class="text-xl font-bold font-bangla text-[#2b0e23] flex items-center gap-2">
-              <i class="fa-solid fa-film text-[#db2777]"></i> রিলস ও ভিডিও পোর্টফোলিও আপলোড
-            </h3>
-            <p class="text-xs text-[#8c4f75] font-bangla mt-0.5">
-              সার্ভিস পেজ ও পোর্টফোলিওতে প্রদর্শিত ৯:১৬ ভিডিও রিলস আপলোড, এডিট ও ডিলিট করুন।
-            </p>
-          </div>
+        <!-- Live Website Link -->
+        <a href="index.html" target="_blank" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#572449] hover:bg-white hover:text-[#db2777] transition-all font-semibold">
+          <i class="fa-solid fa-store w-4 text-center text-[#db2777]"></i>
+          <span class="sidebar-label">Back to Store</span>
+        </a>
 
-          <div class="flex items-center gap-2.5 flex-wrap">
-            <!-- Filter by service -->
-            <select id="admin-reel-filter" class="bg-white border border-[#ED96D7]/50 rounded-xl px-3 py-2 text-xs text-[#2b0e23] font-medium focus:outline-none focus:border-[#db2777] cursor-pointer">
-              <option value="all">সব রিলস (All Services)</option>
-              <option value="cinema-ads">৪K সিনেমা অ্যাড (Cinema Ads)</option>
-              <option value="saree-shoot">শাড়ি ও বোল্ড শ্যুট (Saree Shoot)</option>
-              <option value="viral-reels">ভাইরাল প্রোডাক্ট রিলস (Viral Reels)</option>
-              <option value="facebook-ads">ফেসবুক অ্যাডস (Facebook Ads)</option>
-              <option value="jewellery">জুয়েলারি ও লাক্সারি (Jewellery)</option>
-            </select>
-
-            <!-- Reset to Defaults Button -->
-            <button id="admin-reset-reels-btn" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#572449] text-xs font-bold transition-all shadow-sm">
-              <i class="fa-solid fa-rotate-left mr-1"></i> ডিফল্ট রিস্টোর
-            </button>
-
-            <!-- Add Reel Trigger -->
-            <button id="open-add-reel-btn" class="px-4 py-2 rounded-xl btn-pink-primary text-xs font-bold flex items-center gap-1.5 shadow-md">
-              <i class="fa-solid fa-cloud-arrow-up"></i> নতুন রিলস আপলোড করুন
-            </button>
-          </div>
-        </div>
-
-        <!-- Reels Grid in Admin -->
-        <div id="admin-reels-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <!-- Dynamically populated via JS -->
-        </div>
-
-        <!-- Empty state placeholder -->
-        <div id="reels-empty-state" class="hidden text-center py-12 text-[#8c4f75] text-sm font-bangla bg-[#fdf2f8] rounded-2xl border border-dashed border-[#ED96D7]/40">
-          কোনো রিলস পাওয়া যায়নি।
-        </div>
+        <!-- Sign Out Button -->
+        <button type="button" onclick="handleAdminLogout()" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-700 hover:bg-rose-100 transition-all font-bold">
+          <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center text-rose-600"></i>
+          <span class="sidebar-label">Sign Out</span>
+        </button>
 
       </div>
 
-    </main>
+    </aside>
 
-    <!-- Footer -->
-    <footer class="glass-panel border-t border-[#ED96D7]/25 py-4 px-8 text-center text-xs text-[#8c4f75] font-bangla">
-      BongBangla Creative Lab • অ্যাডমিন কন্ট্রোল সিস্টেম • হোয়াইট পিঙ্কিশ লাক্সারি থিম • সিকিউর লোকাল স্টোরেজ সিঙ্ক
-    </footer>
+    <!-- Mobile Backdrop -->
+    <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 z-40 bg-black/40 lg:hidden hidden"></div>
+
+    <!-- ====================================================================
+         2. Main Application Body (Pushed by Sidebar)
+         ==================================================================== -->
+    <div id="main-content-area" class="flex-1 flex flex-col min-w-0 lg:pl-64 transition-all duration-300">
+      
+      <!-- Top Sticky App Bar -->
+      <header class="glass-panel sticky top-0 z-30 border-b border-[#ED96D7]/30 px-4 sm:px-8 py-3 flex items-center justify-between">
+        
+        <div class="flex items-center gap-3">
+          <!-- Mobile Menu Trigger -->
+          <button type="button" onclick="toggleSidebar()" class="lg:hidden w-9 h-9 rounded-xl bg-white border border-[#ED96D7]/40 text-[#572449] flex items-center justify-center">
+            <i class="fa-solid fa-bars text-sm"></i>
+          </button>
+          
+          <img id="admin-nav-logo" src="assets/logo-bn.png" alt="BongBangla Admin" class="h-9 sm:h-11 w-auto max-w-[200px] sm:max-w-[260px] object-contain">
+        </div>
+
+        <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+          <!-- Supabase Cloud Connection Indicator / Button -->
+          <button id="open-supabase-settings-btn" class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-bold text-[#572449] hover:border-[#db2777] flex items-center gap-1.5 transition-all shadow-sm" title="Supabase ডাটাবেস সেটিংস">
+            <span id="supabase-status-dot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+            <span id="supabase-status-text" class="font-bangla text-[11px]">লোকাল মোড</span>
+            <i class="fa-solid fa-gear text-[10px] text-[#db2777]"></i>
+          </button>
+
+          <!-- Logged-in Real Auth Badge -->
+          <div id="admin-user-badge" class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs font-bold text-[#2b0e23] hidden sm:flex items-center gap-1.5 shadow-sm" title="লগইনকৃত অ্যাডমিন">
+            <i class="fa-solid fa-circle-user text-[#db2777]"></i>
+            <span id="admin-user-email" class="font-mono text-[11px] max-w-[140px] truncate">admin</span>
+          </div>
+
+          <!-- BN / EN Logo Toggle on the right -->
+          <div class="inline-flex items-center p-0.5 rounded-full bg-white border border-[#ED96D7]/50 text-[10px] font-bold shadow-sm">
+            <button type="button" id="admin-nav-btn-bn" class="px-2 py-0.5 rounded-full bg-[#db2777] text-white shadow-sm transition-all" onclick="setAdminLogoLang('bn')">বাং</button>
+            <button type="button" id="admin-nav-btn-en" class="px-2 py-0.5 rounded-full text-[#572449] hover:text-[#db2777] transition-all" onclick="setAdminLogoLang('en')">EN</button>
+          </div>
+
+          <a href="index.html" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-xs text-[#572449] hover:text-[#db2777] hover:border-[#db2777] hover:bg-[#fdf2f8] flex items-center gap-1.5 transition-all font-semibold shadow-sm">
+            <i class="fa-solid fa-external-link text-[10px] text-[#db2777]"></i> লাইভ সাইট
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Content Container with Tabs / Views -->
+      <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <!-- ================================================================
+             SECTION 1: DASHBOARD OVERVIEW
+             ================================================================ -->
+        <section id="section-overview" class="admin-section-view space-y-8">
+          
+          <!-- Top Metrics Overview Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <div class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/35 flex items-center justify-between">
+              <div>
+                <span class="text-xs text-[#8c4f75] font-bangla font-medium">মোট ইনকোয়ারি</span>
+                <div id="stat-total-leads" class="text-3xl font-extrabold text-[#2b0e23] mt-1 font-heading">০</div>
+                <span class="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">ওয়েবসাইট থেকে প্রাপ্ত</span>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-[#ED96D7]/25 text-[#be185d] flex items-center justify-center text-xl shadow-sm">
+                <i class="fa-solid fa-users"></i>
+              </div>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/35 flex items-center justify-between">
+              <div>
+                <span class="text-xs text-[#8c4f75] font-bangla font-medium">নতুন লিড (Pending)</span>
+                <div id="stat-new-leads" class="text-3xl font-extrabold text-[#db2777] mt-1 font-heading">০</div>
+                <span class="text-[10px] text-amber-700 font-semibold bg-amber-50 px-1.5 py-0.5 rounded">যোগাযোগ করতে হবে</span>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-pink-100 text-[#db2777] flex items-center justify-center text-xl shadow-sm">
+                <i class="fa-solid fa-bell"></i>
+              </div>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/35 flex items-center justify-between">
+              <div>
+                <span class="text-xs text-[#8c4f75] font-bangla font-medium">কনফার্মড শ্যুট</span>
+                <div id="stat-booked-leads" class="text-3xl font-extrabold text-emerald-700 mt-1 font-heading">০</div>
+                <span class="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">বুকিং কমপ্লিট</span>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shadow-sm">
+                <i class="fa-solid fa-calendar-check"></i>
+              </div>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/35 flex items-center justify-between">
+              <div>
+                <span class="text-xs text-[#8c4f75] font-bangla font-medium">আনুমানিক পাইপলাইন</span>
+                <div id="stat-pipeline-value" class="text-2xl font-extrabold text-[#be185d] mt-1 font-heading">৳ ০</div>
+                <span class="text-[10px] text-[#8c4f75] font-semibold bg-purple-50 px-1.5 py-0.5 rounded">পটেনশিয়াল রেভিনিউ</span>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center text-xl shadow-sm">
+                <i class="fa-solid fa-chart-line"></i>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Quick Action Shortcuts -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-bangla">
+            <button onclick="switchSection('section-leads', document.querySelectorAll('.admin-nav-item')[1])" class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/30 hover:border-[#db2777] flex items-center gap-4 text-left transition-all group bg-white">
+              <div class="w-12 h-12 rounded-xl bg-pink-50 text-[#db2777] flex items-center justify-center text-xl group-hover:bg-[#db2777] group-hover:text-white transition-colors">
+                <i class="fa-solid fa-inbox"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-sm text-[#2b0e23]">ইনকোয়ারি ও লিড তালিকা</h4>
+                <p class="text-xs text-[#8c4f75] mt-0.5">সব কাস্টমার রিকুয়েস্ট চেক ও স্ট্যাটাস চেঞ্জ করুন</p>
+              </div>
+            </button>
+
+            <button onclick="switchSection('section-models', document.querySelectorAll('.admin-nav-item')[2])" class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/30 hover:border-[#db2777] flex items-center gap-4 text-left transition-all group bg-white">
+              <div class="w-12 h-12 rounded-xl bg-purple-50 text-[#9333ea] flex items-center justify-center text-xl group-hover:bg-[#9333ea] group-hover:text-white transition-colors">
+                <i class="fa-solid fa-users"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-sm text-[#2b0e23]">মডেল ডিরেক্টরি</h4>
+                <p class="text-xs text-[#8c4f75] mt-0.5">নতুন মডেলের ছবি ও প্রোফাইল যুক্ত করুন</p>
+              </div>
+            </button>
+
+            <button onclick="switchSection('section-reels', document.querySelectorAll('.admin-nav-item')[3])" class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/30 hover:border-[#db2777] flex items-center gap-4 text-left transition-all group bg-white">
+              <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                <i class="fa-solid fa-film"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-sm text-[#2b0e23]">রিলস পোর্টফোলিও</h4>
+                <p class="text-xs text-[#8c4f75] mt-0.5">৯:১৬ ভিডিও রিলস আপলোড ও ম্যানেজ করুন</p>
+              </div>
+            </button>
+          </div>
+
+        </section>
+
+        <!-- ================================================================
+             SECTION 2: LEADS & INQUIRIES MANAGEMENT
+             ================================================================ -->
+        <section id="section-leads" class="admin-section-view space-y-6">
+          <div class="glass-panel rounded-3xl border border-[#ED96D7]/35 p-6 space-y-6 bg-white">
+            
+            <!-- Section Header with Search & Actions -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#ED96D7]/20 pb-4">
+              <div>
+                <h3 class="text-xl font-bold font-bangla text-[#2b0e23] flex items-center gap-2">
+                  <i class="fa-solid fa-inbox text-[#db2777]"></i> ক্লায়েন্ট ইনকোয়ারি ও লিডস
+                </h3>
+                <p class="text-xs text-[#8c4f75] font-bangla mt-0.5">
+                  ওয়েবসাইটে ফর্ম সাবমিট হওয়া সব কাস্টমারের তথ্য সরাসরি এখানে প্রদর্শিত ও সংরক্ষিত হয়।
+                </p>
+              </div>
+
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <!-- Filter Tabs -->
+                <select id="lead-filter-status" class="bg-white border border-[#ED96D7]/50 rounded-xl px-3 py-2 text-xs text-[#2b0e23] font-medium focus:outline-none focus:border-[#db2777] cursor-pointer">
+                  <option value="all">সব লিড (All)</option>
+                  <option value="New">নতুন (New)</option>
+                  <option value="Contacted">যোগাযোগকৃত (Contacted)</option>
+                  <option value="Booked">বুকড (Booked)</option>
+                  <option value="Completed">সম্পন্ন (Completed)</option>
+                </select>
+
+                <!-- Export to CSV -->
+                <button id="export-csv-btn" class="px-3.5 py-2 rounded-xl bg-white hover:bg-[#fdf2f8] border border-[#ED96D7]/50 text-xs text-[#be185d] font-bold flex items-center gap-1.5 transition-all shadow-sm">
+                  <i class="fa-solid fa-download text-[11px]"></i> CSV এক্সপোর্ট
+                </button>
+
+                <!-- Manual Add Lead Trigger -->
+                <button id="open-add-lead-btn" class="px-4 py-2 rounded-xl btn-pink-primary text-xs font-bold flex items-center gap-1.5 shadow-md">
+                  <i class="fa-solid fa-plus"></i> নতুন লিড যুক্ত করুন
+                </button>
+              </div>
+            </div>
+
+            <!-- Leads Table -->
+            <div class="overflow-x-auto rounded-2xl border border-[#ED96D7]/25">
+              <table class="w-full text-left text-xs bg-white">
+                <thead class="text-[11px] text-[#572449] font-bold uppercase bg-[#fdf2f8] border-b border-[#ED96D7]/30 font-bangla">
+                  <tr>
+                    <th class="py-3.5 px-4">তারিখ ও আইডি</th>
+                    <th class="py-3.5 px-4">ক্লায়েন্ট ও ব্র্যান্ড</th>
+                    <th class="py-3.5 px-4">ফোন / WhatsApp</th>
+                    <th class="py-3.5 px-4">সার্ভিস</th>
+                    <th class="py-3.5 px-4">বাজেট</th>
+                    <th class="py-3.5 px-4">স্ট্যাটাস</th>
+                    <th class="py-3.5 px-4 text-right">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="leads-table-body" class="divide-y divide-[#ED96D7]/15 font-bangla text-[#2b0e23]">
+                  <!-- Dynamically populated via JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Empty state placeholder -->
+            <div id="leads-empty-state" class="hidden text-center py-12 text-[#8c4f75] text-sm font-bangla bg-[#fdf2f8] rounded-2xl border border-dashed border-[#ED96D7]/40">
+              কোনো ইনকোয়ারি পাওয়া যায়নি।
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ================================================================
+             SECTION 3: MODEL ROSTER MANAGEMENT
+             ================================================================ -->
+        <section id="section-models" class="admin-section-view hidden space-y-6">
+          <div class="glass-panel rounded-3xl border border-[#ED96D7]/35 p-6 space-y-6 bg-white">
+            
+            <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-4">
+              <div>
+                <h3 class="text-xl font-bold font-bangla text-[#2b0e23] flex items-center gap-2">
+                  <i class="fa-solid fa-users text-[#db2777]"></i> মডেল ও আর্টিস্ট ডিরেক্টরি
+                </h3>
+                <p class="text-xs text-[#8c4f75] font-bangla mt-0.5">
+                  ওয়েবসাইটে প্রদর্শিত মডেলদের প্রোফাইল পরিচালনা করুন।
+                </p>
+              </div>
+
+              <button id="open-add-model-btn" class="px-4 py-2 rounded-xl btn-pink-outline text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-user-plus"></i> নতুন মডেল যোগ করুন
+              </button>
+            </div>
+
+            <!-- Models Grid -->
+            <div id="admin-models-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <!-- Dynamically populated via JS -->
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ================================================================
+             SECTION 4: REELS & VIDEO PORTFOLIO
+             ================================================================ -->
+        <section id="section-reels" class="admin-section-view hidden space-y-6">
+          <div class="glass-panel rounded-3xl border border-[#ED96D7]/35 p-6 space-y-6 bg-white">
+            
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#ED96D7]/20 pb-4">
+              <div>
+                <h3 class="text-xl font-bold font-bangla text-[#2b0e23] flex items-center gap-2">
+                  <i class="fa-solid fa-film text-[#db2777]"></i> রিলস ও ভিডিও পোর্টফোলিও আপলোড
+                </h3>
+                <p class="text-xs text-[#8c4f75] font-bangla mt-0.5">
+                  সার্ভিস পেজ ও পোর্টফোলিওতে প্রদর্শিত ৯:১৬ ভিডিও রিলস আপলোড, এডিট ও ডিলিট করুন।
+                </p>
+              </div>
+
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <!-- Filter by service -->
+                <select id="admin-reel-filter" class="bg-white border border-[#ED96D7]/50 rounded-xl px-3 py-2 text-xs text-[#2b0e23] font-medium focus:outline-none focus:border-[#db2777] cursor-pointer">
+                  <option value="all">সব রিলস (All Services)</option>
+                  <option value="cinema-ads">৪K সিনেমা অ্যাড (Cinema Ads)</option>
+                  <option value="saree-shoot">শাড়ি ও বোল্ড শ্যুট (Saree Shoot)</option>
+                  <option value="viral-reels">ভাইরাল প্রোডাক্ট রিলস (Viral Reels)</option>
+                  <option value="facebook-ads">ফেসবুক অ্যাডস (Facebook Ads)</option>
+                  <option value="jewellery">জুয়েলারি ও লাক্সারি (Jewellery)</option>
+                </select>
+
+                <!-- Reset to Defaults Button -->
+                <button id="admin-reset-reels-btn" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#572449] text-xs font-bold transition-all shadow-sm">
+                  <i class="fa-solid fa-rotate-left mr-1"></i> ডিফল্ট রিস্টোর
+                </button>
+
+                <!-- Add Reel Trigger -->
+                <button id="open-add-reel-btn" class="px-4 py-2 rounded-xl btn-pink-primary text-xs font-bold flex items-center gap-1.5 shadow-md">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> নতুন রিলস আপলোড করুন
+                </button>
+              </div>
+            </div>
+
+            <!-- Reels Grid in Admin -->
+            <div id="admin-reels-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <!-- Dynamically populated via JS -->
+            </div>
+
+            <!-- Empty state placeholder -->
+            <div id="reels-empty-state" class="hidden text-center py-12 text-[#8c4f75] text-sm font-bangla bg-[#fdf2f8] rounded-2xl border border-dashed border-[#ED96D7]/40">
+              কোনো রিলস পাওয়া যায়নি।
+            </div>
+
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Footer -->
+      <footer class="glass-panel border-t border-[#ED96D7]/25 py-4 px-8 text-center text-xs text-[#8c4f75] font-bangla">
+        BongBangla Creative Lab • অ্যাডমিন কন্ট্রোল সিস্টেম • হোয়াইট পিঙ্কিশ লাক্সারি থিম • সিকিউর ক্লাউড সিঙ্ক
+      </footer>
+
+    </div>
 
   </div>
 

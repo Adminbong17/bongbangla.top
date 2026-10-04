@@ -59,6 +59,105 @@ window.setAdminLogoLang = function(lang) {
 };
 
 /* ==========================================================================
+   Sidebar Navigation & Section Switcher
+   ========================================================================== */
+window.switchSection = function(sectionId, btnElement) {
+  // Hide all sections
+  document.querySelectorAll('.admin-section-view').forEach(sec => {
+    sec.classList.add('hidden');
+    sec.style.display = 'none';
+  });
+
+  // Show target section
+  const target = document.getElementById(sectionId);
+  if (target) {
+    target.classList.remove('hidden');
+    target.style.display = 'block';
+  }
+
+  // Update active state in sidebar
+  document.querySelectorAll('.admin-nav-item').forEach(btn => {
+    btn.classList.remove('bg-gradient-to-r', 'from-[#db2777]', 'to-[#be185d]', 'text-white', 'font-bold', 'shadow-md');
+    btn.classList.add('text-[#572449]', 'hover:bg-[#fdf2f8]', 'hover:text-[#db2777]');
+  });
+
+  if (btnElement) {
+    btnElement.classList.remove('text-[#572449]', 'hover:bg-[#fdf2f8]', 'hover:text-[#db2777]');
+    btnElement.classList.add('bg-gradient-to-r', 'from-[#db2777]', 'to-[#be185d]', 'text-white', 'font-bold', 'shadow-md');
+  }
+
+  // Close mobile sidebar if open
+  const sidebar = document.getElementById('admin-sidebar');
+  if (sidebar && window.innerWidth < 1024) {
+    sidebar.classList.add('-translate-x-full');
+  }
+};
+
+window.toggleSubmenu = function(submenuId, arrowId) {
+  const submenu = document.getElementById(submenuId);
+  const arrow = document.getElementById(arrowId);
+  if (!submenu) return;
+
+  const isCollapsed = submenu.classList.contains('hidden');
+  if (isCollapsed) {
+    submenu.classList.remove('hidden');
+    if (arrow) arrow.style.transform = 'rotate(180deg)';
+  } else {
+    submenu.classList.add('hidden');
+    if (arrow) arrow.style.transform = 'rotate(0deg)';
+  }
+};
+
+window.toggleSidebar = function() {
+  const sidebar = document.getElementById('admin-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  const mainArea = document.getElementById('main-content-area');
+  if (!sidebar) return;
+
+  if (window.innerWidth < 1024) {
+    // Mobile slide in/out
+    const isOpen = !sidebar.classList.contains('-translate-x-full');
+    if (isOpen) {
+      sidebar.classList.add('-translate-x-full');
+      if (backdrop) backdrop.classList.add('hidden');
+    } else {
+      sidebar.classList.remove('-translate-x-full');
+      if (backdrop) backdrop.classList.remove('hidden');
+    }
+  } else {
+    // Desktop collapse to mini sidebar
+    const isMini = sidebar.classList.contains('w-20');
+    if (isMini) {
+      sidebar.classList.remove('w-20');
+      sidebar.classList.add('w-64');
+      if (mainArea) {
+        mainArea.classList.remove('lg:pl-20');
+        mainArea.classList.add('lg:pl-64');
+      }
+    } else {
+      sidebar.classList.remove('w-64');
+      sidebar.classList.add('w-20');
+      if (mainArea) {
+        mainArea.classList.remove('lg:pl-64');
+        mainArea.classList.add('lg:pl-20');
+      }
+    }
+    
+    const labels = sidebar.querySelectorAll('.sidebar-label');
+    labels.forEach(l => {
+      if (!isMini) l.classList.add('hidden');
+      else l.classList.remove('hidden');
+    });
+
+    const collapseBtnIcon = document.getElementById('sidebar-collapse-icon');
+    if (collapseBtnIcon) {
+      collapseBtnIcon.className = !isMini ? 'fa-solid fa-chevron-right text-xs' : 'fa-solid fa-chevron-left text-xs';
+    }
+  }
+};
+
+
+/* ==========================================================================
    1. Real Supabase & Admin Authentication System
    ========================================================================== */
 function getSupabaseAuthClient() {
@@ -557,7 +656,17 @@ function updateStats() {
   if (newEl) newEl.textContent = newCount.toLocaleString('bn-BD');
   if (bookedEl) bookedEl.textContent = bookedCount.toLocaleString('bn-BD');
   if (pipelineEl) pipelineEl.textContent = '৳ ' + (totalPipeline > 0 ? totalPipeline.toLocaleString('bn-BD') : '১,৩৫,০০০');
+
+  const navBadge = document.getElementById('badge-nav-leads');
+  if (navBadge) {
+    navBadge.textContent = newCount > 0 ? `${newCount} New` : '0';
+  }
 }
+
+window.openAddLeadModal = function() {
+  const modal = document.getElementById('add-lead-modal');
+  if (modal) modal.classList.remove('hidden');
+};
 
 function renderLeadsTable(filter = 'all') {
   const tbody = document.getElementById('leads-table-body');
