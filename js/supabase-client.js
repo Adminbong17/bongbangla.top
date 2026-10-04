@@ -245,9 +245,12 @@
 
   // Auto-init when script loads
   if (typeof window !== 'undefined') {
-    window.addEventListener('DOMContentLoaded', () => {
-      initClient();
-    });
+    initClient();
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', () => {
+        initClient();
+      });
+    }
   }
 
   // Export globally

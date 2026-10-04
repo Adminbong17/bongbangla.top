@@ -5,11 +5,17 @@
  * Theme: White Pinkish Luxury Aesthetic (#ED96D7)
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+function initAdminApp() {
   initLogoSwitcher();
   initAuth();
   initDashboard();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAdminApp);
+} else {
+  initAdminApp();
+}
 
 function initLogoSwitcher() {
   const saved = localStorage.getItem('bongbangla_logo_lang') || 'bn';
@@ -84,292 +90,285 @@ function saveAdminUsers(users) {
   localStorage.setItem('bongbangla_admin_users', JSON.stringify(users));
 }
 
-function initAuth() {
-  const loginScreen = document.getElementById('login-screen');
-  const dashboardScreen = document.getElementById('dashboard-screen');
-  const loginForm = document.getElementById('admin-login-form');
-  const emailInput = document.getElementById('admin-email');
-  const passwordInput = document.getElementById('admin-password');
-  const logoutBtn = document.getElementById('admin-logout-btn');
+let currentAuthMode = 'signin'; // 'signin' or 'signup'
+
+window.showAlert = function(type, message) {
+  const alertBox = document.getElementById('auth-alert-box');
+  if (!alertBox) return;
+  alertBox.classList.remove('hidden');
+  alertBox.style.display = 'block';
+  if (type === 'error') {
+    alertBox.className = 'p-3 rounded-xl text-xs font-bangla font-medium text-left leading-relaxed bg-rose-50 text-rose-800 border border-rose-200 block';
+    alertBox.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mr-1.5"></i> ${message}`;
+  } else if (type === 'success') {
+    alertBox.className = 'p-3 rounded-xl text-xs font-bangla font-medium text-left leading-relaxed bg-emerald-50 text-emerald-800 border border-emerald-200 block';
+    alertBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i> ${message}`;
+  } else {
+    alertBox.className = 'p-3 rounded-xl text-xs font-bangla font-medium text-left leading-relaxed bg-pink-50 text-[#8c4f75] border border-[#ED96D7]/40 block';
+    alertBox.innerHTML = `<i class="fa-solid fa-circle-info text-[#db2777] mr-1.5"></i> ${message}`;
+  }
+};
+
+window.hideAlert = function() {
+  const alertBox = document.getElementById('auth-alert-box');
+  if (alertBox) {
+    alertBox.classList.add('hidden');
+    alertBox.style.display = 'none';
+    alertBox.innerHTML = '';
+  }
+};
+
+window.setAuthMode = function(mode) {
+  currentAuthMode = mode;
+  window.hideAlert();
   const tabSignIn = document.getElementById('auth-tab-signin');
   const tabSignUp = document.getElementById('auth-tab-signup');
-  const alertBox = document.getElementById('auth-alert-box');
+  const submitBtnText = document.getElementById('auth-btn-text');
+  const submitBtnIcon = document.getElementById('auth-btn-icon');
+  const emailInput = document.getElementById('admin-email');
+  const passwordInput = document.getElementById('admin-password');
+
+  if (mode === 'signup') {
+    if (tabSignUp) tabSignUp.className = 'py-2 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white shadow-sm transition-all';
+    if (tabSignIn) tabSignIn.className = 'py-2 rounded-xl text-[#572449] hover:text-[#db2777] transition-all';
+    if (submitBtnText) submitBtnText.textContent = 'নতুন অ্যাকাউন্ট তৈরি করুন';
+    if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-user-plus';
+    if (emailInput && emailInput.value === 'admin@bongbangla.top') emailInput.value = '';
+    if (passwordInput && passwordInput.value === 'bongbangla2026') passwordInput.value = '';
+  } else {
+    if (tabSignIn) tabSignIn.className = 'py-2 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white shadow-sm transition-all';
+    if (tabSignUp) tabSignUp.className = 'py-2 rounded-xl text-[#572449] hover:text-[#db2777] transition-all';
+    if (submitBtnText) submitBtnText.textContent = 'ড্যাশবোর্ডে প্রবেশ করুন';
+    if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-arrow-right';
+    if (emailInput && !emailInput.value) emailInput.value = 'admin@bongbangla.top';
+    if (passwordInput && !passwordInput.value) passwordInput.value = 'bongbangla2026';
+  }
+};
+
+window.showAuthenticatedState = function(user) {
+  const email = (user && user.email) ? user.email : 'admin@bongbangla.top';
+  sessionStorage.setItem('bongbangla_admin_auth', 'true');
+  sessionStorage.setItem('bongbangla_admin_email', email);
+
+  const loginScreen = document.getElementById('login-screen');
+  const dashboardScreen = document.getElementById('dashboard-screen');
+  const userEmailText = document.getElementById('admin-user-email');
+  const userEmailBadge = document.getElementById('admin-user-badge');
+
+  if (loginScreen) {
+    loginScreen.classList.add('hidden');
+    loginScreen.style.setProperty('display', 'none', 'important');
+  }
+  if (dashboardScreen) {
+    dashboardScreen.classList.remove('hidden');
+    dashboardScreen.style.setProperty('display', 'flex', 'important');
+  }
+  if (userEmailText) userEmailText.textContent = email;
+  if (userEmailBadge) {
+    userEmailBadge.classList.remove('hidden');
+    userEmailBadge.style.setProperty('display', 'flex', 'important');
+  }
+  renderDashboard();
+};
+
+window.showUnauthenticatedState = function() {
+  sessionStorage.removeItem('bongbangla_admin_auth');
+  sessionStorage.removeItem('bongbangla_admin_email');
+  const loginScreen = document.getElementById('login-screen');
+  const dashboardScreen = document.getElementById('dashboard-screen');
+  const userEmailBadge = document.getElementById('admin-user-badge');
+
+  if (dashboardScreen) {
+    dashboardScreen.classList.add('hidden');
+    dashboardScreen.style.setProperty('display', 'none', 'important');
+  }
+  if (loginScreen) {
+    loginScreen.classList.remove('hidden');
+    loginScreen.style.setProperty('display', 'flex', 'important');
+  }
+  if (userEmailBadge) {
+    userEmailBadge.classList.add('hidden');
+    userEmailBadge.style.setProperty('display', 'none', 'important');
+  }
+};
+
+window.handleAdminLogout = async function() {
+  const client = getSupabaseAuthClient();
+  if (client) {
+    try { await client.auth.signOut(); } catch (err) {}
+  }
+  window.showUnauthenticatedState();
+  window.showAlert('info', 'আপনি সফলভাবে লগআউট হয়েছেন।');
+};
+
+window.handleAdminLoginSubmit = async function(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  window.hideAlert();
+
+  const emailInput = document.getElementById('admin-email');
+  const passwordInput = document.getElementById('admin-password');
   const submitBtn = document.getElementById('auth-submit-btn');
   const submitBtnText = document.getElementById('auth-btn-text');
   const submitBtnIcon = document.getElementById('auth-btn-icon');
-  const userEmailBadge = document.getElementById('admin-user-badge');
-  const userEmailText = document.getElementById('admin-user-email');
 
-  let authMode = 'signin'; // 'signin' or 'signup'
+  const email = emailInput ? emailInput.value.trim() : '';
+  const password = passwordInput ? passwordInput.value.trim() : '';
 
-  // Helper to show alerts
-  const showAlert = (type, message) => {
-    if (!alertBox) return;
-    alertBox.classList.remove('hidden');
-    alertBox.style.display = 'block';
-    if (type === 'error') {
-      alertBox.className = 'p-3 rounded-xl text-xs font-bangla font-medium text-left leading-relaxed bg-rose-50 text-rose-800 border border-rose-200 block';
-      alertBox.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mr-1.5"></i> ${message}`;
-    } else if (type === 'success') {
-      alertBox.className = 'p-3 rounded-xl text-xs font-bangla font-medium text-left leading-relaxed bg-emerald-50 text-emerald-800 border border-emerald-200 block';
-      alertBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i> ${message}`;
-    } else {
-      alertBox.className = 'p-3 rounded-xl text-xs font-bangla font-medium text-left leading-relaxed bg-pink-50 text-[#8c4f75] border border-[#ED96D7]/40 block';
-      alertBox.innerHTML = `<i class="fa-solid fa-circle-info text-[#db2777] mr-1.5"></i> ${message}`;
-    }
-  };
+  if (!email || !password) {
+    window.showAlert('error', 'অনুগ্রহ করে ইমেইল ও পাসওয়ার্ড উভয়ই লিখুন।');
+    return false;
+  }
 
-  const hideAlert = () => {
-    if (alertBox) {
-      alertBox.classList.add('hidden');
-      alertBox.style.display = 'none';
-      alertBox.innerHTML = '';
-    }
-  };
+  if (password.length < 6) {
+    window.showAlert('error', 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।');
+    return false;
+  }
 
-  // Switch between Sign In and Sign Up modes
-  const setAuthMode = (mode) => {
-    authMode = mode;
-    hideAlert();
-    if (mode === 'signup') {
-      if (tabSignUp) tabSignUp.className = 'py-2 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white shadow-sm transition-all';
-      if (tabSignIn) tabSignIn.className = 'py-2 rounded-xl text-[#572449] hover:text-[#db2777] transition-all';
-      if (submitBtnText) submitBtnText.textContent = 'নতুন অ্যাকাউন্ট তৈরি করুন';
-      if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-user-plus';
-      if (emailInput && emailInput.value === 'admin@bongbangla.top') emailInput.value = '';
-      if (passwordInput && passwordInput.value === 'bongbangla2026') passwordInput.value = '';
-    } else {
-      if (tabSignIn) tabSignIn.className = 'py-2 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white shadow-sm transition-all';
-      if (tabSignUp) tabSignUp.className = 'py-2 rounded-xl text-[#572449] hover:text-[#db2777] transition-all';
-      if (submitBtnText) submitBtnText.textContent = 'ড্যাশবোর্ডে প্রবেশ করুন';
-      if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-arrow-right';
-      if (emailInput && !emailInput.value) emailInput.value = 'admin@bongbangla.top';
-      if (passwordInput && !passwordInput.value) passwordInput.value = 'bongbangla2026';
-    }
-  };
-
-  if (tabSignIn) tabSignIn.addEventListener('click', () => setAuthMode('signin'));
-  if (tabSignUp) tabSignUp.addEventListener('click', () => setAuthMode('signup'));
-
-  // Update UI on authenticated
-  const showAuthenticatedState = (user) => {
-    const email = (user && user.email) ? user.email : 'admin@bongbangla.top';
-    sessionStorage.setItem('bongbangla_admin_auth', 'true');
-    sessionStorage.setItem('bongbangla_admin_email', email);
-
-    if (loginScreen) {
-      loginScreen.classList.add('hidden');
-      loginScreen.style.display = 'none';
-    }
-    if (dashboardScreen) {
-      dashboardScreen.classList.remove('hidden');
-      dashboardScreen.style.display = 'flex';
-    }
-    if (userEmailText) userEmailText.textContent = email;
-    if (userEmailBadge) {
-      userEmailBadge.classList.remove('hidden');
-      userEmailBadge.style.display = 'flex';
-    }
-    renderDashboard();
-  };
-
-  // Update UI on unauthenticated
-  const showUnauthenticatedState = () => {
-    sessionStorage.removeItem('bongbangla_admin_auth');
-    sessionStorage.removeItem('bongbangla_admin_email');
-    if (dashboardScreen) {
-      dashboardScreen.classList.add('hidden');
-      dashboardScreen.style.display = 'none';
-    }
-    if (loginScreen) {
-      loginScreen.classList.remove('hidden');
-      loginScreen.style.display = 'flex';
-    }
-    if (userEmailBadge) {
-      userEmailBadge.classList.add('hidden');
-      userEmailBadge.style.display = 'none';
-    }
-  };
+  const originalText = submitBtnText ? submitBtnText.textContent : '';
+  if (submitBtn) submitBtn.disabled = true;
+  if (submitBtnText) submitBtnText.textContent = currentAuthMode === 'signup' ? 'অ্যাকাউন্ট তৈরি হচ্ছে...' : 'যাচাই করা হচ্ছে...';
+  if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-spinner fa-spin';
 
   const client = getSupabaseAuthClient();
 
-  // 1. Initial Session Check (Supabase session or Super Admin session)
+  try {
+    if (currentAuthMode === 'signup') {
+      // 1. Background Supabase signup attempt
+      if (client) {
+        try {
+          const { error } = await client.auth.signUp({
+            email: email.includes('@') ? email : `${email}@bongbangla.top`,
+            password
+          });
+          if (error) console.warn('Supabase signUp notice:', error.message);
+        } catch (err) {
+          console.warn('Supabase signUp network:', err);
+        }
+      }
+
+      // 2. Save account locally so login always succeeds
+      const adminUsers = getAdminUsers();
+      const existing = adminUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (existing) {
+        existing.password = password;
+      } else {
+        adminUsers.push({ email, password, createdAt: new Date().toISOString() });
+      }
+      saveAdminUsers(adminUsers);
+
+      // 3. Immediately enter dashboard
+      window.showAlert('success', 'নতুন অ্যাডমিন অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে! ড্যাশবোর্ডে প্রবেশ করা হচ্ছে...');
+      setTimeout(() => {
+        window.showAuthenticatedState({ email });
+      }, 300);
+      return false;
+    } else {
+      // --- Sign In Flow ---
+      const isMaster = (email.toLowerCase() === 'admin@bongbangla.top' || email.toLowerCase() === 'admin') && 
+                       (password === 'bongbangla2026' || password === 'bong2026');
+
+      const adminUsers = getAdminUsers();
+      const localMatch = adminUsers.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+
+      // If master or local match, instant success
+      if (isMaster || localMatch) {
+        window.showAlert('success', 'লগইন সফল হয়েছে! ড্যাশবোর্ডে স্বাগতম...');
+        setTimeout(() => {
+          window.showAuthenticatedState({ email: isMaster ? 'admin@bongbangla.top' : localMatch.email });
+        }, 300);
+
+        if (client) {
+          client.auth.signInWithPassword({
+            email: email.includes('@') ? email : 'admin@bongbangla.top',
+            password
+          }).catch(() => {});
+        }
+        return false;
+      }
+
+      // Try Supabase Auth
+      if (client) {
+        const { data, error } = await client.auth.signInWithPassword({
+          email: email.includes('@') ? email : `${email}@bongbangla.top`,
+          password
+        });
+
+        if (!error && data?.session) {
+          window.showAlert('success', 'লগইন সফল হয়েছে! ড্যাশবোর্ডে স্বাগতম...');
+          setTimeout(() => {
+            window.showAuthenticatedState(data.user);
+          }, 300);
+          return false;
+        }
+
+        if (error) {
+          if (error.message.includes('Email not confirmed')) {
+            window.showAlert('success', 'লগইন সফল হয়েছে! ড্যাশবোর্ডে প্রবেশ করা হচ্ছে...');
+            setTimeout(() => {
+              window.showAuthenticatedState({ email });
+            }, 300);
+            return false;
+          }
+
+          let msg = error.message;
+          if (msg.includes('Invalid login credentials')) {
+            msg = 'ভুল ইমেইল বা পাসওয়ার্ড! সঠিক তথ্য দিন। (ডিফল্ট: admin@bongbangla.top / bongbangla2026)';
+          }
+          window.showAlert('error', msg);
+          return false;
+        }
+      }
+
+      window.showAlert('error', 'ভুল ইমেইল বা পাসওয়ার্ড! সঠিক তথ্য দিন। (ডিফল্ট: admin@bongbangla.top / bongbangla2026)');
+      return false;
+    }
+  } catch (err) {
+    console.error('Auth request failed:', err);
+    window.showAlert('error', 'নেটওয়ার্ক সমস্যা: ' + (err.message || 'পুনরায় চেষ্টা করুন'));
+    return false;
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+    if (submitBtnText) submitBtnText.textContent = originalText;
+    if (submitBtnIcon) submitBtnIcon.className = currentAuthMode === 'signup' ? 'fa-solid fa-user-plus' : 'fa-solid fa-arrow-right';
+  }
+};
+
+function initAuth() {
   const masterAuth = sessionStorage.getItem('bongbangla_admin_auth') === 'true';
   const savedEmail = sessionStorage.getItem('bongbangla_admin_email') || 'admin@bongbangla.top';
+  const client = getSupabaseAuthClient();
 
   if (masterAuth) {
-    showAuthenticatedState({ email: savedEmail });
+    window.showAuthenticatedState({ email: savedEmail });
   } else if (client) {
     client.auth.getSession().then(({ data: { session }, error }) => {
       if (!error && session && session.user) {
-        showAuthenticatedState(session.user);
+        window.showAuthenticatedState(session.user);
       } else {
-        showUnauthenticatedState();
+        window.showUnauthenticatedState();
       }
     }).catch(() => {
-      showUnauthenticatedState();
+      window.showUnauthenticatedState();
     });
   } else {
-    showUnauthenticatedState();
+    window.showUnauthenticatedState();
   }
 
-  // 2. Auth State Change Listener
   if (client) {
     try {
       client.auth.onAuthStateChange((event, session) => {
         if (session && session.user) {
-          showAuthenticatedState(session.user);
+          window.showAuthenticatedState(session.user);
         } else if (!sessionStorage.getItem('bongbangla_admin_auth')) {
-          showUnauthenticatedState();
+          window.showUnauthenticatedState();
         }
       });
     } catch (err) {
       console.warn('onAuthStateChange listener failed:', err);
     }
-  }
-
-  // 3. Form Submit Handler (Sign In / Sign Up)
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      hideAlert();
-
-      const email = emailInput ? emailInput.value.trim() : '';
-      const password = passwordInput ? passwordInput.value.trim() : '';
-
-      if (!email || !password) {
-        showAlert('error', 'অনুগ্রহ করে ইমেইল ও পাসওয়ার্ড উভয়ই লিখুন।');
-        return;
-      }
-
-      if (password.length < 6) {
-        showAlert('error', 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।');
-        return;
-      }
-
-      // Set Loading UI
-      const originalText = submitBtnText ? submitBtnText.textContent : '';
-      if (submitBtn) submitBtn.disabled = true;
-      if (submitBtnText) submitBtnText.textContent = authMode === 'signup' ? 'অ্যাকাউন্ট তৈরি হচ্ছে...' : 'যাচাই করা হচ্ছে...';
-      if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-spinner fa-spin';
-
-      try {
-        if (authMode === 'signup') {
-          // --- Sign Up Flow ---
-          // 1. Try to register with Supabase in background
-          if (client) {
-            try {
-              const { error } = await client.auth.signUp({
-                email: email.includes('@') ? email : `${email}@bongbangla.top`,
-                password
-              });
-              if (error) console.warn('Supabase signUp notice:', error.message);
-            } catch (err) {
-              console.warn('Supabase signUp network:', err);
-            }
-          }
-
-          // 2. Save user locally so login always succeeds
-          const adminUsers = getAdminUsers();
-          const existing = adminUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-          if (existing) {
-            existing.password = password;
-          } else {
-            adminUsers.push({ email, password, createdAt: new Date().toISOString() });
-          }
-          saveAdminUsers(adminUsers);
-
-          // 3. Instant success & navigate to dashboard!
-          showAlert('success', 'নতুন অ্যাডমিন অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে! ড্যাশবোর্ডে প্রবেশ করা হচ্ছে...');
-          setTimeout(() => {
-            showAuthenticatedState({ email });
-          }, 300);
-          return;
-        } else {
-          // --- Sign In Flow ---
-          const isMaster = (email.toLowerCase() === 'admin@bongbangla.top' || email.toLowerCase() === 'admin') && 
-                           (password === 'bongbangla2026' || password === 'bong2026');
-
-          const adminUsers = getAdminUsers();
-          const localMatch = adminUsers.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
-
-          // If master or local match, instant entry
-          if (isMaster || localMatch) {
-            showAlert('success', 'লগইন সফল হয়েছে! ড্যাশবোর্ডে স্বাগতম...');
-            setTimeout(() => {
-              showAuthenticatedState({ email: isMaster ? 'admin@bongbangla.top' : localMatch.email });
-            }, 300);
-
-            if (client) {
-              client.auth.signInWithPassword({
-                email: email.includes('@') ? email : 'admin@bongbangla.top',
-                password
-              }).catch(() => {});
-            }
-            return;
-          }
-
-          // Try Supabase Auth
-          if (client) {
-            const { data, error } = await client.auth.signInWithPassword({
-              email: email.includes('@') ? email : `${email}@bongbangla.top`,
-              password
-            });
-
-            if (!error && data?.session) {
-              showAlert('success', 'লগইন সফল হয়েছে! ড্যাশবোর্ডে স্বাগতম...');
-              setTimeout(() => {
-                showAuthenticatedState(data.user);
-              }, 300);
-              return;
-            }
-
-            if (error) {
-              if (error.message.includes('Email not confirmed')) {
-                showAlert('success', 'লগইন সফল হয়েছে! ড্যাশবোর্ডে প্রবেশ করা হচ্ছে...');
-                setTimeout(() => {
-                  showAuthenticatedState({ email });
-                }, 300);
-                return;
-              }
-
-              let msg = error.message;
-              if (msg.includes('Invalid login credentials')) {
-                msg = 'ভুল ইমেইল বা পাসওয়ার্ড! সঠিক তথ্য দিন। (ডিফল্ট: admin@bongbangla.top / bongbangla2026)';
-              }
-              showAlert('error', msg);
-              return;
-            }
-          }
-
-          showAlert('error', 'ভুল ইমেইল বা পাসওয়ার্ড! সঠিক তথ্য দিন। (ডিফল্ট: admin@bongbangla.top / bongbangla2026)');
-        }
-      } catch (err) {
-        console.error('Auth request failed:', err);
-        showAlert('error', 'নেটওয়ার্ক সমস্যা: ' + (err.message || 'অনুগ্রহ করে পুনরায় চেষ্টা করুন'));
-      } finally {
-        if (submitBtn) submitBtn.disabled = false;
-        if (submitBtnText) submitBtnText.textContent = originalText;
-        if (submitBtnIcon) submitBtnIcon.className = authMode === 'signup' ? 'fa-solid fa-user-plus' : 'fa-solid fa-arrow-right';
-      }
-    });
-  }
-
-  // 4. Logout Handler
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-      sessionStorage.removeItem('bongbangla_admin_auth');
-      sessionStorage.removeItem('bongbangla_admin_email');
-      if (client) {
-        try {
-          await client.auth.signOut();
-        } catch (err) {
-          console.warn('SignOut error:', err);
-        }
-      }
-      showUnauthenticatedState();
-      showAlert('info', 'আপনি সফলভাবে লগআউট হয়েছেন।');
-    });
   }
 }
 
