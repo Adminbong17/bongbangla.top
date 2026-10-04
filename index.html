@@ -493,149 +493,13 @@
         </p>
       </div>
 
-      <!-- Models Grid (Pre-rendered for instantaneous zero-delay load & hydrated by js/main.js) -->
+      <!-- Models Grid (Populated dynamically by js/main.js from Supabase Cloud / LocalStorage) -->
       <div id="frontend-models-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        <!-- Model 1: M-101 -->
-        <div class="glass-panel rounded-3xl overflow-hidden group border border-[#ED96D7]/30 hover:border-[#db2777] transition-all hover:shadow-[0_15px_35px_rgba(237,150,215,0.3)] bg-white shadow-sm flex flex-col justify-between">
-          <a href="model-details.html?id=M-101" class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8] block group-hover:opacity-95 transition-opacity">
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" alt="তানজিলা হক রিয়া" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-            <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/95 text-[#be185d] border-[#ED96D7]/50 backdrop-blur-md text-[10px] font-bold border shadow-sm">
-              AVAILABLE
-            </div>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-              <span class="text-white text-xs font-bold font-bangla flex items-center gap-1.5">
-                <span>সম্পূর্ণ প্রোফাইল দেখুন</span>
-                <i class="fa-solid fa-arrow-right text-[10px]"></i>
-              </span>
-            </div>
-          </a>
-          <div class="p-5 space-y-3 font-bangla">
-            <div class="flex items-center justify-between gap-2">
-              <a href="model-details.html?id=M-101" class="font-bangla font-bold text-[#2b0e23] text-base hover:text-[#db2777] transition-colors truncate">
-                তানজিলা হক রিয়া
-              </a>
-              <span class="text-xs text-[#db2777] font-bold truncate">শাড়ি ও ফ্যাশন</span>
-            </div>
-            <div class="grid grid-cols-3 gap-2 text-center text-[10px] text-[#572449] bg-[#fdf2f8] p-2 rounded-xl border border-[#ED96D7]/20">
-              <div>হাইট: <span class="text-[#2b0e23] font-bold">৫'৭"</span></div>
-              <div>শ্যুট: <span class="text-[#2b0e23] font-bold">৪৫+</span></div>
-              <div>স্ট্যাটাস: <span class="text-[#db2777] font-bold">অ্যাক্টিভ</span></div>
-            </div>
-            <a href="model-details.html?id=M-101"
-               class="w-full py-2.5 rounded-xl bg-[#fdf2f8] hover:bg-gradient-to-r hover:from-[#ED96D7] hover:to-[#db2777] hover:text-white text-[#be185d] text-xs font-bold transition-all border border-[#ED96D7]/40 shadow-sm flex items-center justify-center gap-2 group-hover:border-[#db2777]">
-              <i class="fa-solid fa-circle-user text-xs"></i>
-              <span>বিস্তারিত দেখুন</span>
-              <i class="fa-solid fa-arrow-right text-[10px]"></i>
-            </a>
-          </div>
+        <!-- Dynamic loading placeholder -->
+        <div class="col-span-full text-center py-12 bg-white rounded-3xl border border-dashed border-[#ED96D7]/40 p-8 shadow-xs">
+          <div class="w-10 h-10 border-4 border-[#ED96D7]/30 border-t-[#db2777] rounded-full animate-spin mx-auto mb-3"></div>
+          <p class="text-xs text-[#8c4f75] font-bangla font-semibold">মডেল ও কাস্টিং প্রোফাইল লোড হচ্ছে...</p>
         </div>
-
-        <!-- Model 2: M-102 -->
-        <div class="glass-panel rounded-3xl overflow-hidden group border border-[#ED96D7]/30 hover:border-[#db2777] transition-all hover:shadow-[0_15px_35px_rgba(237,150,215,0.3)] bg-white shadow-sm flex flex-col justify-between">
-          <a href="model-details.html?id=M-102" class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8] block group-hover:opacity-95 transition-opacity">
-            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80" alt="ফারহানা চৌধুরী মেহা" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-            <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/95 text-[#be185d] border-[#ED96D7]/50 backdrop-blur-md text-[10px] font-bold border shadow-sm">
-              AVAILABLE
-            </div>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-              <span class="text-white text-xs font-bold font-bangla flex items-center gap-1.5">
-                <span>সম্পূর্ণ প্রোফাইল দেখুন</span>
-                <i class="fa-solid fa-arrow-right text-[10px]"></i>
-              </span>
-            </div>
-          </a>
-          <div class="p-5 space-y-3 font-bangla">
-            <div class="flex items-center justify-between gap-2">
-              <a href="model-details.html?id=M-102" class="font-bangla font-bold text-[#2b0e23] text-base hover:text-[#db2777] transition-colors truncate">
-                ফারহানা চৌধুরী মেহা
-              </a>
-              <span class="text-xs text-[#db2777] font-bold truncate">ব্রাইডাল ও লাক্সারি</span>
-            </div>
-            <div class="grid grid-cols-3 gap-2 text-center text-[10px] text-[#572449] bg-[#fdf2f8] p-2 rounded-xl border border-[#ED96D7]/20">
-              <div>হাইট: <span class="text-[#2b0e23] font-bold">৫'৬"</span></div>
-              <div>শ্যুট: <span class="text-[#2b0e23] font-bold">৩৮+</span></div>
-              <div>স্ট্যাটাস: <span class="text-[#db2777] font-bold">অ্যাক্টিভ</span></div>
-            </div>
-            <a href="model-details.html?id=M-102"
-               class="w-full py-2.5 rounded-xl bg-[#fdf2f8] hover:bg-gradient-to-r hover:from-[#ED96D7] hover:to-[#db2777] hover:text-white text-[#be185d] text-xs font-bold transition-all border border-[#ED96D7]/40 shadow-sm flex items-center justify-center gap-2 group-hover:border-[#db2777]">
-              <i class="fa-solid fa-circle-user text-xs"></i>
-              <span>বিস্তারিত দেখুন</span>
-              <i class="fa-solid fa-arrow-right text-[10px]"></i>
-            </a>
-          </div>
-        </div>
-
-        <!-- Model 3: M-103 -->
-        <div class="glass-panel rounded-3xl overflow-hidden group border border-[#ED96D7]/30 hover:border-[#db2777] transition-all hover:shadow-[0_15px_35px_rgba(237,150,215,0.3)] bg-white shadow-sm flex flex-col justify-between">
-          <a href="model-details.html?id=M-103" class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8] block group-hover:opacity-95 transition-opacity">
-            <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80" alt="নাদিয়া আফরিন স্মৃতি" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-            <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/95 text-[#be185d] border-[#ED96D7]/50 backdrop-blur-md text-[10px] font-bold border shadow-sm">
-              AVAILABLE
-            </div>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-              <span class="text-white text-xs font-bold font-bangla flex items-center gap-1.5">
-                <span>সম্পূর্ণ প্রোফাইল দেখুন</span>
-                <i class="fa-solid fa-arrow-right text-[10px]"></i>
-              </span>
-            </div>
-          </a>
-          <div class="p-5 space-y-3 font-bangla">
-            <div class="flex items-center justify-between gap-2">
-              <a href="model-details.html?id=M-103" class="font-bangla font-bold text-[#2b0e23] text-base hover:text-[#db2777] transition-colors truncate">
-                নাদিয়া আফরিন স্মৃতি
-              </a>
-              <span class="text-xs text-[#db2777] font-bold truncate">বোল্ড ও ওয়েস্টার্ন</span>
-            </div>
-            <div class="grid grid-cols-3 gap-2 text-center text-[10px] text-[#572449] bg-[#fdf2f8] p-2 rounded-xl border border-[#ED96D7]/20">
-              <div>হাইট: <span class="text-[#2b0e23] font-bold">৫'৮"</span></div>
-              <div>শ্যুট: <span class="text-[#2b0e23] font-bold">৫২+</span></div>
-              <div>স্ট্যাটাস: <span class="text-[#db2777] font-bold">অ্যাক্টিভ</span></div>
-            </div>
-            <a href="model-details.html?id=M-103"
-               class="w-full py-2.5 rounded-xl bg-[#fdf2f8] hover:bg-gradient-to-r hover:from-[#ED96D7] hover:to-[#db2777] hover:text-white text-[#be185d] text-xs font-bold transition-all border border-[#ED96D7]/40 shadow-sm flex items-center justify-center gap-2 group-hover:border-[#db2777]">
-              <i class="fa-solid fa-circle-user text-xs"></i>
-              <span>বিস্তারিত দেখুন</span>
-              <i class="fa-solid fa-arrow-right text-[10px]"></i>
-            </a>
-          </div>
-        </div>
-
-        <!-- Model 4: M-104 -->
-        <div class="glass-panel rounded-3xl overflow-hidden group border border-[#ED96D7]/30 hover:border-[#db2777] transition-all hover:shadow-[0_15px_35px_rgba(237,150,215,0.3)] bg-white shadow-sm flex flex-col justify-between">
-          <a href="model-details.html?id=M-104" class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8] block group-hover:opacity-95 transition-opacity">
-            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80" alt="আরিয়ান আহমেদ শুভ" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-            <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/95 text-[#be185d] border-[#ED96D7]/50 backdrop-blur-md text-[10px] font-bold border shadow-sm">
-              AVAILABLE
-            </div>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-              <span class="text-white text-xs font-bold font-bangla flex items-center gap-1.5">
-                <span>সম্পূর্ণ প্রোফাইল দেখুন</span>
-                <i class="fa-solid fa-arrow-right text-[10px]"></i>
-              </span>
-            </div>
-          </a>
-          <div class="p-5 space-y-3 font-bangla">
-            <div class="flex items-center justify-between gap-2">
-              <a href="model-details.html?id=M-104" class="font-bangla font-bold text-[#2b0e23] text-base hover:text-[#db2777] transition-colors truncate">
-                আরিয়ান আহমেদ শুভ
-              </a>
-              <span class="text-xs text-[#db2777] font-bold truncate">মেনস ফ্যাশন ও পাঞ্জাবি</span>
-            </div>
-            <div class="grid grid-cols-3 gap-2 text-center text-[10px] text-[#572449] bg-[#fdf2f8] p-2 rounded-xl border border-[#ED96D7]/20">
-              <div>হাইট: <span class="text-[#2b0e23] font-bold">৬'০"</span></div>
-              <div>শ্যুট: <span class="text-[#2b0e23] font-bold">৩০+</span></div>
-              <div>স্ট্যাটাস: <span class="text-[#db2777] font-bold">অ্যাক্টিভ</span></div>
-            </div>
-            <a href="model-details.html?id=M-104"
-               class="w-full py-2.5 rounded-xl bg-[#fdf2f8] hover:bg-gradient-to-r hover:from-[#ED96D7] hover:to-[#db2777] hover:text-white text-[#be185d] text-xs font-bold transition-all border border-[#ED96D7]/40 shadow-sm flex items-center justify-center gap-2 group-hover:border-[#db2777]">
-              <i class="fa-solid fa-circle-user text-xs"></i>
-              <span>বিস্তারিত দেখুন</span>
-              <i class="fa-solid fa-arrow-right text-[10px]"></i>
-            </a>
-          </div>
-        </div>
-
       </div>
 
     </div>
@@ -1473,11 +1337,11 @@
 
   <!-- Vault Media CDN, Supabase & Main JavaScript Files -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/vault-config.js?v=20261004_v5"></script>
-  <script src="js/supabase-config.js?v=20261004_v5"></script>
-  <script src="js/supabase-client.js?v=20261004_v5"></script>
-  <script src="js/reels.js?v=20261004_v5"></script>
-  <script src="js/main.js?v=20261004_v5"></script>
+  <script src="js/vault-config.js?v=20261004_v6"></script>
+  <script src="js/supabase-config.js?v=20261004_v6"></script>
+  <script src="js/supabase-client.js?v=20261004_v6"></script>
+  <script src="js/reels.js?v=20261004_v6"></script>
+  <script src="js/main.js?v=20261004_v6"></script>
 </body>
 </html>
 

@@ -272,7 +272,7 @@
           // Merge with any custom local models that were added on this device
           if (Array.isArray(localModels) && localModels.length > 0) {
             localModels.forEach(lm => {
-              if (!mapped.some(m => m.id === lm.id) && !['M-1', 'M-2', 'M-3', 'M-4'].includes(lm.id)) {
+              if (!mapped.some(m => m.id === lm.id) && !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(lm.id)) {
                 mapped.push(lm);
               }
             });
@@ -288,7 +288,9 @@
 
     try {
       const local = JSON.parse(localStorage.getItem('bongbangla_models') || '[]');
-      if (Array.isArray(local) && local.length > 0) return local;
+      if (Array.isArray(local) && local.length > 0) {
+        return local.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
+      }
     } catch (e) {}
     return [];
   }

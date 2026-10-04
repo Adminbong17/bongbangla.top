@@ -60,7 +60,7 @@ function cleanupMockData() {
     if (rawModels) {
       const models = JSON.parse(rawModels);
       if (Array.isArray(models)) {
-        const cleanedModels = models.filter(m => !['M-1', 'M-2', 'M-3', 'M-4'].includes(m.id));
+        const cleanedModels = models.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
         localStorage.setItem('bongbangla_models', JSON.stringify(cleanedModels));
       }
     }
@@ -285,102 +285,6 @@ function renderFrontendPortfolio(filter = 'all') {
   }).join('');
 }
 
-const DEFAULT_INITIAL_MODELS = [
-  {
-    id: 'M-101',
-    name: 'তানজিলা হক রিয়া',
-    category: 'শাড়ি ও ফ্যাশন',
-    height: "৫'৭\"",
-    shoots: '৪৫+',
-    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
-    available: true,
-    age: '২২ বছর',
-    measurements: '৩৪-২৬-৩৬',
-    skinTone: 'উজ্জ্বল শ্যামলা',
-    eyeColor: 'ডার্ক ব্রাউন',
-    hairColor: 'কালো সিল্কি লম্বা',
-    location: 'গুলশান ও ধানমন্ডি, ঢাকা',
-    experience: '৪+ বছরের অভিজ্ঞতা',
-    instagram: '@tanzila_riya_official',
-    specialties: 'জামদানি ও সিল্ক শাড়ি শ্যুট, ব্রাইডাল মেকওভার পোর্টফোলিও, ৪K সিনেমাটিক ভিডিও বিজ্ঞাপন',
-    bio: 'বাংলাদেশের শীর্ষস্থানীয় ফ্যাশন ও শাড়ি মডেল। দেশসেরা ব্র্যান্ডের ক্যাটালগ শ্যুট, বিলবোর্ড এবং ৪K সিনেমাটিক কমার্শিয়াল বিজ্ঞাপনে সফলভাবে কাজ করার অভিজ্ঞতা রয়েছে।',
-    gallery: [
-      { type: 'photo', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80', title: 'জামদানি শাড়ি শ্যুট' },
-      { type: 'photo', url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80', title: 'ব্রাইডাল ক্লোজআপ' },
-      { type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-studio-setting-41793-large.mp4', title: '৪K ফ্যাশন রিলস', thumbnail: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80' },
-      { type: 'photo', url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80', title: 'ওয়েস্টার্ন ক্যাটালগ' }
-    ]
-  },
-  {
-    id: 'M-102',
-    name: 'ফারহানা চৌধুরী মেহা',
-    category: 'ব্রাইডাল ও লাক্সারি',
-    height: "৫'৬\"",
-    shoots: '৩৮+',
-    image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
-    available: true,
-    age: '২৩ বছর',
-    measurements: '৩৪-২৫-৩৫',
-    skinTone: 'ফর্সা',
-    eyeColor: 'হ্যারজেল ব্রাউন',
-    hairColor: 'ডার্ক ব্রাউন ওয়েভি',
-    location: 'বনানী, ঢাকা',
-    experience: '৩+ বছরের অভিজ্ঞতা',
-    instagram: '@meha_chowdhury',
-    specialties: 'ব্রাইডাল মেকআপ ক্যাটালগ, জুয়েলারি শ্যুট, কমার্শিয়াল অ্যাড',
-    bio: 'ব্রাইডাল ও লাক্সারি জুয়েলারি শ্যুটের জন্য অন্যতম সেরা মডেল। এক্সপ্রেশন এবং ক্লাসিক লুকের জন্য সুপরিচিত।',
-    gallery: [
-      { type: 'photo', url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80', title: 'ব্রাইডাল শ্যুট' },
-      { type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-model-posing-in-a-studio-41794-large.mp4', title: 'ভাইরাল রিলস', thumbnail: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80' }
-    ]
-  },
-  {
-    id: 'M-103',
-    name: 'নাদিয়া আফরিন স্মৃতি',
-    category: 'বোল্ড ও ওয়েস্টার্ন',
-    height: "৫'৮\"",
-    shoots: '৫২+',
-    image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80',
-    available: true,
-    age: '২৪ বছর',
-    measurements: '৩৬-২৬-৩৬',
-    skinTone: 'উজ্জ্বল শ্যামলা',
-    eyeColor: 'কালো',
-    hairColor: 'কালো সিল্কি',
-    location: 'মিরপুর ডিওএইচএস, ঢাকা',
-    experience: '৫+ বছরের অভিজ্ঞতা',
-    instagram: '@nadia_afrin_official',
-    specialties: 'বোল্ড ওয়েস্টার্ন ফ্যাশন ক্যাটালগ, র‌্যাম্প ওয়াক, টিভি কমার্শিয়াল',
-    bio: 'আন্তর্জাতিক মানের ফ্যাশন ফটোগ্রাফি ও হাই-কনসেপ্ট বোল্ড ক্যাটালগ শ্যুটে অভিজ্ঞ শীর্ষ মডেল।',
-    gallery: [
-      { type: 'photo', url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80', title: 'হাই ফ্যাশন' },
-      { type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-studio-setting-41793-large.mp4', title: 'র‌্যাম্প শোরিল', thumbnail: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80' }
-    ]
-  },
-  {
-    id: 'M-104',
-    name: 'আরিয়ান আহমেদ শুভ',
-    category: 'মেনস ফ্যাশন ও পাঞ্জাবি',
-    height: "৬'০\"",
-    shoots: '৩০+',
-    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80',
-    available: true,
-    age: '২৫ বছর',
-    measurements: '৪০-৩২-৩৮',
-    skinTone: 'উজ্জ্বল শ্যামলা',
-    eyeColor: 'ডার্ক ব্রাউন',
-    hairColor: 'কালো স্টাইলিশ',
-    location: 'উত্তরা, ঢাকা',
-    experience: '৩+ বছরের অভিজ্ঞতা',
-    instagram: '@ariyan_shuvo',
-    specialties: 'পাঞ্জাবি ও কাবলি শ্যুট, মেনস ওয়্যার ক্যাটালগ, লাইফস্টাইল অ্যাডস',
-    bio: 'পুরুষদের প্রিমিয়াম পাঞ্জাবি, স্যুট এবং কমার্শিয়াল ফিটনেস ক্যাটালগ শ্যুটের নির্ভরযোগ্য কাস্টিং মডেল।',
-    gallery: [
-      { type: 'photo', url: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80', title: 'পাঞ্জাবি শ্যুট' }
-    ]
-  }
-];
-
 function renderFrontendModels() {
   const container = document.getElementById('frontend-models-grid');
   if (!container) return;
@@ -390,23 +294,26 @@ function renderFrontendModels() {
     const raw = localStorage.getItem('bongbangla_models');
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        models = parsed;
+      if (Array.isArray(parsed)) {
+        models = parsed.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
       }
     }
   } catch(e) {}
 
   if (!Array.isArray(models) || models.length === 0) {
-    models = DEFAULT_INITIAL_MODELS;
-    try {
-      localStorage.setItem('bongbangla_models', JSON.stringify(models));
-    } catch(e) {}
-  }
-
-  // Filter out any mock sample models if any
-  models = models.filter(m => !['M-1', 'M-2', 'M-3', 'M-4'].includes(m.id));
-  if (models.length === 0) {
-    models = DEFAULT_INITIAL_MODELS;
+    container.innerHTML = `
+      <div class="col-span-full text-center py-12 bg-white rounded-3xl border border-dashed border-[#ED96D7]/50 p-8 shadow-xs">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-[#fff0f6] text-[#db2777] flex items-center justify-center text-2xl mb-3 shadow-xs">
+          <i class="fa-solid fa-users-viewfinder"></i>
+        </div>
+        <h4 class="font-bangla font-bold text-base sm:text-lg text-[#2b0e23]">বর্তমানে কোনো মডেল প্রোফাইল সক্রিয় নেই</h4>
+        <p class="text-xs text-[#8c4f75] mt-1 font-bangla">অ্যাডমিন প্যানেল থেকে নতুন মডেল ও কাস্টিং প্রোফাইল যুক্ত করুন।</p>
+        <a href="admin.html" class="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-xl bg-[#db2777] text-white text-xs font-bold font-bangla shadow-sm hover:bg-[#be185d] transition-all">
+          <i class="fa-solid fa-plus"></i> মডেল যোগ করুন
+        </a>
+      </div>
+    `;
+    return;
   }
 
   const defaultModelFallback = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
