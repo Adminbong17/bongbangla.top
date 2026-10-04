@@ -1,50 +1,64 @@
 /**
  * BongBangla Media & Creative Lab
- * High-Speed Media Vault & CDN Configuration
- * Base Vault Host: https://vault.bongbangla.top
+ * High-Speed Media Vault & CDN Integration
+ * 
+ * Base Vault API Host: https://api.bongbangla.top/vault-api
+ * Web UI: https://vault.bongbangla.top
  * Vault Account: model@bongbangla.top
  * 
- * Routes media & video assets away from Supabase Storage to save costs & limits,
- * providing ultra-fast 4K streaming and image delivery for the entire website.
+ * Routes media & 4K video assets to the private Media Vault CDN to save costs & limits,
+ * providing ultra-fast 4K streaming and high-res image delivery with HTTP byte-range support.
  */
 
 (function() {
   const VAULT_STORAGE_KEY = 'bongbangla_vault_config';
-  const DEFAULT_VAULT_URL = 'https://vault.bongbangla.top';
+  const VAULT_TOKEN_KEY = 'bongbangla_vault_jwt';
+  const DEFAULT_VAULT_API = 'https://api.bongbangla.top/vault-api';
   const DEFAULT_VAULT_USER = 'model@bongbangla.top';
-  const DEFAULT_VAULT_PASS = 'Aktmtbar@1mzs';
+  const DEFAULT_VAULT_PASS = 'Aktmtbar@1';
 
   function getConfig() {
     try {
       const saved = localStorage.getItem(VAULT_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
+        let url = (parsed.url || DEFAULT_VAULT_API).trim().replace(/\/+$/, '');
+        // If user configured vault.bongbangla.top, point to the underlying API endpoint
+        if (url === 'https://vault.bongbangla.top' || url === 'http://vault.bongbangla.top') {
+          url = DEFAULT_VAULT_API;
+        }
         return {
-          url: (parsed.url || DEFAULT_VAULT_URL).replace(/\/+$/, ''),
-          user: parsed.user || DEFAULT_VAULT_USER,
-          pass: parsed.pass || DEFAULT_VAULT_PASS
+          url: url,
+          user: (parsed.user || DEFAULT_VAULT_USER).trim(),
+          pass: (parsed.pass || DEFAULT_VAULT_PASS).trim()
         };
       }
     } catch(e) {}
 
     return {
-      url: (window.VAULT_URL || DEFAULT_VAULT_URL).replace(/\/+$/, ''),
-      user: window.VAULT_USER || DEFAULT_VAULT_USER,
-      pass: window.VAULT_PASS || DEFAULT_VAULT_PASS
+      url: (window.VAULT_URL || DEFAULT_VAULT_API).replace(/\/+$/, ''),
+      user: (window.VAULT_USER || DEFAULT_VAULT_USER).trim(),
+      pass: (window.VAULT_PASS || DEFAULT_VAULT_PASS).trim()
     };
   }
 
   function saveConfig(url, user, pass) {
+    let cleanUrl = (url || DEFAULT_VAULT_API).trim().replace(/\/+$/, '');
+    if (cleanUrl === 'https://vault.bongbangla.top' || cleanUrl === 'http://vault.bongbangla.top') {
+      cleanUrl = DEFAULT_VAULT_API;
+    }
     const config = {
-      url: (url || DEFAULT_VAULT_URL).trim().replace(/\/+$/, ''),
+      url: cleanUrl,
       user: (user || DEFAULT_VAULT_USER).trim(),
       pass: (pass || DEFAULT_VAULT_PASS).trim()
     };
     localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(config));
+    // Clear old token to force re-auth
+    localStorage.removeItem(VAULT_TOKEN_KEY);
     window.VAULT_URL = config.url;
     window.VAULT_USER = config.user;
     window.VAULT_PASS = config.pass;
-    console.log('⚡ BongBangla Media Vault CDN Config Updated:', config.url, `(User: ${config.user})`);
+    console.log('⚡ BongBangla Media Vault Config Updated:', config.url, `(User: ${config.user})`);
     return config;
   }
 
@@ -57,26 +71,48 @@
     return saveConfig(url, cfg.user, cfg.pass).url;
   }
 
-  function getAuthHeaders() {
-    const cfg = getConfig();
-    let authHeader = '';
+  /**
+   * Retrieves or fetches a valid JWT Bearer token from the Vault API
+   */
+  async function getVaultToken() {
     try {
-      if (typeof btoa === 'function') {
-        authHeader = 'Basic ' + btoa(`${cfg.user}:${cfg.pass}`);
+      const cached = localStorage.getItem(VAULT_TOKEN_KEY);
+      if (cached && cached.length > 20) {
+        return cached;
       }
     } catch(e) {}
 
-    return {
-      'X-Vault-User': cfg.user,
-      ...(authHeader ? { 'Authorization': authHeader } : {})
-    };
+    const cfg = getConfig();
+    try {
+      const res = await fetch(`${cfg.url}/login.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          email: cfg.user,
+          password: cfg.pass
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.token) {
+          try {
+            localStorage.setItem(VAULT_TOKEN_KEY, data.token);
+          } catch(e) {}
+          return data.token;
+        }
+      }
+    } catch(err) {
+      console.warn('Vault login error:', err);
+    }
+    return null;
   }
 
   /**
    * Formats any media path or filename into a fully qualified CDN URL
-   * @param {string} path - URL or relative path (e.g. 'reels/bridal.mp4', 'models/1.jpg')
-   * @param {string} [defaultFolder] - Optional fallback folder if just a filename is provided
-   * @returns {string} Fully qualified CDN URL
    */
   function formatMediaUrl(path, defaultFolder = '') {
     if (!path || typeof path !== 'string') return '';
@@ -88,10 +124,14 @@
       return trimmed;
     }
 
+    // If it's a 32-char share token
+    if (/^[a-f0-9]{32}$/i.test(trimmed)) {
+      return `${getConfig().url}/share.php?t=${trimmed}`;
+    }
+
     const base = getVaultBaseUrl();
     let cleanPath = trimmed.replace(/^\/+/, '');
 
-    // If defaultFolder is specified and path doesn't already have a folder prefix
     if (defaultFolder && !cleanPath.includes('/')) {
       const cleanFolder = defaultFolder.replace(/^\/+|\/+$/g, '');
       cleanPath = `${cleanFolder}/${cleanPath}`;
@@ -101,11 +141,7 @@
   }
 
   /**
-   * Compresses and converts an image or media file to a high quality Data URL
-   * @param {File} file 
-   * @param {number} maxWidth 
-   * @param {number} quality 
-   * @returns {Promise<string>}
+   * Compresses and converts an image file to a high quality Data URL
    */
   function fileToDataUrl(file, maxWidth = 1200, quality = 0.85) {
     return new Promise((resolve) => {
@@ -152,71 +188,111 @@
   }
 
   /**
-   * Uploads a file to Supabase Storage, Vault CDN, or generates local media URL
-   * Handles large 4K videos, MP4, MOV, and high-res photos without quota errors.
-   * @param {File} file 
-   * @param {string} folder 
-   * @returns {Promise<{success: boolean, url: string, filename: string}>}
+   * Uploads a file directly to the BongBangla Media Vault CDN API
+   * Handles 4K videos (MP4/MOV/WEBM) and high-res photos.
+   * Returns a public streaming URL with byte-range support.
    */
   async function uploadMedia(file, folder = 'uploads') {
     if (!file) return { success: false, url: '', message: 'No file selected' };
 
     const cfg = getConfig();
-    const rawName = file.name || ('media_' + Date.now() + (file.type && file.type.includes('png') ? '.png' : (file.type && file.type.includes('video') ? '.mp4' : '.jpg')));
+    const ext = file.type && file.type.includes('png') ? '.png' : 
+                (file.type && file.type.includes('webm') ? '.webm' : 
+                (file.type && (file.type.includes('video') || file.type.includes('mp4')) ? '.mp4' : '.jpg'));
+    const rawName = file.name || ('media_' + Date.now() + ext);
     const cleanFileName = rawName.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const vaultUrl = `${cfg.url}/${folder}/${cleanFileName}`;
 
-    // 1. Primary: Direct Remote Media Vault Upload API
+    // 1. PRIMARY: Upload directly to Media Vault API
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('folder', folder);
-      formData.append('user', cfg.user);
-      formData.append('password', cfg.pass);
+      const token = await getVaultToken();
+      if (token) {
+        const formData = new FormData();
+        formData.append('file', file, cleanFileName);
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout for large videos
+        const res = await fetch(`${cfg.url}/upload.php`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          },
+          body: formData
+        });
 
-      const res = await fetch(`${cfg.url}/api/upload`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: formData,
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-
-      if (res.ok) {
-        const data = await res.json().catch(() => ({}));
-        if (data.url) {
-          console.log('⚡ Uploaded to Media Vault CDN:', data.url);
-          return {
-            success: true,
-            url: data.url,
-            filename: cleanFileName,
-            storage: 'vault'
-          };
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          if (data.ok && data.share_token) {
+            const publicUrl = `${cfg.url}/share.php?t=${data.share_token}`;
+            console.log('⚡ File successfully stored in Media Vault CDN:', publicUrl);
+            return {
+              success: true,
+              url: publicUrl,
+              share_token: data.share_token,
+              id: data.id,
+              filename: cleanFileName,
+              storage: 'vault'
+            };
+          }
+        } else if (res.status === 401) {
+          // Token expired, clear token and retry once
+          localStorage.removeItem(VAULT_TOKEN_KEY);
+          const freshToken = await getVaultToken();
+          if (freshToken) {
+            const formData2 = new FormData();
+            formData2.append('file', file, cleanFileName);
+            const retryRes = await fetch(`${cfg.url}/upload.php`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${freshToken}`,
+                'Accept': 'application/json'
+              },
+              body: formData2
+            });
+            if (retryRes.ok) {
+              const retryData = await retryRes.json().catch(() => ({}));
+              if (retryData.ok && retryData.share_token) {
+                const publicUrl = `${cfg.url}/share.php?t=${retryData.share_token}`;
+                console.log('⚡ File successfully stored in Media Vault CDN (after retry):', publicUrl);
+                return {
+                  success: true,
+                  url: publicUrl,
+                  share_token: retryData.share_token,
+                  id: retryData.id,
+                  filename: cleanFileName,
+                  storage: 'vault'
+                };
+              }
+            }
+          }
         }
-      } else {
-        console.warn('Vault API responded:', res.status, await res.text().catch(() => ''));
       }
     } catch(err) {
-      console.warn('Vault API upload notice:', err.message || err);
+      console.warn('Vault upload API exception, trying secondary backup:', err);
     }
 
-    // 2. Cloud backup to Supabase Storage
+    // 2. SECONDARY BACKUP: If Vault API is temporarily unreachable, fallback to Supabase Storage
     if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
       try {
-        const bucket = folder === 'reels' ? 'reels' : (folder === 'models' ? 'models' : 'media');
-        await window.BongBanglaSupabase.uploadStorageFile(file, bucket, folder);
-      } catch(e) {}
+        const bucket = (folder === 'reels' || folder.includes('video')) ? 'reels' : (folder === 'models' ? 'models' : 'media');
+        const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(file, bucket, folder);
+        if (cloudUrl) {
+          console.log('☁️ Backup uploaded to Supabase Storage:', cloudUrl);
+          return {
+            success: true,
+            url: cloudUrl,
+            filename: cleanFileName,
+            storage: 'supabase'
+          };
+        }
+      } catch(e) {
+        console.warn('Supabase storage fallback error:', e);
+      }
     }
 
-    // 3. Return canonical Media Vault CDN URL
     return {
-      success: true,
-      url: vaultUrl,
+      success: false,
+      url: '',
       filename: cleanFileName,
-      storage: 'vault'
+      message: 'Failed to upload to both Vault and Supabase'
     };
   }
 
@@ -240,15 +316,15 @@
     saveConfig,
     getBaseUrl: getVaultBaseUrl,
     setBaseUrl: setVaultBaseUrl,
-    getAuthHeaders,
+    getVaultToken,
     uploadMedia,
     fileToDataUrl,
     formatMediaUrl,
     formatUrl: formatMediaUrl,
     Presets,
-    defaultHost: DEFAULT_VAULT_URL,
+    defaultHost: DEFAULT_VAULT_API,
     defaultUser: DEFAULT_VAULT_USER
   };
 
-  console.log('⚡ BongBangla Media Vault Connected: https://vault.bongbangla.top (Account: ' + currentCfg.user + ')');
+  console.log('⚡ BongBangla Media Vault Connected: https://api.bongbangla.top/vault-api (Account: ' + currentCfg.user + ')');
 })();

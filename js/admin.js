@@ -717,21 +717,25 @@ function initDashboard() {
         const formData = new FormData(addModelForm);
         let photoUrl = (formData.get('image') || '').toString().trim();
 
-        // If direct file was selected, upload via Supabase Storage
+        // If direct file was selected, upload via Vault CDN first (fallback to Supabase Storage)
         if (selectedModelFile) {
-          if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
-            const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(selectedModelFile, 'models');
-            if (cloudUrl) photoUrl = cloudUrl;
-          }
-          if (!photoUrl && window.BongBanglaVault) {
+          if (window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
             const uploadRes = await window.BongBanglaVault.uploadMedia(selectedModelFile, 'models');
             if (uploadRes && uploadRes.url) photoUrl = uploadRes.url;
+          }
+          if (!photoUrl && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+            const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(selectedModelFile, 'models');
+            if (cloudUrl) photoUrl = cloudUrl;
           }
         }
 
         if (!photoUrl && selectedModelDataUrl) {
           const blob = dataUrlToBlob(selectedModelDataUrl);
-          if (blob && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+          if (blob && window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
+            const uploadRes = await window.BongBanglaVault.uploadMedia(blob, 'models');
+            if (uploadRes && uploadRes.url) photoUrl = uploadRes.url;
+          }
+          if (!photoUrl && blob && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
             const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(blob, 'models');
             if (cloudUrl) photoUrl = cloudUrl;
           }
@@ -837,7 +841,26 @@ function initDashboard() {
 
     const bucket = defaultFolder === 'reels' ? 'reels' : 'models';
 
-    // 1. Direct Supabase Cloud Storage binary upload
+    // 1. Primary: Direct Vault CDN binary upload (High-capacity, cost-free)
+    if (file && window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
+      try {
+        const res = await window.BongBanglaVault.uploadMedia(file, defaultFolder);
+        if (res && res.url) return res.url;
+      } catch(e) {}
+    }
+
+    // 2. If data URL, convert to Blob and upload to Vault CDN
+    if (url.startsWith('data:') && window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
+      try {
+        const blob = dataUrlToBlob(url);
+        if (blob) {
+          const res = await window.BongBanglaVault.uploadMedia(blob, defaultFolder);
+          if (res && res.url) return res.url;
+        }
+      } catch(e) {}
+    }
+
+    // 3. Secondary Backup: Supabase Cloud Storage
     if (file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
       try {
         const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(file, bucket);
@@ -845,7 +868,6 @@ function initDashboard() {
       } catch(e) {}
     }
 
-    // 2. If data URL, convert to Blob and upload to Supabase Storage
     if (url.startsWith('data:') && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
       try {
         const blob = dataUrlToBlob(url);
@@ -853,14 +875,6 @@ function initDashboard() {
           const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(blob, bucket);
           if (cloudUrl) return cloudUrl;
         }
-      } catch(e) {}
-    }
-
-    // 3. Fallback to Vault CDN
-    if (file && window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
-      try {
-        const res = await window.BongBanglaVault.uploadMedia(file, defaultFolder);
-        if (res && res.url) return res.url;
       } catch(e) {}
     }
 
@@ -1011,7 +1025,10 @@ function initDashboard() {
 
         for (const item of newItems) {
           try {
-            if (item.file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+            if (item.file && window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
+              const res = await window.BongBanglaVault.uploadMedia(item.file, 'models');
+              if (res && res.url) item.url = res.url;
+            } else if (item.file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
               const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(item.file, 'models');
               if (cloudUrl) item.url = cloudUrl;
             }
@@ -1045,7 +1062,10 @@ function initDashboard() {
 
         for (const item of newItems) {
           try {
-            if (item.file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+            if (item.file && window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
+              const res = await window.BongBanglaVault.uploadMedia(item.file, 'models');
+              if (res && res.url) item.url = res.url;
+            } else if (item.file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
               const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(item.file, 'models');
               if (cloudUrl) item.url = cloudUrl;
             }
@@ -1086,7 +1106,10 @@ function initDashboard() {
 
         for (const item of newItems) {
           try {
-            if (item.file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+            if (item.file && window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
+              const res = await window.BongBanglaVault.uploadMedia(item.file, 'reels');
+              if (res && res.url) item.url = res.url;
+            } else if (item.file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
               const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(item.file, 'reels');
               if (cloudUrl) item.url = cloudUrl;
             }
@@ -1126,7 +1149,10 @@ function initDashboard() {
 
         for (const item of newItems) {
           try {
-            if (item.file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+            if (item.file && window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
+              const res = await window.BongBanglaVault.uploadMedia(item.file, 'reels');
+              if (res && res.url) item.url = res.url;
+            } else if (item.file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
               const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(item.file, 'reels');
               if (cloudUrl) item.url = cloudUrl;
             }
@@ -1289,19 +1315,23 @@ function initDashboard() {
         let photoUrl = (formData.get('image') || '').toString().trim();
 
         if (editSelectedModelFile) {
-          if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
-            const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(editSelectedModelFile, 'models');
-            if (cloudUrl) photoUrl = cloudUrl;
-          }
-          if (!photoUrl && window.BongBanglaVault) {
+          if (window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
             const uploadRes = await window.BongBanglaVault.uploadMedia(editSelectedModelFile, 'models');
             if (uploadRes && uploadRes.url) photoUrl = uploadRes.url;
+          }
+          if (!photoUrl && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+            const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(editSelectedModelFile, 'models');
+            if (cloudUrl) photoUrl = cloudUrl;
           }
         }
 
         if (!photoUrl && editSelectedModelDataUrl) {
           const blob = dataUrlToBlob(editSelectedModelDataUrl);
-          if (blob && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+          if (blob && window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
+            const uploadRes = await window.BongBanglaVault.uploadMedia(blob, 'models');
+            if (uploadRes && uploadRes.url) photoUrl = uploadRes.url;
+          }
+          if (!photoUrl && blob && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
             const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(blob, 'models');
             if (cloudUrl) photoUrl = cloudUrl;
           }
@@ -1719,9 +1749,9 @@ function initSupabaseAdmin() {
   const populateVaultInputs = () => {
     if (window.BongBanglaVault) {
       const vcfg = window.BongBanglaVault.getConfig();
-      if (vaultInput) vaultInput.value = vcfg.url || 'https://vault.bongbangla.top';
+      if (vaultInput) vaultInput.value = vcfg.url || 'https://api.bongbangla.top/vault-api';
       if (vaultUserInput) vaultUserInput.value = vcfg.user || 'model@bongbangla.top';
-      if (vaultPassInput) vaultPassInput.value = vcfg.pass || 'pass-Aktmtbar@1';
+      if (vaultPassInput) vaultPassInput.value = vcfg.pass || 'Aktmtbar@1';
     }
   };
 
@@ -1792,9 +1822,9 @@ function initSupabaseAdmin() {
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const vaultUrl = vaultInput ? vaultInput.value.trim() : 'https://vault.bongbangla.top';
+      const vaultUrl = vaultInput ? vaultInput.value.trim() : 'https://api.bongbangla.top/vault-api';
       const vaultUser = vaultUserInput ? vaultUserInput.value.trim() : 'model@bongbangla.top';
-      const vaultPass = vaultPassInput ? vaultPassInput.value.trim() : 'pass-Aktmtbar@1';
+      const vaultPass = vaultPassInput ? vaultPassInput.value.trim() : 'Aktmtbar@1';
       const url = urlInput.value.trim();
       const key = keyInput.value.trim();
 
