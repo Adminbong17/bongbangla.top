@@ -589,21 +589,26 @@ const DEFAULT_REELS = [
   }
 ];
 
-// Helper to get reels from localStorage (with auto-seeding)
+// Helper to get reels from localStorage (with auto-seeding only on initial visit)
 function getReels(category = 'all') {
-  let reels = [];
+  let reels = null;
   try {
     const raw = localStorage.getItem('bongbangla_reels');
-    if (raw) {
+    if (raw !== null) {
       reels = JSON.parse(raw);
     }
   } catch (e) {
     console.error('Error reading reels:', e);
   }
 
-  if (!reels || reels.length === 0) {
+  // Only seed DEFAULT_REELS if the key has NEVER been set in localStorage (raw === null)
+  if (reels === null) {
     reels = DEFAULT_REELS;
     localStorage.setItem('bongbangla_reels', JSON.stringify(DEFAULT_REELS));
+  }
+
+  if (!Array.isArray(reels)) {
+    reels = [];
   }
 
   if (category === 'all') return reels;
