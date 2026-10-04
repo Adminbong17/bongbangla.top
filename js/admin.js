@@ -916,19 +916,23 @@ function initDashboard() {
 
         saveModels(models);
 
+
         if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.getClient === 'function') {
           const client = window.BongBanglaSupabase.getClient();
           if (client) {
-            client.from('models').update({
-              name: model.name,
-              category: model.category,
-              height: model.height,
-              shoots: model.shoots,
-              available: model.available,
-              image: model.image
-            }).eq('id', model.id).catch(() => {});
+            try {
+              await client.from('models').update({
+                name: model.name,
+                category: model.category,
+                height: model.height,
+                shoots: model.shoots,
+                available: model.available,
+                image: model.image
+              }).eq('id', model.id);
+            } catch (e) { console.warn('Supabase model update error:', e); }
           }
         }
+
 
         closeEditModelModal();
         renderModelsGrid();
@@ -1846,15 +1850,17 @@ function initReelsAdmin() {
         if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.getClient === 'function') {
           const client = window.BongBanglaSupabase.getClient();
           if (client) {
-            client.from('reels').update({
-              title: reel.title,
-              client: reel.client,
-              category: reel.category,
-              tag: reel.tag,
-              views: reel.views,
-              video_url: reel.videoUrl,
-              thumbnail: reel.thumbnail
-            }).eq('id', reel.id).catch(() => {});
+            try {
+              await client.from('reels').update({
+                title: reel.title,
+                client: reel.client,
+                category: reel.category,
+                tag: reel.tag,
+                views: reel.views,
+                video_url: reel.videoUrl,
+                thumbnail: reel.thumbnail
+              }).eq('id', reel.id);
+            } catch (e) { console.warn('Supabase reel update error:', e); }
           }
         }
 
@@ -1968,7 +1974,9 @@ window.applyBulkReelsCategory = async function() {
   if (window.BongBanglaSupabase && window.BongBanglaSupabase.getClient()) {
     const client = window.BongBanglaSupabase.getClient();
     for (const id of Array.from(selectedReelIds)) {
-      client.from('reels').update({ category: newCategory }).eq('id', id).catch(() => {});
+      try {
+        await client.from('reels').update({ category: newCategory }).eq('id', id);
+      } catch (e) { console.warn('Supabase bulk category update error:', e); }
     }
   }
 
