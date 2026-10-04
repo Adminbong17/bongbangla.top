@@ -1052,9 +1052,24 @@
       </div>
 
       <form id="supabase-settings-form" class="space-y-3.5 text-xs font-bangla">
-        <div>
-          <label class="block text-[#572449] font-bold mb-1">Media Vault CDN URL *</label>
-          <input type="url" id="vault-input-url" required placeholder="https://vault.bongbangla.top" value="https://vault.bongbangla.top" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] font-mono text-xs">
+        <div class="p-3 bg-pink-50/60 rounded-xl border border-[#ED96D7]/40 space-y-3">
+          <div class="font-bold text-[#be185d] flex items-center gap-1.5 text-xs">
+            <i class="fa-solid fa-server"></i> Vault Media CDN Credentials
+          </div>
+          <div>
+            <label class="block text-[#572449] font-bold mb-1">Vault Server Endpoint *</label>
+            <input type="url" id="vault-input-url" required placeholder="https://vault.bongbangla.top" value="https://vault.bongbangla.top" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] font-mono text-xs">
+          </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">Vault Account *</label>
+              <input type="text" id="vault-input-user" required placeholder="model@bongbangla.top" value="model@bongbangla.top" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] font-mono text-xs">
+            </div>
+            <div>
+              <label class="block text-[#572449] font-bold mb-1">Vault Key / Pass *</label>
+              <input type="password" id="vault-input-pass" required placeholder="pass-Aktmtbar@1" value="pass-Aktmtbar@1" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] font-mono text-xs">
+            </div>
+          </div>
         </div>
 
         <div>

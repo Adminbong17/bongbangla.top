@@ -11,4 +11,7 @@ window.SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 
 // Dedicated High-Capacity Media Vault CDN (Redirects all video/image uploads away from Supabase)
 window.VAULT_URL = "https://vault.bongbangla.top";
+window.VAULT_USER = "model@bongbangla.top";
+window.VAULT_PASS = "pass-Aktmtbar@1";
+
 

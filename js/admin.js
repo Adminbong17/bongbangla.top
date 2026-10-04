@@ -932,6 +932,8 @@ function initSupabaseAdmin() {
   const modal = document.getElementById('supabase-settings-modal');
   const form = document.getElementById('supabase-settings-form');
   const vaultInput = document.getElementById('vault-input-url');
+  const vaultUserInput = document.getElementById('vault-input-user');
+  const vaultPassInput = document.getElementById('vault-input-pass');
   const urlInput = document.getElementById('supabase-input-url');
   const keyInput = document.getElementById('supabase-input-key');
 
@@ -948,9 +950,16 @@ function initSupabaseAdmin() {
     }
   };
 
-  if (window.BongBanglaVault && vaultInput) {
-    vaultInput.value = window.BongBanglaVault.getBaseUrl();
-  }
+  const populateVaultInputs = () => {
+    if (window.BongBanglaVault) {
+      const vcfg = window.BongBanglaVault.getConfig();
+      if (vaultInput) vaultInput.value = vcfg.url || 'https://vault.bongbangla.top';
+      if (vaultUserInput) vaultUserInput.value = vcfg.user || 'model@bongbangla.top';
+      if (vaultPassInput) vaultPassInput.value = vcfg.pass || 'pass-Aktmtbar@1';
+    }
+  };
+
+  populateVaultInputs();
 
   if (window.BongBanglaSupabase) {
     const cfg = window.BongBanglaSupabase.getConfig();
@@ -996,9 +1005,7 @@ function initSupabaseAdmin() {
   if (openBtn && modal && !openBtn.dataset.initialized) {
     openBtn.dataset.initialized = 'true';
     openBtn.addEventListener('click', () => {
-      if (window.BongBanglaVault && vaultInput) {
-        vaultInput.value = window.BongBanglaVault.getBaseUrl();
-      }
+      populateVaultInputs();
       if (window.BongBanglaSupabase) {
         const cfg = window.BongBanglaSupabase.getConfig();
         if (urlInput) urlInput.value = cfg.url || '';
@@ -1011,11 +1018,13 @@ function initSupabaseAdmin() {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const vaultUrl = vaultInput ? vaultInput.value.trim() : 'https://vault.bongbangla.top';
+      const vaultUser = vaultUserInput ? vaultUserInput.value.trim() : 'model@bongbangla.top';
+      const vaultPass = vaultPassInput ? vaultPassInput.value.trim() : 'pass-Aktmtbar@1';
       const url = urlInput.value.trim();
       const key = keyInput.value.trim();
 
       if (window.BongBanglaVault) {
-        window.BongBanglaVault.setBaseUrl(vaultUrl);
+        window.BongBanglaVault.saveConfig(vaultUrl, vaultUser, vaultPass);
       }
 
       if (window.BongBanglaSupabase) {
