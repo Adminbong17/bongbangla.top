@@ -5,16 +5,41 @@
  * Theme: Royal Bengali Velvet & Jamdani Gold
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   cleanupMockData();
   initLogoSwitcher();
   initNavbar();
+  renderFrontendPortfolio('all');
+  renderFrontendModels();
   initPortfolioFilter();
   initLightbox();
   initEstimator();
   initFaqAccordion();
   initModals();
   initContactForm();
+
+  // Supabase real-time sync for frontend if configured
+  if (window.BongBanglaSupabase) {
+    if (window.BongBanglaSupabase.isConfigured()) {
+      try {
+        await window.BongBanglaSupabase.fetchModels();
+        renderFrontendModels();
+      } catch(e) {}
+    }
+    if (typeof window.BongBanglaSupabase.subscribeToReels === 'function') {
+      window.BongBanglaSupabase.subscribeToReels(() => {
+        const activeFilter = document.querySelector('.filter-btn.bg-gradient-to-r');
+        renderFrontendPortfolio(activeFilter ? activeFilter.getAttribute('data-filter') : 'all');
+      });
+    }
+    if (typeof window.BongBanglaSupabase.subscribeToModels === 'function') {
+      window.BongBanglaSupabase.subscribeToModels(() => {
+        window.BongBanglaSupabase.fetchModels().then(() => {
+          renderFrontendModels();
+        });
+      });
+    }
+  }
 });
 
 /* ==========================================================================
@@ -112,11 +137,165 @@ function initNavbar() {
 }
 
 /* ==========================================================================
-   2. Portfolio Filter System (Royal Bengali Gold & Crimson Active)
+   2. Dynamic Frontend Portfolio & Model Roster System
    ========================================================================== */
+
+function getFrontendCategoryBadge(category) {
+  const map = {
+    'cinema-ads': '৪K সিনেমা অ্যাড',
+    'saree-shoot': 'শাড়ি ও মডেল শ্যুট',
+    'viral-reels': 'ভাইরাল প্রোডাক্ট রিলস',
+    'facebook-ads': 'ফেসবুক অ্যাডস',
+    'jewellery': 'জুয়েলারি ও লাক্সারি',
+    'commercial-ad': 'কমার্শিয়াল অ্যাড ফিল্ম',
+    'model-shoot': 'শাড়ি ও ফ্যাশন শ্যুট',
+    'product-reels': 'প্রোডাক্ট রিলস প্যাক',
+    'branding-web': 'ব্র্যান্ড ওয়েবসাইট'
+  };
+  return map[category] || category || 'কমার্শিয়াল মিডিয়া';
+}
+
+function renderFrontendPortfolio(filter = 'all') {
+  const container = document.getElementById('portfolio-grid');
+  if (!container) return;
+
+  let reels = [];
+  if (window.BongBanglaReels && typeof window.BongBanglaReels.getReels === 'function') {
+    reels = window.BongBanglaReels.getReels('all');
+  }
+
+  // Filter category mapping
+  let filtered = reels;
+  if (filter !== 'all') {
+    filtered = reels.filter(r => {
+      if (filter === 'commercial-ad') return r.category === 'cinema-ads' || r.category === 'commercial-ad';
+      if (filter === 'model-shoot') return r.category === 'saree-shoot' || r.category === 'model-shoot';
+      if (filter === 'product-reels') return r.category === 'viral-reels' || r.category === 'product-reels';
+      if (filter === 'branding-web') return r.category === 'facebook-ads' || r.category === 'jewellery' || r.category === 'branding-web';
+      return r.category === filter;
+    });
+  }
+
+  if (!filtered || filtered.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full text-center py-12 bg-white rounded-3xl border border-dashed border-[#ED96D7]/50 p-8 shadow-xs">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-[#fff0f6] text-[#db2777] flex items-center justify-center text-2xl mb-3 shadow-xs">
+          <i class="fa-solid fa-film"></i>
+        </div>
+        <h4 class="font-bangla font-bold text-base sm:text-lg text-[#2b0e23]">বর্তমানে কোনো রিলস বা পোর্টফোলিও ভিডিও নেই</h4>
+        <p class="text-xs text-[#8c4f75] mt-1 font-bangla">অ্যাডমিন প্যানেল থেকে নতুন রিলস ও ভিডিও আপলোড করুন।</p>
+        <a href="admin.html" class="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-xl bg-[#db2777] text-white text-xs font-bold font-bangla shadow-sm hover:bg-[#be185d] transition-all">
+          <i class="fa-solid fa-plus"></i> রিলস আপলোড করুন
+        </a>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(item => {
+    const title = item.title || 'BongBangla Production';
+    const client = item.client || 'BongBangla Client';
+    const tag = item.tag || '4K';
+    const views = item.views || '১.৫M ভিউজ';
+    const thumb = item.thumbnail || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80';
+    const videoUrl = item.videoUrl || '';
+    const categoryLabel = getFrontendCategoryBadge(item.category);
+
+    return `
+      <div class="portfolio-item gallery-card group cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden bg-white border border-[#ED96D7]/35 hover:border-[#db2777] shadow-sm hover:shadow-xl transition-all"
+           onclick="if(window.BongBanglaReels){window.BongBanglaReels.openReelVideoModal('${videoUrl}', '${encodeURIComponent(title)}', '${encodeURIComponent(client)}')}">
+        <div class="aspect-[3/4] overflow-hidden relative bg-black">
+          <img src="${thumb}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          
+          <!-- Top Badges -->
+          <div class="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none z-10">
+            <span class="px-2.5 py-1 rounded-full bg-white/90 text-[10px] font-bold text-[#db2777] shadow-sm">
+              ${tag}
+            </span>
+            <span class="px-2.5 py-1 rounded-full bg-black/60 text-[10px] font-bold text-white shadow-sm flex items-center gap-1">
+              <i class="fa-regular fa-eye text-[#ED96D7]"></i> ${views}
+            </span>
+          </div>
+
+          <!-- Gallery Overlay -->
+          <div class="gallery-overlay absolute inset-0 flex flex-col justify-end p-5 bg-gradient-to-t from-black/85 via-black/20 to-transparent">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-[#ED96D7] mb-1 font-bangla">${categoryLabel}</span>
+            <h4 class="font-bangla font-bold text-base sm:text-lg text-white mb-2 leading-snug line-clamp-2">${title}</h4>
+            <div class="flex items-center justify-between text-xs text-pink-100">
+              <span class="font-bangla flex items-center gap-1"><i class="fa-solid fa-user-tag text-[10px]"></i> ${client}</span>
+              <span class="w-9 h-9 rounded-full bg-[#db2777] text-white flex items-center justify-center font-bold shadow-lg shadow-[#db2777]/50 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-play ml-0.5 text-xs"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderFrontendModels() {
+  const container = document.getElementById('frontend-models-grid');
+  if (!container) return;
+
+  let models = [];
+  try {
+    const raw = localStorage.getItem('bongbangla_models');
+    if (raw) {
+      models = JSON.parse(raw);
+    }
+  } catch(e) {}
+
+  if (!Array.isArray(models)) models = [];
+
+  // Filter out any mock sample models if any
+  models = models.filter(m => !['M-1', 'M-2', 'M-3', 'M-4'].includes(m.id));
+
+  if (models.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full text-center py-12 bg-white rounded-3xl border border-dashed border-[#ED96D7]/50 p-8 shadow-xs">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-[#fff0f6] text-[#db2777] flex items-center justify-center text-2xl mb-3 shadow-xs">
+          <i class="fa-solid fa-user-group"></i>
+        </div>
+        <h4 class="font-bangla font-bold text-base sm:text-lg text-[#2b0e23]">বর্তমানে কোনো মডেল প্রোফাইল সক্রিয় নেই</h4>
+        <p class="text-xs text-[#8c4f75] mt-1 font-bangla">অ্যাডমিন প্যানেল থেকে নতুন মডেল কাস্টিং প্রোফাইল যুক্ত করুন।</p>
+        <a href="admin.html" class="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-xl bg-[#db2777] text-white text-xs font-bold font-bangla shadow-sm hover:bg-[#be185d] transition-all">
+          <i class="fa-solid fa-user-plus"></i> মডেল যুক্ত করুন
+        </a>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = models.map(m => `
+    <div class="glass-panel rounded-3xl overflow-hidden group border border-[#ED96D7]/30 hover:border-[#ED96D7] transition-all hover:shadow-[0_15px_35px_rgba(237,150,215,0.3)] bg-white shadow-sm flex flex-col justify-between">
+      <div class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8]">
+        <img src="${m.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80'}" alt="${m.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+        <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full ${m.available !== false ? 'bg-white/90 text-[#be185d] border-[#ED96D7]/50' : 'bg-gray-100 text-gray-500 border-gray-300'} backdrop-blur-md text-[10px] font-bold border shadow-sm">
+          ${m.available !== false ? 'AVAILABLE' : 'BOOKED'}
+        </div>
+      </div>
+      <div class="p-5 space-y-3 font-bangla">
+        <div class="flex items-center justify-between gap-2">
+          <h4 class="font-bangla font-bold text-[#2b0e23] text-base">${m.name}</h4>
+          <span class="text-xs text-[#db2777] font-bold truncate">${m.category || 'মডেল'}</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center text-[10px] text-[#572449] bg-[#fdf2f8] p-2 rounded-xl border border-[#ED96D7]/20">
+          <div>হাইট: <span class="text-[#2b0e23] font-bold">${m.height || "৫'৭\""}</span></div>
+          <div>শ্যুট: <span class="text-[#2b0e23] font-bold">${m.shoots || '২০+'}</span></div>
+          <div>স্ট্যাটাস: <span class="text-[#db2777] font-bold">${m.available !== false ? 'অ্যাক্টিভ' : 'বুকড'}</span></div>
+        </div>
+        <button class="open-booking-modal w-full py-2.5 rounded-xl bg-[#fdf2f8] hover:bg-gradient-to-r hover:from-[#ED96D7] hover:to-[#db2777] hover:text-white text-[#be185d] text-xs font-bold transition-all border border-[#ED96D7]/40 shadow-sm"
+                data-service-preset="model-portfolio">
+          কাস্টিং বুক করুন
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
 function initPortfolioFilter() {
   const filterButtons = document.querySelectorAll('.filter-btn');
-  const portfolioItems = document.querySelectorAll('.portfolio-item');
 
   filterButtons.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -128,17 +307,8 @@ function initPortfolioFilter() {
       btn.classList.add('bg-gradient-to-r', 'from-[#ED96D7]', 'to-[#db2777]', 'text-white', 'border-[#db2777]', 'shadow-[0_0_15px_rgba(237,150,215,0.5)]');
       btn.classList.remove('bg-white', 'text-[#572449]', 'border-[#ED96D7]/40');
 
-      const filterValue = btn.getAttribute('data-filter');
-
-      portfolioItems.forEach(item => {
-        const itemCategory = item.getAttribute('data-category');
-        if (filterValue === 'all' || itemCategory === filterValue) {
-          item.style.display = 'block';
-          item.classList.add('animate-fadeIn');
-        } else {
-          item.style.display = 'none';
-        }
-      });
+      const filterValue = btn.getAttribute('data-filter') || 'all';
+      renderFrontendPortfolio(filterValue);
     });
   });
 }
@@ -337,22 +507,22 @@ function initEstimator() {
    ========================================================================== */
 function initModals() {
   const bookingModal = document.getElementById('booking-modal');
-  const openButtons = document.querySelectorAll('.open-booking-modal');
   const closeButtons = document.querySelectorAll('.close-booking-modal, #close-booking-modal-btn');
 
-  openButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const servicePreset = btn.getAttribute('data-service-preset');
-      const selectEl = document.getElementById('modal-service-select');
-      if (selectEl && servicePreset) {
-        selectEl.value = servicePreset;
-      }
-      if (bookingModal) {
-        bookingModal.classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
-      }
-    });
+  // Event delegation for static and dynamically rendered open-booking-modal triggers
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.open-booking-modal');
+    if (!btn) return;
+    e.preventDefault();
+    const servicePreset = btn.getAttribute('data-service-preset');
+    const selectEl = document.getElementById('modal-service-select');
+    if (selectEl && servicePreset) {
+      selectEl.value = servicePreset;
+    }
+    if (bookingModal) {
+      bookingModal.classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+    }
   });
 
   closeButtons.forEach(btn => {

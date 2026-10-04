@@ -166,7 +166,7 @@
         }
 
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
+        if (!error && data !== null) {
           const mapped = data.map(r => ({
             id: r.id,
             category: r.category,
@@ -239,7 +239,7 @@
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!error && data && data.length > 0) {
+        if (!error && data !== null) {
           const mapped = data.map(m => ({
             id: m.id,
             name: m.name,
