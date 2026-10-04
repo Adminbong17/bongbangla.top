@@ -211,6 +211,23 @@
   }
 
   async function deleteReel(id) {
+    try {
+      const raw = localStorage.getItem('bongbangla_reels');
+      if (raw) {
+        const local = JSON.parse(raw);
+        if (Array.isArray(local)) {
+          const filtered = local.filter(r => r.id !== id);
+          localStorage.setItem('bongbangla_reels', JSON.stringify(filtered));
+        }
+      }
+      const delRaw = localStorage.getItem('bongbangla_deleted_reels') || '[]';
+      const delList = JSON.parse(delRaw);
+      if (!delList.includes(id)) {
+        delList.push(id);
+        localStorage.setItem('bongbangla_deleted_reels', JSON.stringify(delList));
+      }
+    } catch(e) {}
+
     if (supabaseClient) {
       try {
         await supabaseClient
@@ -268,14 +285,8 @@
             };
           });
 
-          // Check if local device has models that are missing in Supabase cloud
-          const missingInCloud = localModels.filter(lm => !mapped.some(m => m.id === lm.id));
-          if (missingInCloud.length > 0) {
-            console.log('🔄 Auto-uploading local models to Supabase:', missingInCloud.length);
-            for (const m of missingInCloud) {
-              await addModel(m);
-            }
-          }
+          // Note: Cloud database is the single source of truth.
+          // Never auto-upload missing items from local cache, as missing items were intentionally deleted.
 
           try {
             const sanitized = mapped.map(m => {
@@ -394,6 +405,23 @@
   }
 
   async function deleteModel(id) {
+    try {
+      const raw = localStorage.getItem('bongbangla_models');
+      if (raw) {
+        const local = JSON.parse(raw);
+        if (Array.isArray(local)) {
+          const filtered = local.filter(m => m.id !== id);
+          localStorage.setItem('bongbangla_models', JSON.stringify(filtered));
+        }
+      }
+      const delRaw = localStorage.getItem('bongbangla_deleted_models') || '[]';
+      const delList = JSON.parse(delRaw);
+      if (!delList.includes(id)) {
+        delList.push(id);
+        localStorage.setItem('bongbangla_deleted_models', JSON.stringify(delList));
+      }
+    } catch(e) {}
+
     if (supabaseClient) {
       try {
         await supabaseClient
@@ -446,49 +474,9 @@
      4. Automatic Local-to-Cloud Sync Migration Engine
      ========================================================================== */
   async function syncLocalDataToSupabase() {
-    if (!supabaseClient) return;
-
-    try {
-      // 1. Sync Models
-      const rawModels = localStorage.getItem('bongbangla_models');
-      if (rawModels) {
-        const localModels = JSON.parse(rawModels);
-        if (Array.isArray(localModels)) {
-          const validModels = localModels.filter(m => !isMockModelId(m.id));
-          if (validModels.length > 0) {
-            const { data: cloudModels } = await supabaseClient.from('models').select('id');
-            const cloudIds = new Set((cloudModels || []).map(m => m.id));
-            for (const lm of validModels) {
-              if (!cloudIds.has(lm.id)) {
-                console.log('⚡ Migrating local model to Supabase:', lm.name, lm.id);
-                await addModel(lm);
-              }
-            }
-          }
-        }
-      }
-
-      // 2. Sync Reels
-      const rawReels = localStorage.getItem('bongbangla_reels');
-      if (rawReels) {
-        const localReels = JSON.parse(rawReels);
-        if (Array.isArray(localReels)) {
-          const validReels = localReels.filter(r => !r.id || !r.id.match(/^reel-[csvfj]\d+$/));
-          if (validReels.length > 0) {
-            const { data: cloudReels } = await supabaseClient.from('reels').select('id');
-            const cloudIds = new Set((cloudReels || []).map(r => r.id));
-            for (const lr of validReels) {
-              if (!cloudIds.has(lr.id)) {
-                console.log('⚡ Migrating local reel to Supabase:', lr.title, lr.id);
-                await addReel(lr);
-              }
-            }
-          }
-        }
-      }
-    } catch (err) {
-      console.warn('Background sync error:', err);
-    }
+    // Cloud database is the single source of truth.
+    // Do not auto-upload local items because missing items in cloud were intentionally deleted.
+    return;
   }
 
   // Realtime subscription helpers

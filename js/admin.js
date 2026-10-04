@@ -1773,15 +1773,6 @@ function initSupabaseAdmin() {
       }).catch(() => {});
 
       window.BongBanglaSupabase.fetchModels().then((models) => {
-        // Automatically sync any local admin models to Supabase cloud
-        const local = getModels();
-        if (Array.isArray(local) && local.length > 0) {
-          local.forEach(m => {
-            if (!['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id)) {
-              window.BongBanglaSupabase.addModel(m).catch(() => {});
-            }
-          });
-        }
         renderModelsGrid();
       }).catch(() => {});
 
