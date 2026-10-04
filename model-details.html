@@ -1015,7 +1015,17 @@
 
       let galleryList = [];
       if (Array.isArray(model.gallery) && model.gallery.length > 0) {
-        galleryList = [...model.gallery];
+        galleryList = model.gallery.map(item => {
+          // Normalize type: handle truncated values like 'v', 'vid', or detect from URL
+          let type = (item.type || 'photo').toLowerCase();
+          if (type === 'v' || type.startsWith('vid') || 
+              (item.url && /\.(mp4|webm|mov|m4v|avi|mkv)(\?|$)/i.test(item.url))) {
+            type = 'video';
+          } else if (type !== 'video') {
+            type = 'photo';
+          }
+          return { ...item, type };
+        });
       } else {
         // Curated default portfolio items
         galleryList = [
