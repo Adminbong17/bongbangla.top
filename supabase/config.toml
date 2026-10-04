@@ -15,8 +15,8 @@ major_version = 15
 
 [auth]
 enabled = true
-site_url = "http://127.0.0.1:3000"
-additional_redirect_urls = ["https://localhost:3000"]
+site_url = "https://bongbangla.top"
+additional_redirect_urls = ["https://www.bongbangla.top", "https://bongbangla.top", "https://vault.bongbangla.top"]
 jwt_expiry = 3600
 enable_signup = true
 
