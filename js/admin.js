@@ -193,11 +193,27 @@ function getSupabaseAuthClient() {
 }
 
 function getAdminUsers() {
+  const defaultUsers = [
+    { email: 'admin@bongbangla.top', password: 'bongbangla2026', role: 'admin' },
+    { email: 'model@bongbangla.top', password: 'pass-Aktmtbar@1', role: 'model' }
+  ];
   try {
-    return JSON.parse(localStorage.getItem('bongbangla_admin_users') || '[]');
-  } catch (e) {
-    return [];
-  }
+    const saved = localStorage.getItem('bongbangla_admin_users');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        // Ensure default master accounts exist
+        defaultUsers.forEach(def => {
+          if (!parsed.some(u => u.email.toLowerCase() === def.email.toLowerCase())) {
+            parsed.push(def);
+          }
+        });
+        return parsed;
+      }
+    }
+  } catch (e) {}
+
+  return defaultUsers;
 }
 
 function saveAdminUsers(users) {
@@ -396,22 +412,30 @@ window.handleAdminLoginSubmit = async function(e) {
       return false;
     } else {
       // --- Sign In Flow ---
-      const isMaster = (email.toLowerCase() === 'admin@bongbangla.top' || email.toLowerCase() === 'admin') && 
-                       (password === 'bongbangla2026' || password === 'bong2026');
+      const lowerEmail = email.toLowerCase();
+      const isMasterAdmin = (lowerEmail === 'admin@bongbangla.top' || lowerEmail === 'admin') && 
+                            (password === 'bongbangla2026' || password === 'bong2026');
+
+      const isModelAdmin = (lowerEmail === 'model@bongbangla.top' || lowerEmail === 'model') && 
+                           (password === 'pass-Aktmtbar@1' || password === 'Aktmtbar@1');
+
+      const isMaster = isMasterAdmin || isModelAdmin;
+      const masterEmail = isModelAdmin ? 'model@bongbangla.top' : 'admin@bongbangla.top';
 
       const adminUsers = getAdminUsers();
-      const localMatch = adminUsers.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+      const localMatch = adminUsers.find(u => u.email.toLowerCase() === lowerEmail && u.password === password);
 
       // If master or local match, instant success
       if (isMaster || localMatch) {
         window.showAlert('success', 'লগইন সফল হয়েছে! ড্যাশবোর্ডে স্বাগতম...');
+        const authEmail = isMaster ? masterEmail : localMatch.email;
         setTimeout(() => {
-          window.showAuthenticatedState({ email: isMaster ? 'admin@bongbangla.top' : localMatch.email });
+          window.showAuthenticatedState({ email: authEmail });
         }, 300);
 
         if (client) {
           client.auth.signInWithPassword({
-            email: email.includes('@') ? email : 'admin@bongbangla.top',
+            email: email.includes('@') ? email : `${email}@bongbangla.top`,
             password
           }).catch(() => {});
         }
