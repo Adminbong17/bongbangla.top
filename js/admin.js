@@ -147,6 +147,8 @@ window.setAuthMode = function(mode) {
 
 window.showAuthenticatedState = function(user) {
   const email = (user && user.email) ? user.email : 'admin@bongbangla.top';
+  localStorage.setItem('bongbangla_admin_auth', 'true');
+  localStorage.setItem('bongbangla_admin_email', email);
   sessionStorage.setItem('bongbangla_admin_auth', 'true');
   sessionStorage.setItem('bongbangla_admin_email', email);
 
@@ -172,6 +174,8 @@ window.showAuthenticatedState = function(user) {
 };
 
 window.showUnauthenticatedState = function() {
+  localStorage.removeItem('bongbangla_admin_auth');
+  localStorage.removeItem('bongbangla_admin_email');
   sessionStorage.removeItem('bongbangla_admin_auth');
   sessionStorage.removeItem('bongbangla_admin_email');
   const loginScreen = document.getElementById('login-screen');
@@ -200,6 +204,17 @@ window.handleAdminLogout = async function() {
   window.showUnauthenticatedState();
   window.showAlert('info', 'আপনি সফলভাবে লগআউট হয়েছেন।');
 };
+
+function hasPersistedAuth() {
+  return localStorage.getItem('bongbangla_admin_auth') === 'true' || 
+         sessionStorage.getItem('bongbangla_admin_auth') === 'true';
+}
+
+function getPersistedEmail() {
+  return localStorage.getItem('bongbangla_admin_email') || 
+         sessionStorage.getItem('bongbangla_admin_email') || 
+         'admin@bongbangla.top';
+}
 
 window.handleAdminLoginSubmit = async function(e) {
   if (e) {
@@ -337,8 +352,8 @@ window.handleAdminLoginSubmit = async function(e) {
 };
 
 function initAuth() {
-  const masterAuth = sessionStorage.getItem('bongbangla_admin_auth') === 'true';
-  const savedEmail = sessionStorage.getItem('bongbangla_admin_email') || 'admin@bongbangla.top';
+  const masterAuth = hasPersistedAuth();
+  const savedEmail = getPersistedEmail();
   const client = getSupabaseAuthClient();
 
   if (masterAuth) {
@@ -347,11 +362,13 @@ function initAuth() {
     client.auth.getSession().then(({ data: { session }, error }) => {
       if (!error && session && session.user) {
         window.showAuthenticatedState(session.user);
-      } else {
+      } else if (!hasPersistedAuth()) {
         window.showUnauthenticatedState();
       }
     }).catch(() => {
-      window.showUnauthenticatedState();
+      if (!hasPersistedAuth()) {
+        window.showUnauthenticatedState();
+      }
     });
   } else {
     window.showUnauthenticatedState();
@@ -362,7 +379,7 @@ function initAuth() {
       client.auth.onAuthStateChange((event, session) => {
         if (session && session.user) {
           window.showAuthenticatedState(session.user);
-        } else if (!sessionStorage.getItem('bongbangla_admin_auth')) {
+        } else if (!hasPersistedAuth()) {
           window.showUnauthenticatedState();
         }
       });
