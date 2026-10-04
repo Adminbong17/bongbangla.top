@@ -166,19 +166,22 @@ function renderFrontendHeroSlides() {
   // Duplicate set to create seamless infinite sliding loop
   const displaySet = slides.length < 5 ? [...slides, ...slides, ...slides, ...slides] : [...slides, ...slides];
 
-  track.innerHTML = displaySet.map(s => `
-    <div class="model-reel-card">
-      <img src="${s.image}" alt="${s.title}" loading="lazy">
-      <div class="absolute inset-0 bg-gradient-to-t from-[#2b0e23]/85 via-transparent to-black/20"></div>
-      <div class="absolute top-3 left-3 px-2.5 py-1 rounded-full model-card-badge text-[10px] font-bold text-[#db2777] flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-[#db2777] pulse-indicator"></span>
-        <span>${s.tag || '4K REC'}</span>
+  track.innerHTML = displaySet.map(s => {
+    const resolvedImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(s.image, 'hero') : s.image;
+    return `
+      <div class="model-reel-card">
+        <img src="${resolvedImg}" alt="${s.title}" loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#2b0e23]/85 via-transparent to-black/20"></div>
+        <div class="absolute top-3 left-3 px-2.5 py-1 rounded-full model-card-badge text-[10px] font-bold text-[#db2777] flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-[#db2777] pulse-indicator"></span>
+          <span>${s.tag || '4K REC'}</span>
+        </div>
+        <div class="absolute bottom-3 inset-x-3 text-center">
+          <span class="inline-block px-2.5 py-1 rounded-lg model-card-badge text-[11px] font-bold text-[#1a0515] font-bangla">${s.title}</span>
+        </div>
       </div>
-      <div class="absolute bottom-3 inset-x-3 text-center">
-        <span class="inline-block px-2.5 py-1 rounded-lg model-card-badge text-[11px] font-bold text-[#1a0515] font-bangla">${s.title}</span>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function getFrontendCategoryBadge(category) {
@@ -238,8 +241,10 @@ function renderFrontendPortfolio(filter = 'all') {
     const client = item.client || 'BongBangla Client';
     const tag = item.tag || '4K';
     const views = item.views || '১.৫M ভিউজ';
-    const thumb = item.thumbnail || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80';
-    const videoUrl = item.videoUrl || '';
+    const rawThumb = item.thumbnail || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80';
+    const rawVideo = item.videoUrl || '';
+    const thumb = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawThumb, 'thumbnails') : rawThumb;
+    const videoUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawVideo, 'reels') : rawVideo;
     const categoryLabel = getFrontendCategoryBadge(item.category);
 
     return `
@@ -308,31 +313,36 @@ function renderFrontendModels() {
     return;
   }
 
-  container.innerHTML = models.map(m => `
-    <div class="glass-panel rounded-3xl overflow-hidden group border border-[#ED96D7]/30 hover:border-[#ED96D7] transition-all hover:shadow-[0_15px_35px_rgba(237,150,215,0.3)] bg-white shadow-sm flex flex-col justify-between">
-      <div class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8]">
-        <img src="${m.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80'}" alt="${m.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-        <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full ${m.available !== false ? 'bg-white/90 text-[#be185d] border-[#ED96D7]/50' : 'bg-gray-100 text-gray-500 border-gray-300'} backdrop-blur-md text-[10px] font-bold border shadow-sm">
-          ${m.available !== false ? 'AVAILABLE' : 'BOOKED'}
+  container.innerHTML = models.map(m => {
+    const rawImg = m.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+    const modelImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImg, 'models') : rawImg;
+
+    return `
+      <div class="glass-panel rounded-3xl overflow-hidden group border border-[#ED96D7]/30 hover:border-[#ED96D7] transition-all hover:shadow-[0_15px_35px_rgba(237,150,215,0.3)] bg-white shadow-sm flex flex-col justify-between">
+        <div class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8]">
+          <img src="${modelImg}" alt="${m.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full ${m.available !== false ? 'bg-white/90 text-[#be185d] border-[#ED96D7]/50' : 'bg-gray-100 text-gray-500 border-gray-300'} backdrop-blur-md text-[10px] font-bold border shadow-sm">
+            ${m.available !== false ? 'AVAILABLE' : 'BOOKED'}
+          </div>
+        </div>
+        <div class="p-5 space-y-3 font-bangla">
+          <div class="flex items-center justify-between gap-2">
+            <h4 class="font-bangla font-bold text-[#2b0e23] text-base">${m.name}</h4>
+            <span class="text-xs text-[#db2777] font-bold truncate">${m.category || 'মডেল'}</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center text-[10px] text-[#572449] bg-[#fdf2f8] p-2 rounded-xl border border-[#ED96D7]/20">
+            <div>হাইট: <span class="text-[#2b0e23] font-bold">${m.height || "৫'৭\""}</span></div>
+            <div>শ্যুট: <span class="text-[#2b0e23] font-bold">${m.shoots || '২০+'}</span></div>
+            <div>স্ট্যাটাস: <span class="text-[#db2777] font-bold">${m.available !== false ? 'অ্যাক্টিভ' : 'বুকড'}</span></div>
+          </div>
+          <button class="open-booking-modal w-full py-2.5 rounded-xl bg-[#fdf2f8] hover:bg-gradient-to-r hover:from-[#ED96D7] hover:to-[#db2777] hover:text-white text-[#be185d] text-xs font-bold transition-all border border-[#ED96D7]/40 shadow-sm"
+                  data-service-preset="model-portfolio">
+            কাস্টিং বুক করুন
+          </button>
         </div>
       </div>
-      <div class="p-5 space-y-3 font-bangla">
-        <div class="flex items-center justify-between gap-2">
-          <h4 class="font-bangla font-bold text-[#2b0e23] text-base">${m.name}</h4>
-          <span class="text-xs text-[#db2777] font-bold truncate">${m.category || 'মডেল'}</span>
-        </div>
-        <div class="grid grid-cols-3 gap-2 text-center text-[10px] text-[#572449] bg-[#fdf2f8] p-2 rounded-xl border border-[#ED96D7]/20">
-          <div>হাইট: <span class="text-[#2b0e23] font-bold">${m.height || "৫'৭\""}</span></div>
-          <div>শ্যুট: <span class="text-[#2b0e23] font-bold">${m.shoots || '২০+'}</span></div>
-          <div>স্ট্যাটাস: <span class="text-[#db2777] font-bold">${m.available !== false ? 'অ্যাক্টিভ' : 'বুকড'}</span></div>
-        </div>
-        <button class="open-booking-modal w-full py-2.5 rounded-xl bg-[#fdf2f8] hover:bg-gradient-to-r hover:from-[#ED96D7] hover:to-[#db2777] hover:text-white text-[#be185d] text-xs font-bold transition-all border border-[#ED96D7]/40 shadow-sm"
-                data-service-preset="model-portfolio">
-          কাস্টিং বুক করুন
-        </button>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function initPortfolioFilter() {

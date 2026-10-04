@@ -871,8 +871,14 @@
           </div>
         </div>
         <div>
-          <label class="block text-[#572449] font-bold mb-1">ছবির URL (Photo Image Link)</label>
-          <input type="url" name="image" placeholder="https://images.unsplash.com/..." class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[#572449] font-bold">ছবির URL (Photo Image Link)</label>
+            <button type="button" onclick="setVaultHelperInput('model-image-input', 'models/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
+              <i class="fa-solid fa-cloud-arrow-up mr-0.5"></i> Vault CDN (+models/)
+            </button>
+          </div>
+          <input type="text" id="model-image-input" name="image" placeholder="https://vault.bongbangla.top/models/model1.jpg" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          <span class="text-[10px] text-[#8c4f75] mt-0.5 block">সরাসরি Vault CDN লিংক বা Unsplash ফটো URL সাপোর্ট করে</span>
         </div>
 
         <button type="submit" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2">
@@ -892,6 +898,16 @@
           <i class="fa-solid fa-video text-[#db2777]"></i> নতুন ৯:১৬ রিলস ভিডিও আপলোড
         </h4>
         <button id="close-add-reel-btn" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
+      </div>
+
+      <!-- Vault CDN Badge Alert -->
+      <div class="p-2.5 bg-pink-50/80 rounded-xl border border-[#ED96D7]/40 flex items-center justify-between text-[11px] text-[#8c4f75] font-bangla">
+        <span class="flex items-center gap-1.5 font-semibold text-[#be185d]">
+          <i class="fa-solid fa-hard-drive"></i> Vault CDN স্টোরেজ:
+        </span>
+        <span class="font-mono text-[10px] text-emerald-700 font-bold bg-white px-2 py-0.5 rounded-md border border-emerald-300">
+          vault.bongbangla.top
+        </span>
       </div>
 
       <form id="add-reel-form" class="space-y-3 text-xs font-bangla">
@@ -929,14 +945,24 @@
         </div>
 
         <div>
-          <label class="block text-[#572449] font-bold mb-1">ভিডিও লিংক (Direct MP4 URL) *</label>
-          <input type="url" name="videoUrl" required placeholder="https://assets.mixkit.co/videos/..." value="https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-studio-setting-41793-large.mp4" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
-          <span class="text-[10px] text-[#8c4f75] mt-0.5 block">যেকোনো ৯:১৬ ডিরেক্ট MP4 ভিডিও লিংক সাপোর্ট করে</span>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[#572449] font-bold">ভিডিও লিংক (Direct MP4 URL) *</label>
+            <button type="button" onclick="setVaultHelperInput('reel-video-input', 'reels/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
+              <i class="fa-solid fa-bolt mr-0.5"></i> Vault (+reels/)
+            </button>
+          </div>
+          <input type="text" id="reel-video-input" name="videoUrl" required placeholder="https://vault.bongbangla.top/reels/video1.mp4" value="https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-studio-setting-41793-large.mp4" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          <span class="text-[10px] text-[#8c4f75] mt-0.5 block">সরাসরি Vault CDN লিংক বা যেকোনো ডিরেক্ট MP4 সাপোর্ট করে</span>
         </div>
 
         <div>
-          <label class="block text-[#572449] font-bold mb-1">পোস্টার / থাম্বনেইল ছবির URL *</label>
-          <input type="url" name="thumbnail" required placeholder="https://images.unsplash.com/..." value="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=720&h=1280&q=80" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[#572449] font-bold">পোস্টার / থাম্বনেইল ছবির URL *</label>
+            <button type="button" onclick="setVaultHelperInput('reel-thumb-input', 'thumbnails/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
+              <i class="fa-solid fa-image mr-0.5"></i> Vault (+thumbnails/)
+            </button>
+          </div>
+          <input type="text" id="reel-thumb-input" name="thumbnail" required placeholder="https://vault.bongbangla.top/thumbnails/thumb1.jpg" value="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=720&h=1280&q=80" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
         </div>
 
         <button type="submit" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2">
@@ -960,9 +986,14 @@
 
       <form id="add-hero-slide-form" class="space-y-3.5 text-xs font-bangla">
         <div>
-          <label class="block text-[#572449] font-bold mb-1">ইমেজের URL (Photo Link) *</label>
-          <input type="url" name="image" required placeholder="https://images.unsplash.com/..." class="w-full bg-[#fdf2f8] border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
-          <span class="text-[10px] text-[#8c4f75] mt-0.5 block">৯:১৬ রেশিওর পোর্ট্রেট ইমেজ লিংক দিন</span>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[#572449] font-bold">ইমেজের URL (Photo Link) *</label>
+            <button type="button" onclick="setVaultHelperInput('hero-slide-image-input', 'hero/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
+              <i class="fa-solid fa-cloud-arrow-up mr-0.5"></i> Vault (+hero/)
+            </button>
+          </div>
+          <input type="text" id="hero-slide-image-input" name="image" required placeholder="https://vault.bongbangla.top/hero/slide1.jpg" class="w-full bg-[#fdf2f8] border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          <span class="text-[10px] text-[#8c4f75] mt-0.5 block">৯:১৬ রেশিওর পোর্ট্রেট ইমেজ লিংক দিন (Vault CDN বা Unsplash)</span>
         </div>
 
         <div>
@@ -983,20 +1014,35 @@
   </div>
 
   <!-- ========================================================================
-       Modal: Supabase Database Cloud Configuration
+       Modal: Supabase & Vault CDN Cloud Configuration
        ======================================================================== -->
   <div id="supabase-settings-modal" class="fixed inset-0 z-50 hidden bg-[#2b0e23]/60 backdrop-blur-md flex items-center justify-center p-4">
     <div class="max-w-lg w-full glass-panel p-6 sm:p-8 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
         <h4 class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
-          <i class="fa-solid fa-cloud text-emerald-600"></i> Supabase ক্লাউড ডাটাবেস ইন্টিগ্রেশন
+          <i class="fa-solid fa-cloud text-emerald-600"></i> ক্লাউড ডাটাবেস ও Vault CDN ইন্টিগ্রেশন
         </h4>
         <button id="close-supabase-settings-btn" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
       </div>
 
+      <!-- Vault CDN Status Card -->
+      <div class="p-3 bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl border border-[#ED96D7]/50 text-xs text-[#2b0e23] font-bangla space-y-1.5 shadow-xs">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-[#db2777] flex items-center gap-1.5">
+            <i class="fa-solid fa-server text-sm"></i> High-Speed Media Vault CDN
+          </span>
+          <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-indicator"></span> কানেক্টেড (Active)
+          </span>
+        </div>
+        <p class="text-[11px] text-[#572449] leading-relaxed">
+          Supabase এর সীমিত স্টোরেজ বাচিয়ে সব ৪K ভিডিও ও মিডিয়া ফাইল সরাসরি <strong>vault.bongbangla.top</strong> থেকে দ্রুত গতিতে স্ট্রিম হয়।
+        </p>
+      </div>
+
       <div class="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs text-emerald-800 font-bangla space-y-1">
         <div class="font-bold flex items-center gap-1.5">
-          <i class="fa-solid fa-circle-check text-emerald-600"></i> Lovable & GitHub ক্লাউড সিঙ্ক রেডি
+          <i class="fa-solid fa-circle-check text-emerald-600"></i> Lovable, GitHub & Supabase সিঙ্ক রেডি
         </div>
         <p class="text-[11px] leading-relaxed text-emerald-700">
           Supabase ড্যাশবোর্ডের <strong>Project Settings > API</strong> থেকে Project URL এবং Anon Key নিচে পেস্ট করুন।
@@ -1004,6 +1050,11 @@
       </div>
 
       <form id="supabase-settings-form" class="space-y-3.5 text-xs font-bangla">
+        <div>
+          <label class="block text-[#572449] font-bold mb-1">Media Vault CDN URL *</label>
+          <input type="url" id="vault-input-url" required placeholder="https://vault.bongbangla.top" value="https://vault.bongbangla.top" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] font-mono text-xs">
+        </div>
+
         <div>
           <label class="block text-[#572449] font-bold mb-1">Supabase Project URL *</label>
           <input type="url" id="supabase-input-url" required placeholder="https://xyzcompany.supabase.co" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] font-mono text-xs">
@@ -1026,11 +1077,12 @@
     </div>
   </div>
 
-  <!-- JavaScript Logics with Supabase CDN -->
+  <!-- JavaScript Logics with Vault & Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-config.js?v=20261004_v3"></script>
-  <script src="js/supabase-client.js?v=20261004_v3"></script>
-  <script src="js/reels.js?v=20261004_v3"></script>
-  <script src="js/admin.js?v=20261004_v3"></script>
+  <script src="js/vault-config.js?v=20261004_v4"></script>
+  <script src="js/supabase-config.js?v=20261004_v4"></script>
+  <script src="js/supabase-client.js?v=20261004_v4"></script>
+  <script src="js/reels.js?v=20261004_v4"></script>
+  <script src="js/admin.js?v=20261004_v4"></script>
 </body>
 </html>

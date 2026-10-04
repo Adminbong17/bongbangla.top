@@ -5,6 +5,21 @@
  * Theme: White Pinkish Luxury Aesthetic (#ED96D7)
  */
 
+// Vault CDN Helper for quick URL generation in Admin Modals
+window.setVaultHelperInput = function(inputId, folder) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const baseUrl = window.BongBanglaVault ? window.BongBanglaVault.getBaseUrl() : 'https://vault.bongbangla.top';
+  let val = input.value.trim();
+  if (!val || val.includes('unsplash.com') || val.includes('mixkit.co')) {
+    input.value = `${baseUrl}/${folder}`;
+  } else if (!val.startsWith('http')) {
+    input.value = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(val, folder) : `${baseUrl}/${folder}${val}`;
+  }
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+};
+
 function initAdminApp() {
   initLogoSwitcher();
   initAuth();
@@ -564,13 +579,15 @@ function initDashboard() {
       e.preventDefault();
       const formData = new FormData(addModelForm);
       const models = getModels();
+      const rawImage = formData.get('image') || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+      const formattedImage = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImage, 'models') : rawImage;
       const newModel = {
         id: 'M-' + Date.now(),
         name: formData.get('name'),
         category: formData.get('category'),
         height: formData.get('height') || '৫\'৭"',
         shoots: formData.get('shoots') || '২৫+',
-        image: formData.get('image') || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+        image: formattedImage,
         available: true
       };
       models.push(newModel);
@@ -890,6 +907,7 @@ function initSupabaseAdmin() {
   const closeBtn = document.getElementById('close-supabase-settings-btn');
   const modal = document.getElementById('supabase-settings-modal');
   const form = document.getElementById('supabase-settings-form');
+  const vaultInput = document.getElementById('vault-input-url');
   const urlInput = document.getElementById('supabase-input-url');
   const keyInput = document.getElementById('supabase-input-key');
 
@@ -905,6 +923,10 @@ function initSupabaseAdmin() {
       if (statusText) statusText.textContent = 'লোকাল মোড (Connect)';
     }
   };
+
+  if (window.BongBanglaVault && vaultInput) {
+    vaultInput.value = window.BongBanglaVault.getBaseUrl();
+  }
 
   if (window.BongBanglaSupabase) {
     const cfg = window.BongBanglaSupabase.getConfig();
@@ -950,6 +972,9 @@ function initSupabaseAdmin() {
   if (openBtn && modal && !openBtn.dataset.initialized) {
     openBtn.dataset.initialized = 'true';
     openBtn.addEventListener('click', () => {
+      if (window.BongBanglaVault && vaultInput) {
+        vaultInput.value = window.BongBanglaVault.getBaseUrl();
+      }
       if (window.BongBanglaSupabase) {
         const cfg = window.BongBanglaSupabase.getConfig();
         if (urlInput) urlInput.value = cfg.url || '';
@@ -961,12 +986,18 @@ function initSupabaseAdmin() {
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
+      const vaultUrl = vaultInput ? vaultInput.value.trim() : 'https://vault.bongbangla.top';
       const url = urlInput.value.trim();
       const key = keyInput.value.trim();
+
+      if (window.BongBanglaVault) {
+        window.BongBanglaVault.setBaseUrl(vaultUrl);
+      }
+
       if (window.BongBanglaSupabase) {
         window.BongBanglaSupabase.saveConfig(url, key);
         updateStatusUI();
-        alert('Supabase ক্রেডেনশিয়াল সফলভাবে সংরক্ষণ হয়েছে!');
+        alert('Vault CDN ও Supabase ক্রেডেনশিয়াল সফলভাবে সংরক্ষণ হয়েছে!');
         modal.classList.add('hidden');
         renderDashboard();
       }
@@ -1010,6 +1041,12 @@ function initReelsAdmin() {
     addReelForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(addReelForm);
+      const rawVideoUrl = formData.get('videoUrl');
+      const rawThumb = formData.get('thumbnail');
+
+      const videoUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawVideoUrl, 'reels') : rawVideoUrl;
+      const thumbnail = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawThumb, 'thumbnails') : rawThumb;
+
       const newReel = {
         id: 'reel-' + Date.now(),
         title: formData.get('title'),
@@ -1017,8 +1054,8 @@ function initReelsAdmin() {
         category: formData.get('category'),
         tag: formData.get('tag') || '4K CINEMA',
         views: formData.get('views') || '১.৫M ভিউজ',
-        videoUrl: formData.get('videoUrl'),
-        thumbnail: formData.get('thumbnail'),
+        videoUrl: videoUrl,
+        thumbnail: thumbnail,
         date: new Date().toISOString().split('T')[0]
       };
 
@@ -1286,141 +1323,151 @@ function renderAdminReels(category = 'all') {
 
   // 1. Render Table / List View
   if (listBody) {
-    listBody.innerHTML = reels.map(r => `
-      <tr class="hover:bg-[#fff8fa] transition-colors border-b border-[#ED96D7]/15">
-        <!-- Checkbox -->
-        <td class="py-3 px-3 text-center">
-          <input type="checkbox" class="reel-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer"
-                 data-id="${r.id}"
-                 ${selectedReelIds.has(r.id) ? 'checked' : ''}
-                 onchange="toggleReelSelection('${r.id}', this.checked)">
-        </td>
+    listBody.innerHTML = reels.map(r => {
+      const thumb = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(r.thumbnail, 'thumbnails') : r.thumbnail;
+      const video = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(r.videoUrl, 'reels') : r.videoUrl;
 
-        <!-- Thumbnail -->
-        <td class="py-3 px-4">
-          <div class="w-12 h-16 rounded-xl overflow-hidden bg-black relative border border-[#ED96D7]/30 shrink-0 shadow-xs cursor-pointer group"
-               onclick="window.BongBanglaReels.openReelVideoModal('${r.videoUrl}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')">
-            <img src="${r.thumbnail}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
-            <div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-              <i class="fa-solid fa-play"></i>
+      return `
+        <tr class="hover:bg-[#fff8fa] transition-colors border-b border-[#ED96D7]/15">
+          <!-- Checkbox -->
+          <td class="py-3 px-3 text-center">
+            <input type="checkbox" class="reel-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer"
+                   data-id="${r.id}"
+                   ${selectedReelIds.has(r.id) ? 'checked' : ''}
+                   onchange="toggleReelSelection('${r.id}', this.checked)">
+          </td>
+
+          <!-- Thumbnail -->
+          <td class="py-3 px-4">
+            <div class="w-12 h-16 rounded-xl overflow-hidden bg-black relative border border-[#ED96D7]/30 shrink-0 shadow-xs cursor-pointer group"
+                 onclick="window.BongBanglaReels.openReelVideoModal('${video}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')">
+              <img src="${thumb}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+              <div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                <i class="fa-solid fa-play"></i>
+              </div>
             </div>
-          </div>
-        </td>
+          </td>
 
-        <!-- Title & Client -->
-        <td class="py-3 px-4">
-          <div class="font-bold text-[#2b0e23] text-xs">${r.title}</div>
-          <div class="text-[11px] text-[#db2777] font-semibold mt-0.5 flex items-center gap-1">
-            <i class="fa-solid fa-user-tag text-[9px]"></i>
-            <span>${r.client || 'BongBangla Client'}</span>
-          </div>
-        </td>
+          <!-- Title & Client -->
+          <td class="py-3 px-4">
+            <div class="font-bold text-[#2b0e23] text-xs">${r.title}</div>
+            <div class="text-[11px] text-[#db2777] font-semibold mt-0.5 flex items-center gap-1">
+              <i class="fa-solid fa-user-tag text-[9px]"></i>
+              <span>${r.client || 'BongBangla Client'}</span>
+            </div>
+          </td>
 
-        <!-- Category -->
-        <td class="py-3 px-4">
-          <span class="inline-block px-2.5 py-1 rounded-full bg-pink-50 text-[#be185d] border border-[#ED96D7]/30 text-[11px] font-semibold">
-            ${categoryNames[r.category] || r.category}
-          </span>
-        </td>
+          <!-- Category -->
+          <td class="py-3 px-4">
+            <span class="inline-block px-2.5 py-1 rounded-full bg-pink-50 text-[#be185d] border border-[#ED96D7]/30 text-[11px] font-semibold">
+              ${categoryNames[r.category] || r.category}
+            </span>
+          </td>
 
-        <!-- Tag / Resolution -->
-        <td class="py-3 px-4">
-          <span class="inline-block px-2 py-0.5 rounded bg-slate-100 text-[#572449] font-mono text-[10px] font-bold">
-            ${r.tag || '4K'}
-          </span>
-        </td>
+          <!-- Tag / Resolution -->
+          <td class="py-3 px-4">
+            <span class="inline-block px-2 py-0.5 rounded bg-slate-100 text-[#572449] font-mono text-[10px] font-bold">
+              ${r.tag || '4K'}
+            </span>
+          </td>
 
-        <!-- Views -->
-        <td class="py-3 px-4 font-mono font-bold text-xs text-[#2b0e23]">
-          ${r.views || '-'}
-        </td>
+          <!-- Views -->
+          <td class="py-3 px-4 font-mono font-bold text-xs text-[#2b0e23]">
+            ${r.views || '-'}
+          </td>
 
-        <!-- Date -->
-        <td class="py-3 px-4 text-gray-500 font-mono text-[11px]">
-          ${r.date || '২০২৬'}
-        </td>
+          <!-- Date -->
+          <td class="py-3 px-4 text-gray-500 font-mono text-[11px]">
+            ${r.date || '২০২৬'}
+          </td>
 
-        <!-- Actions (View Video / Delete) -->
-        <td class="py-3 px-4 text-right">
-          <div class="flex items-center justify-end gap-1.5">
-            <!-- View / Play Button -->
-            <button onclick="window.BongBanglaReels.openReelVideoModal('${r.videoUrl}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')"
-                    class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#db2777] to-[#be185d] text-white text-xs font-bold flex items-center gap-1 shadow-xs hover:opacity-95 transition-all"
-                    title="ভিডিও ভিউ ও প্লে করুন">
-              <i class="fa-solid fa-eye text-[11px]"></i>
-              <span>ভিউ (View)</span>
-            </button>
+          <!-- Actions (View Video / Delete) -->
+          <td class="py-3 px-4 text-right">
+            <div class="flex items-center justify-end gap-1.5">
+              <!-- View / Play Button -->
+              <button onclick="window.BongBanglaReels.openReelVideoModal('${video}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')"
+                      class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#db2777] to-[#be185d] text-white text-xs font-bold flex items-center gap-1 shadow-xs hover:opacity-95 transition-all"
+                      title="ভিডিও ভিউ ও প্লে করুন">
+                <i class="fa-solid fa-eye text-[11px]"></i>
+                <span>ভিউ (View)</span>
+              </button>
 
-            <!-- Delete Button -->
-            <button onclick="deleteAdminReel('${r.id}')"
-                    class="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 inline-flex items-center justify-center transition-colors shadow-xs"
-                    title="রিলস ডিলিট করুন">
-              <i class="fa-solid fa-trash-can text-xs"></i>
-            </button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+              <!-- Delete Button -->
+              <button onclick="deleteAdminReel('${r.id}')"
+                      class="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 inline-flex items-center justify-center transition-colors shadow-xs"
+                      title="রিলস ডিলিট করুন">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
   }
 
   // 2. Render Grid View
   if (grid) {
-    grid.innerHTML = reels.map(r => `
-      <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/35 group hover:border-[#db2777] shadow-sm hover:shadow-md transition-all bg-white flex flex-col justify-between relative">
-        
-        <!-- 9:16 Thumbnail Preview -->
-        <div class="aspect-[9/16] relative overflow-hidden bg-black">
-          <img src="${r.thumbnail}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
+    grid.innerHTML = reels.map(r => {
+      const thumb = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(r.thumbnail, 'thumbnails') : r.thumbnail;
+      const video = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(r.videoUrl, 'reels') : r.videoUrl;
 
-          <!-- Top Badges, Checkbox & Delete Button -->
-          <div class="absolute top-2 inset-x-2 flex items-center justify-between z-10">
-            <div class="flex items-center gap-1.5">
-              <input type="checkbox" class="reel-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer bg-white/90 shadow-sm"
-                     data-id="${r.id}"
-                     ${selectedReelIds.has(r.id) ? 'checked' : ''}
-                     onchange="toggleReelSelection('${r.id}', this.checked)">
-              <span class="px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-[#db2777] shadow-sm">
-                ${r.tag || '4K'}
+      return `
+        <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/35 group hover:border-[#db2777] shadow-sm hover:shadow-md transition-all bg-white flex flex-col justify-between relative">
+          
+          <!-- 9:16 Thumbnail Preview -->
+          <div class="aspect-[9/16] relative overflow-hidden bg-black">
+            <img src="${thumb}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
+
+            <!-- Top Badges, Checkbox & Delete Button -->
+            <div class="absolute top-2 inset-x-2 flex items-center justify-between z-10">
+              <div class="flex items-center gap-1.5">
+                <input type="checkbox" class="reel-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer bg-white/90 shadow-sm"
+                       data-id="${r.id}"
+                       ${selectedReelIds.has(r.id) ? 'checked' : ''}
+                       onchange="toggleReelSelection('${r.id}', this.checked)">
+                <span class="px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-[#db2777] shadow-sm">
+                  ${r.tag || '4K'}
+                </span>
+              </div>
+              <button onclick="deleteAdminReel('${r.id}')" class="w-7 h-7 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-colors" title="রিলস ডিলিট করুন">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+
+            <!-- Play preview trigger -->
+            <button onclick="window.BongBanglaReels.openReelVideoModal('${video}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')" class="absolute inset-0 flex items-center justify-center text-white/90 hover:text-white transition-all">
+              <div class="w-11 h-11 rounded-full bg-[#db2777]/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-play ml-0.5 text-sm"></i>
+              </div>
+            </button>
+
+            <!-- Bottom Client Name -->
+            <div class="absolute bottom-2 inset-x-2 text-left pointer-events-none">
+              <span class="inline-block px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-bold">
+                ${r.client}
               </span>
             </div>
-            <button onclick="deleteAdminReel('${r.id}')" class="w-7 h-7 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-colors" title="রিলস ডিলিট করুন">
-              <i class="fa-solid fa-trash-can"></i>
+          </div>
+
+          <!-- Info Footer -->
+          <div class="p-3 space-y-1.5 font-bangla text-xs bg-white">
+            <div class="font-bold text-[#2b0e23] line-clamp-1" title="${r.title}">${r.title}</div>
+            <div class="flex items-center justify-between text-[11px] text-[#8c4f75] pt-1.5 border-t border-[#ED96D7]/20">
+              <span class="text-[#db2777] font-semibold">${categoryNames[r.category] || r.category}</span>
+              <span class="font-medium">${r.views || ''}</span>
+            </div>
+            <!-- View Button in card -->
+            <button onclick="window.BongBanglaReels.openReelVideoModal('${video}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')"
+                    class="w-full mt-2 py-1.5 rounded-xl bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
+              <i class="fa-solid fa-eye text-xs"></i>
+              <span>ভিডিও ভিউ করুন</span>
             </button>
           </div>
 
-          <!-- Play preview trigger -->
-          <button onclick="window.BongBanglaReels.openReelVideoModal('${r.videoUrl}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')" class="absolute inset-0 flex items-center justify-center text-white/90 hover:text-white transition-all">
-            <div class="w-11 h-11 rounded-full bg-[#db2777]/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-              <i class="fa-solid fa-play ml-0.5 text-sm"></i>
-            </div>
-          </button>
-
-          <!-- Bottom Client Name -->
-          <div class="absolute bottom-2 inset-x-2 text-left pointer-events-none">
-            <span class="inline-block px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-bold">
-              ${r.client}
-            </span>
-          </div>
         </div>
-
-        <!-- Info Footer -->
-        <div class="p-3 space-y-1.5 font-bangla text-xs bg-white">
-          <div class="font-bold text-[#2b0e23] line-clamp-1" title="${r.title}">${r.title}</div>
-          <div class="flex items-center justify-between text-[11px] text-[#8c4f75] pt-1.5 border-t border-[#ED96D7]/20">
-            <span class="text-[#db2777] font-semibold">${categoryNames[r.category] || r.category}</span>
-            <span class="font-medium">${r.views || ''}</span>
-          </div>
-          <!-- View Button in card -->
-          <button onclick="window.BongBanglaReels.openReelVideoModal('${r.videoUrl}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')"
-                  class="w-full mt-2 py-1.5 rounded-xl bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
-            <i class="fa-solid fa-eye text-xs"></i>
-            <span>ভিডিও ভিউ করুন</span>
-          </button>
-        </div>
-
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   setReelViewMode(currentReelViewMode);
@@ -1483,32 +1530,37 @@ function renderModelsGrid() {
     return;
   }
 
-  grid.innerHTML = models.map(m => `
-    <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/30 group hover:border-[#ED96D7] shadow-sm hover:shadow-md transition-all bg-white relative">
-      <div class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8]">
-        <img src="${m.image}" alt="${m.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-        
-        <!-- Top Checkbox and Delete Button -->
-        <div class="absolute top-2.5 inset-x-2.5 flex items-center justify-between z-10">
-          <input type="checkbox" class="model-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer bg-white/90 shadow-sm"
-                 data-id="${m.id}"
-                 ${selectedModelIds.has(m.id) ? 'checked' : ''}
-                 onchange="toggleModelSelection('${m.id}', this.checked)">
-          <button onclick="deleteModel('${m.id}')" class="w-8 h-8 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-colors" title="মডেল রিমুভ করুন">
-            <i class="fa-solid fa-trash-can"></i>
-          </button>
+  grid.innerHTML = models.map(m => {
+    const rawImg = m.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+    const modelImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImg, 'models') : rawImg;
+
+    return `
+      <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/30 group hover:border-[#ED96D7] shadow-sm hover:shadow-md transition-all bg-white relative">
+        <div class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8]">
+          <img src="${modelImg}" alt="${m.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          
+          <!-- Top Checkbox and Delete Button -->
+          <div class="absolute top-2.5 inset-x-2.5 flex items-center justify-between z-10">
+            <input type="checkbox" class="model-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer bg-white/90 shadow-sm"
+                   data-id="${m.id}"
+                   ${selectedModelIds.has(m.id) ? 'checked' : ''}
+                   onchange="toggleModelSelection('${m.id}', this.checked)">
+            <button onclick="deleteModel('${m.id}')" class="w-8 h-8 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-colors" title="মডেল রিমুভ করুন">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        </div>
+        <div class="p-4 space-y-1.5 font-bangla text-xs">
+          <div class="font-bold text-[#2b0e23] text-sm">${m.name}</div>
+          <div class="text-[#be185d] text-[11px] font-semibold">${m.category}</div>
+          <div class="flex items-center justify-between text-[#8c4f75] text-[11px] pt-2 border-t border-[#ED96D7]/20">
+            <span>উচ্চতা: ${m.height}</span>
+            <span>শ্যুট: ${m.shoots}</span>
+          </div>
         </div>
       </div>
-      <div class="p-4 space-y-1.5 font-bangla text-xs">
-        <div class="font-bold text-[#2b0e23] text-sm">${m.name}</div>
-        <div class="text-[#be185d] text-[11px] font-semibold">${m.category}</div>
-        <div class="flex items-center justify-between text-[#8c4f75] text-[11px] pt-2 border-t border-[#ED96D7]/20">
-          <span>উচ্চতা: ${m.height}</span>
-          <span>শ্যুট: ${m.shoots}</span>
-        </div>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   updateModelsBulkUI();
 }
@@ -1650,42 +1702,46 @@ function renderAdminHeroSlides() {
 
   if (emptyState) emptyState.classList.add('hidden');
 
-  grid.innerHTML = slides.map(s => `
-    <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/35 group hover:border-[#db2777] shadow-sm hover:shadow-md transition-all bg-white flex flex-col justify-between relative">
-      <div class="aspect-[9/16] relative overflow-hidden bg-black">
-        <img src="${s.image}" alt="${s.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
-        
-        <!-- Top Checkbox & Delete -->
-        <div class="absolute top-2 inset-x-2 flex items-center justify-between z-10">
-          <input type="checkbox" class="hero-slide-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer bg-white/90 shadow-sm"
-                 data-id="${s.id}"
-                 ${selectedHeroSlideIds.has(s.id) ? 'checked' : ''}
-                 onchange="toggleHeroSlideSelection('${s.id}', this.checked)">
-          <button onclick="deleteAdminHeroSlide('${s.id}')" class="w-7 h-7 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-colors" title="মুছে ফেলুন">
-            <i class="fa-solid fa-trash-can"></i>
-          </button>
-        </div>
+  grid.innerHTML = slides.map(s => {
+    const slideImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(s.image, 'hero') : s.image;
 
-        <!-- Top Badge -->
-        <div class="absolute top-8 left-2 pointer-events-none">
-          <span class="px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-[#db2777] shadow-sm">
-            ${s.tag || 'HERO'}
-          </span>
-        </div>
+    return `
+      <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/35 group hover:border-[#db2777] shadow-sm hover:shadow-md transition-all bg-white flex flex-col justify-between relative">
+        <div class="aspect-[9/16] relative overflow-hidden bg-black">
+          <img src="${slideImg}" alt="${s.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
+          
+          <!-- Top Checkbox & Delete -->
+          <div class="absolute top-2 inset-x-2 flex items-center justify-between z-10">
+            <input type="checkbox" class="hero-slide-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer bg-white/90 shadow-sm"
+                   data-id="${s.id}"
+                   ${selectedHeroSlideIds.has(s.id) ? 'checked' : ''}
+                   onchange="toggleHeroSlideSelection('${s.id}', this.checked)">
+            <button onclick="deleteAdminHeroSlide('${s.id}')" class="w-7 h-7 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-colors" title="মুছে ফেলুন">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
 
-        <!-- Bottom Title -->
-        <div class="absolute bottom-2 inset-x-2 text-center pointer-events-none">
-          <span class="inline-block px-2 py-0.5 rounded bg-black/70 text-white text-[10px] font-bold font-bangla line-clamp-1">
-            ${s.title || 'হিরো কার্ড'}
-          </span>
+          <!-- Top Badge -->
+          <div class="absolute top-8 left-2 pointer-events-none">
+            <span class="px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-[#db2777] shadow-sm">
+              ${s.tag || 'HERO'}
+            </span>
+          </div>
+
+          <!-- Bottom Title -->
+          <div class="absolute bottom-2 inset-x-2 text-center pointer-events-none">
+            <span class="inline-block px-2 py-0.5 rounded bg-black/70 text-white text-[10px] font-bold font-bangla line-clamp-1">
+              ${s.title || 'হিরো কার্ড'}
+            </span>
+          </div>
+        </div>
+        <div class="p-2.5 text-center font-bangla text-xs bg-white">
+          <div class="font-bold text-[#2b0e23] line-clamp-1 text-[11px]">${s.title || 'হিরো কার্ড'}</div>
         </div>
       </div>
-      <div class="p-2.5 text-center font-bangla text-xs bg-white">
-        <div class="font-bold text-[#2b0e23] line-clamp-1 text-[11px]">${s.title || 'হিরো কার্ড'}</div>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   updateHeroSlidesBulkUI();
 }
@@ -1706,18 +1762,20 @@ function initHeroSlidesAdmin() {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         const formData = new FormData(form);
-        const image = (formData.get('image') || '').toString().trim();
+        const rawImage = (formData.get('image') || '').toString().trim();
         const title = (formData.get('title') || '').toString().trim();
         const tag = (formData.get('tag') || '4K REC').toString().trim();
 
-        if (!image || !title) {
+        if (!rawImage || !title) {
           alert('অনুগ্রহ করে ছবির লিংক এবং শিরোনাম লিখুন!');
           return;
         }
 
+        const formattedImage = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImage, 'hero') : rawImage;
+
         const newSlide = {
           id: 'hero-' + Date.now(),
-          image: image,
+          image: formattedImage,
           title: title,
           tag: tag
         };
@@ -1734,4 +1792,5 @@ function initHeroSlidesAdmin() {
     }
   }
 }
+
 

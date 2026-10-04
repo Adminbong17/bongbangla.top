@@ -700,8 +700,11 @@ async function initReelsPage(options = {}) {
       const viewsText = reel.views || '1.5M ভিউজ';
       const clientName = reel.client || 'BongBangla Client';
       const title = reel.title || 'সিনেমাটিক কমার্শিয়াল রিল';
-      const thumb = reel.thumbnail || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=720&h=1280&q=80';
-      const video = reel.videoUrl || '';
+      const rawThumb = reel.thumbnail || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=720&h=1280&q=80';
+      const rawVideo = reel.videoUrl || '';
+      
+      const thumb = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawThumb, 'thumbnails') : rawThumb;
+      const video = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawVideo, 'reels') : rawVideo;
 
       return `
         <div class="reel-card group relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white border border-[#ED96D7]/40 shadow-lg hover:shadow-2xl hover:border-[#db2777] transition-all duration-300 flex flex-col justify-between"
@@ -914,6 +917,7 @@ function openReelVideoModal(videoUrl, title, client) {
   }
 
   // Populate data
+  const resolvedVideoUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(videoUrl, 'reels') : videoUrl;
   const videoElem = modal.querySelector('#modal-reel-video');
   const sourceElem = modal.querySelector('#modal-reel-source');
   const titleElem = modal.querySelector('#modal-reel-title');
@@ -922,7 +926,7 @@ function openReelVideoModal(videoUrl, title, client) {
 
   if (titleElem) titleElem.textContent = title;
   if (clientElem) clientElem.textContent = client;
-  if (sourceElem) sourceElem.src = videoUrl;
+  if (sourceElem) sourceElem.src = resolvedVideoUrl;
   if (videoElem) {
     videoElem.load();
     videoElem.play().catch(() => {});
