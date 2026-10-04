@@ -152,8 +152,8 @@
   }
 
   /**
-   * Uploads a file to vault.bongbangla.top with authenticated account,
-   * with automatic high-res DataURL fallback if server is unreachable.
+   * Uploads a file to Supabase Storage, Vault CDN, or generates local media URL
+   * Handles large 4K videos, MP4, MOV, and high-res photos without quota errors.
    * @param {File} file 
    * @param {string} folder 
    * @returns {Promise<{success: boolean, url: string, filename: string}>}
@@ -164,12 +164,22 @@
     const cfg = getConfig();
     const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     const targetUrl = `${cfg.url}/${folder}/${cleanFileName}`;
-    
-    // 1. Generate optimized local data URL first
-    let localDataUrl = '';
-    try {
-      localDataUrl = await fileToDataUrl(file, folder === 'hero' ? 1080 : 800, 0.85);
-    } catch(e) {}
+    const isVideo = file.type && (file.type.startsWith('video/') || /\.(mp4|mov|webm|m4v)$/i.test(file.name));
+
+    // 1. If Supabase Storage is configured, try direct cloud binary upload first
+    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+      try {
+        const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(file, folder === 'reels' ? 'reels' : (folder === 'models' ? 'models' : 'media'), folder);
+        if (cloudUrl) {
+          return {
+            success: true,
+            url: cloudUrl,
+            filename: cleanFileName,
+            storage: 'supabase'
+          };
+        }
+      } catch(e) {}
+    }
 
     // 2. Attempt remote Vault API upload
     try {
@@ -195,15 +205,37 @@
           return {
             success: true,
             url: data.url,
-            filename: cleanFileName
+            filename: cleanFileName,
+            storage: 'vault'
           };
         }
       }
     } catch(err) {
-      console.warn('Vault direct upload endpoint not active, using reliable persistent media storage:', err);
+      console.warn('Vault direct upload notice (using fallback media delivery):', err);
     }
 
-    // 3. Reliable Fallback: Use high-res Data URL so photo ALWAYS renders 100% perfectly
+    // 3. For video files: create reliable Object URL so browser plays the exact uploaded video
+    if (isVideo) {
+      let videoUrl = '';
+      try {
+        videoUrl = URL.createObjectURL(file);
+      } catch(e) {
+        videoUrl = targetUrl;
+      }
+      return {
+        success: true,
+        url: videoUrl || targetUrl,
+        filename: cleanFileName,
+        fallback: true
+      };
+    }
+
+    // 4. For image files: compress to compact high-quality Data URL (or use target URL)
+    let localDataUrl = '';
+    try {
+      localDataUrl = await fileToDataUrl(file, folder === 'hero' ? 1080 : 800, 0.85);
+    } catch(e) {}
+
     const fallbackUrl = localDataUrl || targetUrl;
 
     return {

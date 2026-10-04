@@ -1011,31 +1011,47 @@
         <div class="p-3.5 bg-pink-50/50 rounded-2xl border border-[#ED96D7]/40 space-y-3">
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-photo-film"></i> ৫. মডেল গ্যালারি (অতিরিক্ত ফটো ও ভিডিও)
+              <i class="fa-solid fa-photo-film"></i> ৫. মডেল গ্যালারি (ফটো ও ভিডিও আপলোড / লিংক)
             </span>
             <span id="add-model-gallery-count" class="text-[10px] text-[#8c4f75] font-bold">০ টি আইটেম</span>
           </div>
           
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <!-- Add Photo Button / File Input -->
-            <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 flex flex-col justify-between gap-2">
-              <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
-                <i class="fa-solid fa-camera text-[#db2777]"></i> অতিরিক্ত ছবি যোগ করুন
-              </span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <!-- Photos: File Upload + Link -->
+            <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
+                  <i class="fa-solid fa-camera text-[#db2777]"></i> অতিরিক্ত ছবি (Photos)
+                </span>
+                <span class="text-[9px] text-[#8c4f75]">আপলোড বা লিংক</span>
+              </div>
               <input type="file" id="add-model-gallery-files" accept="image/*" multiple class="hidden">
               <button type="button" onclick="document.getElementById('add-model-gallery-files').click()" class="w-full py-1.5 rounded-lg bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] transition-colors flex items-center justify-center gap-1 border border-[#ED96D7]/40">
-                <i class="fa-solid fa-cloud-arrow-up"></i> ডিভাইস থেকে ছবি সিলেক্ট করুন
+                <i class="fa-solid fa-cloud-arrow-up"></i> ডিভাইস থেকে ছবি আপলোড
               </button>
+              <div class="flex gap-1">
+                <input type="text" id="add-model-gallery-photo-url-input" placeholder="ছবির URL / লিংক পেস্ট করুন" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
+                <button type="button" onclick="addModelGalleryPhotoUrl('add')" class="px-2.5 py-1 rounded-lg bg-pink-100 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] border border-[#ED96D7]/40">
+                  + যোগ
+                </button>
+              </div>
             </div>
 
-            <!-- Add Video / Reel URL -->
-            <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 flex flex-col justify-between gap-1.5">
-              <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
-                <i class="fa-solid fa-video text-[#db2777]"></i> ভিডিও / রিলস লিংক যোগ করুন
-              </span>
+            <!-- Videos: File Upload + Link -->
+            <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
+                  <i class="fa-solid fa-video text-[#db2777]"></i> ভিডিও ও রিলস (Videos)
+                </span>
+                <span class="text-[9px] text-[#8c4f75]">আপলোড বা লিংক</span>
+              </div>
+              <input type="file" id="add-model-gallery-video-files" accept="video/mp4,video/quicktime,video/webm,video/*" multiple class="hidden">
+              <button type="button" onclick="document.getElementById('add-model-gallery-video-files').click()" class="w-full py-1.5 rounded-lg bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] transition-colors flex items-center justify-center gap-1 border border-[#ED96D7]/40">
+                <i class="fa-solid fa-file-video"></i> ডিভাইস থেকে ভিডিও আপলোড
+              </button>
               <div class="flex gap-1">
-                <input type="text" id="add-model-gallery-video-input" placeholder="https://...mp4 বা Vault লিংক" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
-                <button type="button" onclick="addModelGalleryVideo('add')" class="px-2.5 py-1 rounded-lg bg-[#db2777] text-white font-bold text-[10px] shadow-xs hover:bg-[#be185d]">
+                <input type="text" id="add-model-gallery-video-input" placeholder="ভিডিও URL / Vault লিংক" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
+                <button type="button" onclick="addModelGalleryVideo('add')" class="px-2.5 py-1 rounded-lg bg-[#db2777] hover:bg-[#be185d] text-white font-bold text-[10px] shadow-xs">
                   + যোগ
                 </button>
               </div>
@@ -1477,31 +1493,47 @@
         <div class="p-3.5 bg-pink-50/50 rounded-2xl border border-[#ED96D7]/40 space-y-3">
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-bold text-[#db2777] uppercase tracking-wider flex items-center gap-1.5">
-              <i class="fa-solid fa-photo-film"></i> ৫. মডেল গ্যালারি (অতিরিক্ত ফটো ও ভিডিও)
+              <i class="fa-solid fa-photo-film"></i> ৫. মডেল গ্যালারি (ফটো ও ভিডিও আপলোড / লিংক)
             </span>
             <span id="edit-model-gallery-count" class="text-[10px] text-[#8c4f75] font-bold">০ টি আইটেম</span>
           </div>
           
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <!-- Add Photo Button / File Input -->
-            <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 flex flex-col justify-between gap-2">
-              <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
-                <i class="fa-solid fa-camera text-[#db2777]"></i> অতিরিক্ত ছবি যোগ করুন
-              </span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <!-- Photos: File Upload + Link -->
+            <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
+                  <i class="fa-solid fa-camera text-[#db2777]"></i> অতিরিক্ত ছবি (Photos)
+                </span>
+                <span class="text-[9px] text-[#8c4f75]">আপলোড বা লিংক</span>
+              </div>
               <input type="file" id="edit-model-gallery-files" accept="image/*" multiple class="hidden">
               <button type="button" onclick="document.getElementById('edit-model-gallery-files').click()" class="w-full py-1.5 rounded-lg bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] transition-colors flex items-center justify-center gap-1 border border-[#ED96D7]/40">
-                <i class="fa-solid fa-cloud-arrow-up"></i> ডিভাইস থেকে ছবি সিলেক্ট করুন
+                <i class="fa-solid fa-cloud-arrow-up"></i> ডিভাইস থেকে ছবি আপলোড
               </button>
+              <div class="flex gap-1">
+                <input type="text" id="edit-model-gallery-photo-url-input" placeholder="ছবির URL / লিংক পেস্ট করুন" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
+                <button type="button" onclick="addModelGalleryPhotoUrl('edit')" class="px-2.5 py-1 rounded-lg bg-pink-100 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] border border-[#ED96D7]/40">
+                  + যোগ
+                </button>
+              </div>
             </div>
 
-            <!-- Add Video / Reel URL -->
-            <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 flex flex-col justify-between gap-1.5">
-              <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
-                <i class="fa-solid fa-video text-[#db2777]"></i> ভিডিও / রিলস লিংক যোগ করুন
-              </span>
+            <!-- Videos: File Upload + Link -->
+            <div class="p-2.5 bg-white rounded-xl border border-[#ED96D7]/40 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-[#572449] flex items-center gap-1">
+                  <i class="fa-solid fa-video text-[#db2777]"></i> ভিডিও ও রিলস (Videos)
+                </span>
+                <span class="text-[9px] text-[#8c4f75]">আপলোড বা লিংক</span>
+              </div>
+              <input type="file" id="edit-model-gallery-video-files" accept="video/mp4,video/quicktime,video/webm,video/*" multiple class="hidden">
+              <button type="button" onclick="document.getElementById('edit-model-gallery-video-files').click()" class="w-full py-1.5 rounded-lg bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-[10px] transition-colors flex items-center justify-center gap-1 border border-[#ED96D7]/40">
+                <i class="fa-solid fa-file-video"></i> ডিভাইস থেকে ভিডিও আপলোড
+              </button>
               <div class="flex gap-1">
-                <input type="text" id="edit-model-gallery-video-input" placeholder="https://...mp4 বা Vault লিংক" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
-                <button type="button" onclick="addModelGalleryVideo('edit')" class="px-2.5 py-1 rounded-lg bg-[#db2777] text-white font-bold text-[10px] shadow-xs hover:bg-[#be185d]">
+                <input type="text" id="edit-model-gallery-video-input" placeholder="ভিডিও URL / Vault লিংক" class="flex-1 bg-[#fff8fa] border border-[#ED96D7]/40 rounded-lg px-2 py-1 text-[10px] text-[#2b0e23]">
+                <button type="button" onclick="addModelGalleryVideo('edit')" class="px-2.5 py-1 rounded-lg bg-[#db2777] hover:bg-[#be185d] text-white font-bold text-[10px] shadow-xs">
                   + যোগ
                 </button>
               </div>

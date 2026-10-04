@@ -362,6 +362,29 @@
     return null;
   }
 
+  async function uploadStorageFile(file, bucket = 'reels', folder = '') {
+    if (!supabaseClient || !file) return null;
+    try {
+      const cleanName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const filePath = folder ? `${folder}/${cleanName}` : cleanName;
+      const { data, error } = await supabaseClient.storage
+        .from(bucket)
+        .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+      if (error) {
+        console.warn(`Supabase Storage upload to "${bucket}" notice:`, error.message);
+        return null;
+      }
+      const { data: publicData } = supabaseClient.storage
+        .from(bucket)
+        .getPublicUrl(filePath);
+      return publicData ? publicData.publicUrl : null;
+    } catch (e) {
+      console.warn('Supabase storage exception:', e);
+      return null;
+    }
+  }
+
   // Auto-init when script loads
   if (typeof window !== 'undefined') {
     initClient();
@@ -388,6 +411,7 @@
     fetchModels,
     addModel,
     deleteModel,
+    uploadStorageFile,
     subscribeToLeads,
     subscribeToReels,
     subscribeToModels,
