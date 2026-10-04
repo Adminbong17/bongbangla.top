@@ -535,26 +535,69 @@
     </div>
   </footer>
 
-  <!-- Image Lightbox Modal -->
-  <div id="image-lightbox-modal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-    <button onclick="closeImageLightbox()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/20 hover:bg-white text-white hover:text-black flex items-center justify-center text-lg transition-colors z-10">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-    <div class="max-w-4xl max-h-[85vh] flex items-center justify-center">
-      <img id="lightbox-full-img" src="" alt="Fullscreen Model Photo" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/20">
-    </div>
-  </div>
+  <!-- ========================================================================
+       Big Screen Gallery Slider Lightbox (Photos & Videos with Modern Nav Arrows)
+       ======================================================================== -->
+  <div id="gallery-lightbox-slider-modal" class="fixed inset-0 z-50 hidden bg-black/95 backdrop-blur-xl flex flex-col justify-between p-2 sm:p-6 transition-all duration-300 select-none">
+    
+    <!-- Top Header Bar -->
+    <div class="w-full flex items-center justify-between z-20 px-3 sm:px-6 py-2.5">
+      <div class="flex items-center gap-2.5 sm:gap-3.5">
+        <span id="slider-type-badge" class="px-3 py-1 rounded-full bg-[#db2777] text-white text-[11px] font-bold tracking-wider uppercase shadow-md flex items-center gap-1.5 font-mono">
+          <i class="fa-solid fa-camera"></i> <span id="slider-type-text">PHOTO</span>
+        </span>
+        <div class="text-white">
+          <h4 id="slider-item-title" class="font-bangla font-bold text-sm sm:text-base text-white truncate max-w-[180px] sm:max-w-md">মডেল গ্যালারি</h4>
+          <span id="slider-item-counter" class="text-[11px] text-pink-200/80 font-mono block">১ / ৪</span>
+        </div>
+      </div>
 
-  <!-- Video Player Modal -->
-  <div id="video-player-modal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-    <button onclick="closeVideoPlayerModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/20 hover:bg-white text-white hover:text-black flex items-center justify-center text-lg transition-colors z-10">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-    <div class="w-full max-w-sm aspect-[9/16] max-h-[85vh] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/20 relative flex flex-col justify-between">
-      <video id="gallery-active-video" controls autoplay playsinline class="w-full h-full object-cover">
-        <source src="" type="video/mp4">
-      </video>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="closeGallerySliderModal()" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/15 hover:bg-[#db2777] text-white flex items-center justify-center text-lg sm:text-xl transition-all shadow-lg hover:scale-105 active:scale-95 border border-white/20" title="বন্ধ করুন (Esc)">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
     </div>
+
+    <!-- Center Stage with Navigation Arrows -->
+    <div class="relative flex-1 w-full flex items-center justify-center overflow-hidden my-auto" id="slider-touch-area">
+      
+      <!-- Modern Left Arrow Button -->
+      <button type="button" id="slider-prev-btn" onclick="prevGallerySlide(event)" class="absolute left-2 sm:left-6 z-30 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-black/50 hover:bg-[#db2777] text-white flex items-center justify-center text-lg sm:text-xl transition-all shadow-[0_4px_25px_rgba(0,0,0,0.6)] border border-white/20 backdrop-blur-md hover:scale-110 active:scale-95 group cursor-pointer" aria-label="পূর্ববর্তী মিডিয়া">
+        <i class="fa-solid fa-chevron-left group-hover:-translate-x-0.5 transition-transform"></i>
+      </button>
+
+      <!-- Media Display Container -->
+      <div id="slider-media-container" class="w-full h-full flex items-center justify-center p-2 sm:p-4">
+        <!-- Photo Element -->
+        <img id="slider-active-image" src="" alt="Gallery Preview" class="hidden max-h-[72vh] sm:max-h-[78vh] max-w-[92vw] sm:max-w-[85vw] object-contain rounded-2xl shadow-2xl transition-all duration-300">
+        
+        <!-- Video Element -->
+        <div id="slider-video-wrapper" class="hidden w-full max-w-sm aspect-[9/16] max-h-[72vh] sm:max-h-[78vh] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/20 relative">
+          <video id="slider-active-video" controls autoplay playsinline class="w-full h-full object-cover">
+            <source src="" type="video/mp4">
+          </video>
+        </div>
+      </div>
+
+      <!-- Modern Right Arrow Button -->
+      <button type="button" id="slider-next-btn" onclick="nextGallerySlide(event)" class="absolute right-2 sm:right-6 z-30 w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-black/50 hover:bg-[#db2777] text-white flex items-center justify-center text-lg sm:text-xl transition-all shadow-[0_4px_25px_rgba(0,0,0,0.6)] border border-white/20 backdrop-blur-md hover:scale-110 active:scale-95 group cursor-pointer" aria-label="পরবর্তী মিডিয়া">
+        <i class="fa-solid fa-chevron-right group-hover:translate-x-0.5 transition-transform"></i>
+      </button>
+    </div>
+
+    <!-- Bottom Thumbnail Navigation Strip & Indicators -->
+    <div class="w-full z-20 flex flex-col items-center gap-1.5 pb-2">
+      <div id="slider-thumbnails-strip" class="flex items-center gap-2 sm:gap-3 overflow-x-auto max-w-full py-1.5 px-4 scrollbar-none">
+        <!-- Dynamically rendered thumbnails with active highlight border -->
+      </div>
+      <div class="text-[10px] sm:text-xs text-white/60 font-bangla flex items-center gap-2">
+        <span class="flex items-center gap-1"><i class="fa-solid fa-arrows-left-right text-[#ED96D7]"></i> কীবোর্ড বা অ্যারো কী ক্লিক করে পরিবর্তন করুন</span>
+        <span class="hidden sm:inline text-white/30">•</span>
+        <span class="hidden sm:inline">স্ক্রিনে বামে/ডানে সোয়াইপ করুন</span>
+      </div>
+    </div>
+
   </div>
 
   <!-- Booking Modal -->
@@ -1298,6 +1341,12 @@
       }
     });
 
+    // =========================================================================
+    // Dynamic Model Gallery Lightbox Slider with Modern Nav Arrows & Gestures
+    // =========================================================================
+    let currentSliderIndex = 0;
+    let currentSliderFilteredItems = [];
+
     window.renderModelGalleryGrid = function(filter = 'all') {
       const grid = document.getElementById('model-full-gallery-grid');
       if (!grid) return;
@@ -1305,6 +1354,8 @@
       let items = window.currentModelGalleryItems || [];
       if (filter === 'photo') items = items.filter(i => i.type === 'photo');
       if (filter === 'video') items = items.filter(i => i.type === 'video');
+
+      window.currentFilteredGalleryItems = items;
 
       if (items.length === 0) {
         grid.innerHTML = `
@@ -1323,11 +1374,11 @@
         if (isVideo) {
           return `
             <div class="group relative rounded-3xl overflow-hidden bg-black aspect-[9/16] shadow-md border border-[#ED96D7]/30 hover:border-[#db2777] transition-all cursor-pointer flex flex-col justify-between"
-                 onclick="openVideoPlayerModal('${formattedUrl}')">
+                 onclick="openGallerySliderModal(${idx})">
               <video src="${formattedUrl}" preload="metadata" muted playsinline class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"></video>
               <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-between p-4 pointer-events-none">
                 <div class="flex items-center justify-between">
-                  <span class="px-2.5 py-1 rounded-full bg-red-600/90 text-white text-[10px] font-bold tracking-wider uppercase backdrop-blur-md flex items-center gap-1 shadow-sm">
+                  <span class="px-2.5 py-1 rounded-full bg-red-600/90 text-white text-[10px] font-bold tracking-wider uppercase backdrop-blur-md flex items-center gap-1 shadow-sm font-mono">
                     <i class="fa-solid fa-play text-[8px]"></i> 4K REEL
                   </span>
                 </div>
@@ -1345,14 +1396,14 @@
         } else {
           return `
             <div class="group relative rounded-3xl overflow-hidden bg-pink-50 aspect-[3/4] shadow-md border border-[#ED96D7]/30 hover:border-[#db2777] transition-all cursor-pointer"
-                 onclick="openImageLightbox('${formattedUrl}')">
+                 onclick="openGallerySliderModal(${idx})">
               <img src="${formattedUrl}" alt="Model Portfolio Photo" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4 pointer-events-none">
                 <span class="text-white text-xs font-bold font-bangla flex items-center gap-1.5">
                   <i class="fa-solid fa-expand text-xs"></i>
-                  <span>বড় করে দেখুন</span>
+                  <span>বড় করে স্লাইড দেখুন</span>
                 </span>
-                <span class="px-2 py-0.5 rounded-full bg-white/90 text-[#db2777] text-[10px] font-bold">PHOTO</span>
+                <span class="px-2 py-0.5 rounded-full bg-white/90 text-[#db2777] text-[10px] font-bold font-mono">PHOTO</span>
               </div>
             </div>
           `;
@@ -1372,37 +1423,203 @@
       renderModelGalleryGrid(filter);
     };
 
-    window.openImageLightbox = function(url) {
-      const modal = document.getElementById('image-lightbox-modal');
-      const img = document.getElementById('lightbox-full-img');
-      if (img) img.src = url;
-      if (modal) modal.classList.remove('hidden');
-    };
+    // Open unified gallery slider
+    window.openGallerySliderModal = function(indexOrUrl) {
+      let items = window.currentFilteredGalleryItems || window.currentModelGalleryItems || [];
+      if (!items || items.length === 0) return;
+      currentSliderFilteredItems = items;
 
-    window.closeImageLightbox = function() {
-      const modal = document.getElementById('image-lightbox-modal');
-      if (modal) modal.classList.add('hidden');
-    };
-
-    window.openVideoPlayerModal = function(url) {
-      const modal = document.getElementById('video-player-modal');
-      const video = document.getElementById('gallery-active-video');
-      if (video) {
-        video.src = url;
-        video.play().catch(() => {});
+      if (typeof indexOrUrl === 'number') {
+        currentSliderIndex = Math.max(0, Math.min(indexOrUrl, items.length - 1));
+      } else if (typeof indexOrUrl === 'string') {
+        const foundIdx = items.findIndex(i => {
+          const raw = i.url || '';
+          const f = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(raw, i.type === 'video' ? 'reels' : 'models') : raw;
+          return raw === indexOrUrl || f === indexOrUrl;
+        });
+        currentSliderIndex = foundIdx !== -1 ? foundIdx : 0;
+      } else {
+        currentSliderIndex = 0;
       }
-      if (modal) modal.classList.remove('hidden');
+
+      showGallerySlide(currentSliderIndex);
+      const modal = document.getElementById('gallery-lightbox-slider-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      }
     };
 
-    window.closeVideoPlayerModal = function() {
-      const modal = document.getElementById('video-player-modal');
-      const video = document.getElementById('gallery-active-video');
+    window.closeGallerySliderModal = function() {
+      const modal = document.getElementById('gallery-lightbox-slider-modal');
+      const video = document.getElementById('slider-active-video');
       if (video) {
         video.pause();
         video.src = '';
       }
       if (modal) modal.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
     };
+
+    window.prevGallerySlide = function(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      if (!currentSliderFilteredItems || currentSliderFilteredItems.length === 0) return;
+      currentSliderIndex = (currentSliderIndex - 1 + currentSliderFilteredItems.length) % currentSliderFilteredItems.length;
+      showGallerySlide(currentSliderIndex);
+    };
+
+    window.nextGallerySlide = function(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      if (!currentSliderFilteredItems || currentSliderFilteredItems.length === 0) return;
+      currentSliderIndex = (currentSliderIndex + 1) % currentSliderFilteredItems.length;
+      showGallerySlide(currentSliderIndex);
+    };
+
+    window.showGallerySlide = function(index) {
+      const items = currentSliderFilteredItems || [];
+      if (items.length === 0 || index < 0 || index >= items.length) return;
+      currentSliderIndex = index;
+
+      const item = items[index];
+      const isVideo = item.type === 'video';
+      const rawUrl = item.url || '';
+      const formattedUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawUrl, isVideo ? 'reels' : 'models') : rawUrl;
+
+      // Header Elements
+      const typeBadge = document.getElementById('slider-type-badge');
+      const typeText = document.getElementById('slider-type-text');
+      const titleEl = document.getElementById('slider-item-title');
+      const counterEl = document.getElementById('slider-item-counter');
+
+      if (typeBadge && typeText) {
+        if (isVideo) {
+          typeBadge.className = 'px-3 py-1 rounded-full bg-red-600 text-white text-[11px] font-bold tracking-wider uppercase shadow-md flex items-center gap-1.5 font-mono';
+          const icon = typeBadge.querySelector('i');
+          if (icon) icon.className = 'fa-solid fa-film';
+          typeText.textContent = '4K VIDEO REEL';
+        } else {
+          typeBadge.className = 'px-3 py-1 rounded-full bg-[#db2777] text-white text-[11px] font-bold tracking-wider uppercase shadow-md flex items-center gap-1.5 font-mono';
+          const icon = typeBadge.querySelector('i');
+          if (icon) icon.className = 'fa-solid fa-camera';
+          typeText.textContent = 'PHOTO';
+        }
+      }
+
+      if (titleEl) titleEl.textContent = item.title || (isVideo ? '৪K ফ্যাশন ভিডিও রিলস' : 'এক্সক্লুসিভ পোর্টফোলিও ফটো');
+      if (counterEl) {
+        const bnNums = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
+        const toBn = n => String(n).split('').map(d => bnNums[d] || d).join('');
+        counterEl.textContent = `${toBn(index + 1)} / ${toBn(items.length)}`;
+      }
+
+      // Media Elements
+      const imgEl = document.getElementById('slider-active-image');
+      const vidWrap = document.getElementById('slider-video-wrapper');
+      const vidEl = document.getElementById('slider-active-video');
+
+      if (isVideo) {
+        if (imgEl) imgEl.classList.add('hidden');
+        if (vidWrap) vidWrap.classList.remove('hidden');
+        if (vidEl) {
+          vidEl.src = formattedUrl;
+          vidEl.load();
+          vidEl.play().catch(() => {});
+        }
+      } else {
+        if (vidEl) {
+          vidEl.pause();
+          vidEl.src = '';
+        }
+        if (vidWrap) vidWrap.classList.add('hidden');
+        if (imgEl) {
+          imgEl.classList.remove('hidden');
+          imgEl.src = formattedUrl;
+        }
+      }
+
+      // Render Thumbnail Strip
+      const strip = document.getElementById('slider-thumbnails-strip');
+      if (strip) {
+        strip.innerHTML = items.map((it, idx) => {
+          const itIsVideo = it.type === 'video';
+          const itRaw = it.url || it.thumbnail || '';
+          const itFormatted = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(itRaw, itIsVideo ? 'reels' : 'models') : itRaw;
+          const isActive = idx === index;
+
+          return `
+            <button type="button" onclick="showGallerySlide(${idx})" class="w-12 h-14 sm:w-14 sm:h-16 rounded-xl overflow-hidden relative shrink-0 transition-all border-2 ${isActive ? 'border-[#db2777] ring-2 ring-[#ED96D7] scale-105 opacity-100' : 'border-white/30 opacity-50 hover:opacity-80 hover:scale-100'} bg-black">
+              ${itIsVideo ? `
+                <video src="${itFormatted}" class="w-full h-full object-cover"></video>
+                <span class="absolute inset-0 flex items-center justify-center text-white/90 text-[10px]"><i class="fa-solid fa-play"></i></span>
+              ` : `
+                <img src="${itFormatted}" class="w-full h-full object-cover">
+              `}
+            </button>
+          `;
+        }).join('');
+      }
+    };
+
+    // Backward compatibility helpers
+    window.openImageLightbox = function(url) {
+      openGallerySliderModal(url);
+    };
+
+    window.closeImageLightbox = function() {
+      closeGallerySliderModal();
+    };
+
+    window.openVideoPlayerModal = function(url) {
+      openGallerySliderModal(url);
+    };
+
+    window.closeVideoPlayerModal = function() {
+      closeGallerySliderModal();
+    };
+
+    // Swipe and Keyboard support
+    document.addEventListener('DOMContentLoaded', () => {
+      let touchStartX = 0;
+      let touchEndX = 0;
+      const touchArea = document.getElementById('slider-touch-area');
+      
+      if (touchArea) {
+        touchArea.addEventListener('touchstart', e => {
+          if (e.changedTouches && e.changedTouches[0]) {
+            touchStartX = e.changedTouches[0].screenX;
+          }
+        }, { passive: true });
+
+        touchArea.addEventListener('touchend', e => {
+          if (e.changedTouches && e.changedTouches[0]) {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchEndX - touchStartX;
+            if (Math.abs(diff) > 40) {
+              if (diff < 0) {
+                // Swiped Left -> Next Image
+                nextGallerySlide();
+              } else {
+                // Swiped Right -> Prev Image
+                prevGallerySlide();
+              }
+            }
+          }
+        }, { passive: true });
+      }
+
+      document.addEventListener('keydown', (e) => {
+        const modal = document.getElementById('gallery-lightbox-slider-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+          if (e.key === 'ArrowLeft') {
+            prevGallerySlide();
+          } else if (e.key === 'ArrowRight') {
+            nextGallerySlide();
+          } else if (e.key === 'Escape') {
+            closeGallerySliderModal();
+          }
+        }
+      });
+    });
   </script>
 </body>
 </html>

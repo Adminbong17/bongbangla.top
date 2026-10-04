@@ -854,57 +854,114 @@ async function initReelsPage(options = {}) {
   }
 }
 
+let currentModalReelsList = [];
+let currentModalReelIndex = 0;
+
 /**
- * 9:16 Video Player Lightbox Modal
+ * 9:16 Video Player Lightbox Modal with Modern Slider Navigation Arrows
  */
-function openReelVideoModal(videoUrl, title, client) {
+function openReelVideoModal(videoUrl, title, client, categoryOrList) {
   let modal = document.getElementById('reel-video-modal');
+  
+  // Resolve reels list
+  let allReels = [];
+  if (Array.isArray(categoryOrList)) {
+    allReels = categoryOrList;
+  } else if (typeof categoryOrList === 'string') {
+    allReels = getReels(categoryOrList);
+  } else {
+    allReels = getReels('all');
+  }
+  
+  if (!allReels || allReels.length === 0) {
+    allReels = DEFAULT_REELS;
+  }
+  currentModalReelsList = allReels;
+
+  // Find index
+  const foundIdx = allReels.findIndex(r => {
+    const raw = r.videoUrl || '';
+    const f = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(raw, 'reels') : raw;
+    return raw === videoUrl || f === videoUrl || r.title === title;
+  });
+  currentModalReelIndex = foundIdx !== -1 ? foundIdx : 0;
+
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'reel-video-modal';
-    modal.className = 'fixed inset-0 z-50 bg-[#2b0e23]/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4';
+    modal.className = 'fixed inset-0 z-50 bg-[#2b0e23]/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 select-none';
     modal.innerHTML = `
-      <div class="relative w-full max-w-[420px] bg-black rounded-3xl overflow-hidden shadow-2xl border border-[#ED96D7]/50 flex flex-col">
-        <!-- Top bar with close button -->
-        <div class="absolute top-3 inset-x-3 z-20 flex items-center justify-between pointer-events-auto">
-          <div class="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold font-bangla border border-white/20">
-            <span id="modal-reel-client">ক্লায়েন্ট</span>
-          </div>
-          <button id="close-reel-modal-btn" class="w-9 h-9 rounded-full bg-black/60 hover:bg-[#db2777] text-white flex items-center justify-center transition-all border border-white/20 shadow-md">
-            <i class="fa-solid fa-xmark text-base"></i>
-          </button>
-        </div>
+      <div class="relative w-full max-w-[440px] flex items-center justify-center">
+        <!-- Floating Left Arrow -->
+        <button id="reel-modal-prev-btn" class="absolute -left-3 sm:-left-14 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-[#db2777] text-white flex items-center justify-center text-base sm:text-lg transition-all border border-white/20 shadow-xl backdrop-blur-md hover:scale-110 active:scale-95 group cursor-pointer" title="পূর্ববর্তী ভিডিও">
+          <i class="fa-solid fa-chevron-left group-hover:-translate-x-0.5 transition-transform"></i>
+        </button>
 
-        <!-- 9:16 Video Player Container -->
-        <div class="relative w-full aspect-[9/16] bg-black flex items-center justify-center">
-          <video id="modal-reel-video" class="w-full h-full object-cover" playsinline controls autoplay loop>
-            <source id="modal-reel-source" src="" type="video/mp4">
-            আপনার ব্রাউজার ভিডিও প্লে করতে সমর্থন করে না।
-          </video>
-        </div>
-
-        <!-- Bottom Action Bar -->
-        <div class="p-4 bg-[#fff8fa] border-t border-[#ED96D7]/30 text-left space-y-2.5">
-          <h4 id="modal-reel-title" class="font-bangla font-bold text-sm text-[#2b0e23] line-clamp-1"></h4>
-          <div class="flex items-center gap-2">
-            <button class="open-booking-modal flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white font-bangla font-bold text-xs shadow-md hover:opacity-95 flex items-center justify-center gap-2">
-              <i class="fa-solid fa-calendar-check"></i>
-              <span>এইরকম শুটিং বুক করুন</span>
+        <div class="relative w-full bg-black rounded-3xl overflow-hidden shadow-2xl border border-[#ED96D7]/50 flex flex-col" id="reel-modal-card">
+          <!-- Top bar with close button -->
+          <div class="absolute top-3 inset-x-3 z-20 flex items-center justify-between pointer-events-auto">
+            <div class="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold font-bangla border border-white/20 flex items-center gap-1.5">
+              <span id="modal-reel-client">ক্লায়েন্ট</span>
+              <span class="text-pink-300/80 text-[10px]" id="modal-reel-counter"></span>
+            </div>
+            <button id="close-reel-modal-btn" class="w-9 h-9 rounded-full bg-black/60 hover:bg-[#db2777] text-white flex items-center justify-center transition-all border border-white/20 shadow-md">
+              <i class="fa-solid fa-xmark text-base"></i>
             </button>
-            <a id="modal-reel-whatsapp-btn" href="#" target="_blank" class="px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center transition-all shadow-md" title="WhatsApp-এ মেসেজ দিন">
-              <i class="fa-brands fa-whatsapp text-sm"></i>
-            </a>
+          </div>
+
+          <!-- 9:16 Video Player Container -->
+          <div class="relative w-full aspect-[9/16] bg-black flex items-center justify-center overflow-hidden" id="reel-touch-surface">
+            <video id="modal-reel-video" class="w-full h-full object-cover" playsinline controls autoplay loop>
+              <source id="modal-reel-source" src="" type="video/mp4">
+              আপনার ব্রাউজার ভিডিও প্লে করতে সমর্থন করে না।
+            </video>
+          </div>
+
+          <!-- Bottom Action Bar -->
+          <div class="p-4 bg-[#fff8fa] border-t border-[#ED96D7]/30 text-left space-y-2.5">
+            <h4 id="modal-reel-title" class="font-bangla font-bold text-sm text-[#2b0e23] line-clamp-1"></h4>
+            <div class="flex items-center gap-2">
+              <button class="open-booking-modal flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white font-bangla font-bold text-xs shadow-md hover:opacity-95 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-calendar-check"></i>
+                <span>এইরকম শুটিং বুক করুন</span>
+              </button>
+              <a id="modal-reel-whatsapp-btn" href="#" target="_blank" class="px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center transition-all shadow-md" title="WhatsApp-এ মেসেজ দিন">
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+              </a>
+            </div>
           </div>
         </div>
+
+        <!-- Floating Right Arrow -->
+        <button id="reel-modal-next-btn" class="absolute -right-3 sm:-right-14 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-[#db2777] text-white flex items-center justify-center text-base sm:text-lg transition-all border border-white/20 shadow-xl backdrop-blur-md hover:scale-110 active:scale-95 group cursor-pointer" title="পরবর্তী ভিডিও">
+          <i class="fa-solid fa-chevron-right group-hover:translate-x-0.5 transition-transform"></i>
+        </button>
       </div>
     `;
     document.body.appendChild(modal);
 
     const closeBtn = modal.querySelector('#close-reel-modal-btn');
+    const prevBtn = modal.querySelector('#reel-modal-prev-btn');
+    const nextBtn = modal.querySelector('#reel-modal-next-btn');
+
     closeBtn.addEventListener('click', () => {
       const vid = modal.querySelector('#modal-reel-video');
       if (vid) vid.pause();
       modal.classList.add('hidden');
+    });
+
+    prevBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!currentModalReelsList || currentModalReelsList.length === 0) return;
+      currentModalReelIndex = (currentModalReelIndex - 1 + currentModalReelsList.length) % currentModalReelsList.length;
+      updateReelModalContent(currentModalReelsList[currentModalReelIndex], currentModalReelIndex, currentModalReelsList.length);
+    });
+
+    nextBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!currentModalReelsList || currentModalReelsList.length === 0) return;
+      currentModalReelIndex = (currentModalReelIndex + 1) % currentModalReelsList.length;
+      updateReelModalContent(currentModalReelsList[currentModalReelIndex], currentModalReelIndex, currentModalReelsList.length);
     });
 
     modal.addEventListener('click', (e) => {
@@ -914,18 +971,72 @@ function openReelVideoModal(videoUrl, title, client) {
         modal.classList.add('hidden');
       }
     });
+
+    // Touch swipe for reels modal
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const surface = modal.querySelector('#reel-touch-surface');
+    if (surface) {
+      surface.addEventListener('touchstart', e => {
+        if (e.changedTouches && e.changedTouches[0]) {
+          touchStartX = e.changedTouches[0].screenX;
+        }
+      }, { passive: true });
+
+      surface.addEventListener('touchend', e => {
+        if (e.changedTouches && e.changedTouches[0]) {
+          touchEndX = e.changedTouches[0].screenX;
+          const diff = touchEndX - touchStartX;
+          if (Math.abs(diff) > 40) {
+            if (diff < 0) {
+              // swipe left -> next
+              nextBtn.click();
+            } else {
+              // swipe right -> prev
+              prevBtn.click();
+            }
+          }
+        }
+      }, { passive: true });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (modal && !modal.classList.contains('hidden')) {
+        if (e.key === 'ArrowLeft') prevBtn.click();
+        else if (e.key === 'ArrowRight') nextBtn.click();
+        else if (e.key === 'Escape') closeBtn.click();
+      }
+    });
   }
 
-  // Populate data
-  const resolvedVideoUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(videoUrl, 'reels') : videoUrl;
+  const activeReel = currentModalReelsList[currentModalReelIndex] || { videoUrl, title, client };
+  updateReelModalContent(activeReel, currentModalReelIndex, currentModalReelsList.length);
+  modal.classList.remove('hidden');
+}
+
+function updateReelModalContent(reel, index, total) {
+  const modal = document.getElementById('reel-video-modal');
+  if (!modal || !reel) return;
+
+  const rawUrl = reel.videoUrl || '';
+  const resolvedVideoUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawUrl, 'reels') : rawUrl;
   const videoElem = modal.querySelector('#modal-reel-video');
   const sourceElem = modal.querySelector('#modal-reel-source');
   const titleElem = modal.querySelector('#modal-reel-title');
   const clientElem = modal.querySelector('#modal-reel-client');
+  const counterElem = modal.querySelector('#modal-reel-counter');
   const waBtn = modal.querySelector('#modal-reel-whatsapp-btn');
+
+  const title = reel.title || '৪K কমার্শিয়াল রিলস';
+  const client = reel.client || 'BongBangla Production';
 
   if (titleElem) titleElem.textContent = title;
   if (clientElem) clientElem.textContent = client;
+  if (counterElem && total > 1) {
+    const bnNums = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
+    const toBn = n => String(n).split('').map(d => bnNums[d] || d).join('');
+    counterElem.textContent = `• ${toBn(index + 1)} / ${toBn(total)}`;
+  }
   if (sourceElem) sourceElem.src = resolvedVideoUrl;
   if (videoElem) {
     videoElem.load();
@@ -934,8 +1045,6 @@ function openReelVideoModal(videoUrl, title, client) {
   if (waBtn) {
     waBtn.href = `https://wa.me/8801700000000?text=${encodeURIComponent('নমস্কার BongBangla! আমি ' + title + ' (' + client + ') ভিডিওটি দেখেছি এবং এইরকম রিল শ্যুট করাতে চাই।')}`;
   }
-
-  modal.classList.remove('hidden');
 }
 
 // Expose functions globally
