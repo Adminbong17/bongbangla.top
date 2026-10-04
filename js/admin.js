@@ -1669,7 +1669,7 @@ function getModels() {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) {
-        return parsed.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
+        return parsed.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104', 'M-1791099527539'].includes(m.id));
       }
     }
   } catch (e) {}
@@ -2766,20 +2766,27 @@ function renderAdminReels(category = 'all') {
 }
 
 window.deleteAdminReel = async function(id) {
-  if (confirm('আপনি কি নিশ্চিতভাবে এই রিলসটি মুছে ফেলতে চান?')) {
-    if (window.BongBanglaReels) {
-      window.BongBanglaReels.deleteReel(id);
+  if (!id) return;
+  if (!confirm('আপনি কি নিশ্চিতভাবে এই রিলসটি মুছে ফেলতে চান?')) {
+    return;
+  }
+
+  // 1. Instant local removal
+  if (window.BongBanglaReels) {
+    window.BongBanglaReels.deleteReel(id);
+  }
+  selectedReelIds.delete(id);
+  const filter = document.getElementById('admin-reel-filter');
+  renderAdminReels(filter ? filter.value : 'all');
+  showAdminToast('রিলস সফলভাবে মুছে ফেলা হয়েছে!', 'success');
+
+  // 2. Delete from Supabase in background
+  if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.deleteReel === 'function') {
+    try {
+      await window.BongBanglaSupabase.deleteReel(id);
+    } catch (err) {
+      console.warn('Supabase deleteReel error:', err);
     }
-    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.deleteReel === 'function') {
-      try {
-        await window.BongBanglaSupabase.deleteReel(id);
-      } catch (err) {
-        console.warn('Supabase deleteReel error:', err);
-      }
-    }
-    selectedReelIds.delete(id);
-    const filter = document.getElementById('admin-reel-filter');
-    renderAdminReels(filter ? filter.value : 'all');
   }
 };
 
@@ -2838,7 +2845,7 @@ function renderModelsGrid() {
                    data-id="${m.id}"
                    ${selectedModelIds.has(m.id) ? 'checked' : ''}
                    onchange="toggleModelSelection('${m.id}', this.checked)">
-            <button onclick="deleteModel('${m.id}')" class="w-8 h-8 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-colors" title="মডেল রিমুভ করুন">
+            <button type="button" onclick="event.stopPropagation(); deleteModel('${m.id}')" class="w-8 h-8 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-all active:scale-95 cursor-pointer" title="মডেল রিমুভ করুন">
               <i class="fa-solid fa-trash-can"></i>
             </button>
           </div>
@@ -2857,11 +2864,11 @@ function renderModelsGrid() {
           </div>
           ${m.location ? `<div class="text-[10px] text-gray-500 truncate"><i class="fa-solid fa-location-dot text-[#db2777] text-[9px] mr-1"></i>${m.location}</div>` : ''}
           <div class="pt-2 flex items-center gap-2">
-            <button onclick="openEditModelModal('${m.id}')" class="flex-1 py-1.5 rounded-xl bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs">
+            <button type="button" onclick="event.stopPropagation(); openEditModelModal('${m.id}')" class="flex-1 py-1.5 rounded-xl bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer">
               <i class="fa-solid fa-pen-to-square text-xs"></i>
               <span>এডিট করুন</span>
             </button>
-            <button onclick="deleteModel('${m.id}')" class="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 inline-flex items-center justify-center transition-colors shadow-xs" title="মডেল রিমুভ করুন">
+            <button type="button" onclick="event.stopPropagation(); deleteModel('${m.id}')" class="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 inline-flex items-center justify-center transition-colors shadow-xs active:scale-95 cursor-pointer" title="মডেল রিমুভ করুন">
               <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
           </div>
@@ -2873,19 +2880,56 @@ function renderModelsGrid() {
   updateModelsBulkUI();
 }
 
+function showAdminToast(message, type = 'success') {
+  let toast = document.getElementById('admin-floating-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'admin-floating-toast';
+    document.body.appendChild(toast);
+  }
+  const isError = type === 'error';
+  toast.className = `fixed bottom-5 right-5 z-[9999] px-4 py-3 rounded-2xl shadow-2xl font-bangla text-xs flex items-center gap-2.5 transition-all duration-300 pointer-events-none text-white ${
+    isError ? 'bg-rose-600' : 'bg-emerald-600'
+  }`;
+  toast.innerHTML = `<i class="fa-solid ${isError ? 'fa-triangle-exclamation' : 'fa-circle-check'} text-sm"></i> <span>${message}</span>`;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateY(0)';
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(16px)';
+  }, 3500);
+}
+
 window.deleteModel = async function(id) {
-  if (confirm('আপনি কি এই মডেলের প্রোফাইল রিমুভ করতে চান?')) {
-    const models = getModels().filter(m => m.id !== id);
-    saveModels(models);
-    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.deleteModel === 'function') {
-      try {
-        await window.BongBanglaSupabase.deleteModel(id);
-      } catch (err) {
-        console.warn('Supabase deleteModel error:', err);
-      }
+  if (!id) return;
+  if (!confirm('আপনি কি এই মডেলের প্রোফাইল রিমুভ করতে চান?')) {
+    return;
+  }
+
+  // 1. Instant optimistic UI update
+  const models = getModels().filter(m => m.id !== id);
+  saveModels(models);
+  selectedModelIds.delete(id);
+  renderModelsGrid();
+  showAdminToast('মডেলের প্রোফাইল সফলভাবে মুছে ফেলা হয়েছে!', 'success');
+
+  // 2. Add to local tombstone
+  try {
+    const delRaw = localStorage.getItem('bongbangla_deleted_models') || '[]';
+    const delList = JSON.parse(delRaw);
+    if (!delList.includes(id)) {
+      delList.push(id);
+      localStorage.setItem('bongbangla_deleted_models', JSON.stringify(delList));
     }
-    selectedModelIds.delete(id);
-    renderModelsGrid();
+  } catch(e) {}
+
+  // 3. Delete from Supabase Cloud
+  if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.deleteModel === 'function') {
+    try {
+      await window.BongBanglaSupabase.deleteModel(id);
+    } catch (err) {
+      console.warn('Supabase deleteModel error:', err);
+    }
   }
 };
 

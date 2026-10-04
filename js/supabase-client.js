@@ -288,8 +288,10 @@
           // Note: Cloud database is the single source of truth.
           // Never auto-upload missing items from local cache, as missing items were intentionally deleted.
 
+          const validMapped = mapped.filter(m => !isMockModelId(m.id));
+
           try {
-            const sanitized = mapped.map(m => {
+            const sanitized = validMapped.map(m => {
               const c = { ...m };
               if (typeof c.image === 'string' && c.image.startsWith('data:') && c.image.length > 30000) {
                 c.image = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
@@ -308,7 +310,7 @@
           } catch(e) {
             console.warn('localStorage quota warning in fetchModels, skipped local cache:', e);
           }
-          return mapped;
+          return validMapped;
         }
       } catch (err) {
         console.warn('Error fetching models from Supabase:', err);
@@ -326,10 +328,14 @@
 
   function isMockModelId(id) {
     if (!id) return true;
-    return ['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(id);
+    return ['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104', 'M-1791099527539'].includes(id);
   }
 
   async function addModel(model) {
+    if (!model || isMockModelId(model.id)) {
+      console.log('Blocked addModel for banned or mock ID:', model ? model.id : null);
+      return;
+    }
     if (supabaseClient) {
       try {
         const payload = {

@@ -85,7 +85,7 @@ function cleanupMockData() {
     if (rawModels) {
       const models = JSON.parse(rawModels);
       if (Array.isArray(models)) {
-        const cleanedModels = models.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
+        const cleanedModels = models.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104', 'M-1791099527539'].includes(m.id));
         localStorage.setItem('bongbangla_models', JSON.stringify(cleanedModels));
       }
     }

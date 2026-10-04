@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="bn" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
@@ -60,7 +60,7 @@
   <!-- Google Fonts & Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=20261004_v9">
+  <link rel="stylesheet" href="css/style.css?v=20261004_v11">
 </head>
 <body class="bg-[#fff8fa] text-[#572449] antialiased selection:bg-[#ED96D7]/40 selection:text-[#2b0e23] overflow-x-hidden min-h-screen flex flex-col justify-between">
 
@@ -718,9 +718,9 @@
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/vault-config.js?v=20261004_v9"></script>
-  <script src="js/supabase-config.js?v=20261004_v9"></script>
-  <script src="js/supabase-client.js?v=20261004_v9"></script>
+  <script src="js/vault-config.js?v=20261004_v11"></script>
+  <script src="js/supabase-config.js?v=20261004_v11"></script>
+  <script src="js/supabase-client.js?v=20261004_v11"></script>
   <script>
     // Model Details Dynamic Page Logic
     document.addEventListener('DOMContentLoaded', async () => {
@@ -752,7 +752,22 @@
 
       // Parse Query Parameter ?id=...
       const urlParams = new URLSearchParams(window.location.search);
-      const modelId = urlParams.get('id');
+      let modelId = urlParams.get('id');
+
+      // Purge and redirect removed duplicate model ID (M-1791099527539) to active profile (M-1791116934889)
+      if (modelId === 'M-1791099527539') {
+        try {
+          const raw = localStorage.getItem('bongbangla_models');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              localStorage.setItem('bongbangla_models', JSON.stringify(parsed.filter(m => m.id !== 'M-1791099527539')));
+            }
+          }
+        } catch(e) {}
+        window.location.replace('model-details.html?id=M-1791116934889');
+        return;
+      }
 
       // Fetch or read models
       let models = [];
@@ -761,7 +776,7 @@
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            models = parsed.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
+            models = parsed.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104', 'M-1791099527539'].includes(m.id));
           }
         }
       } catch(e) {}
@@ -770,7 +785,7 @@
         try {
           const remoteModels = await window.BongBanglaSupabase.fetchModels();
           if (Array.isArray(remoteModels)) {
-            const filteredRemote = remoteModels.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
+            const filteredRemote = remoteModels.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104', 'M-1791099527539'].includes(m.id));
             if (filteredRemote.length > 0) {
               models = filteredRemote;
             }
@@ -1635,4 +1650,5 @@
   </script>
 </body>
 </html>
+
 
