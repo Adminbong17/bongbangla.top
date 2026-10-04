@@ -23,6 +23,20 @@
   <link rel="shortcut icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="favicon.png">
 
+  <!-- Cache Bust & Unregister Stale Service Workers -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
+      }).catch(function(){});
+    }
+    if ('caches' in window) {
+      caches.keys().then(function(names) {
+        for (var j = 0; j < names.length; j++) { caches.delete(names[j]); }
+      }).catch(function(){});
+    }
+  </script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
