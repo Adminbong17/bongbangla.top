@@ -643,9 +643,118 @@ window.openAddLeadModal = function() {
   if (modal) modal.classList.remove('hidden');
 };
 
+let selectedLeadIds = new Set();
+
+function updateLeadsBulkUI() {
+  const bulkBar = document.getElementById('leads-bulk-bar');
+  const countEl = document.getElementById('leads-selected-count');
+  const selectAll = document.getElementById('leads-select-all');
+
+  const count = selectedLeadIds.size;
+  if (countEl) countEl.textContent = count.toLocaleString('bn-BD');
+
+  if (bulkBar) {
+    if (count > 0) {
+      bulkBar.classList.remove('hidden');
+    } else {
+      bulkBar.classList.add('hidden');
+    }
+  }
+
+  const allCheckboxes = document.querySelectorAll('.lead-checkbox');
+  if (selectAll && allCheckboxes.length > 0) {
+    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+    const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+    selectAll.checked = allChecked;
+    selectAll.indeterminate = someChecked && !allChecked;
+  }
+}
+
+window.toggleLeadSelection = function(id, checked) {
+  if (checked) selectedLeadIds.add(id);
+  else selectedLeadIds.delete(id);
+  updateLeadsBulkUI();
+};
+
+window.deselectAllLeads = function() {
+  selectedLeadIds.clear();
+  document.querySelectorAll('.lead-checkbox').forEach(cb => cb.checked = false);
+  const selectAll = document.getElementById('leads-select-all');
+  if (selectAll) {
+    selectAll.checked = false;
+    selectAll.indeterminate = false;
+  }
+  updateLeadsBulkUI();
+};
+
+window.applyBulkLeadsStatus = async function() {
+  if (selectedLeadIds.size === 0) return;
+  const select = document.getElementById('leads-bulk-status-select');
+  const newStatus = select ? select.value : 'Contacted';
+
+  const leads = getLeads();
+  for (const lead of leads) {
+    if (selectedLeadIds.has(lead.id)) {
+      lead.status = newStatus;
+      if (window.BongBanglaSupabase) {
+        window.BongBanglaSupabase.updateLeadStatus(lead.id, newStatus).catch(() => {});
+      }
+    }
+  }
+  saveLeads(leads);
+  alert(`${selectedLeadIds.size} টি ইনকোয়ারির স্ট্যাটাস সফলভাবে "${newStatus}" করা হয়েছে!`);
+  selectedLeadIds.clear();
+  const filter = document.getElementById('lead-filter-status');
+  renderLeadsTable(filter ? filter.value : 'all');
+  updateStats();
+};
+
+window.exportSelectedLeadsCSV = function() {
+  if (selectedLeadIds.size === 0) {
+    alert('প্রথমে এক বা একাধিক ইনকোয়ারি সিলেক্ট করুন!');
+    return;
+  }
+  const leads = getLeads().filter(l => selectedLeadIds.has(l.id));
+  let csv = 'ID,Date,Client Name,Brand,Phone,Service,Budget,Status,Notes\n';
+  leads.forEach(l => {
+    csv += `"${l.id}","${l.date}","${l.name}","${l.brand}","${l.phone}","${l.service}","${l.budget}","${l.status}","${(l.notes || '').replace(/"/g, '""')}"\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Selected_Leads_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
+
+window.applyBulkLeadsDelete = async function() {
+  if (selectedLeadIds.size === 0) return;
+  if (!confirm(`আপনি কি নিশ্চিতভাবে নির্বাচিত ${selectedLeadIds.size} টি ইনকোয়ারি মুছে ফেলতে চান?`)) return;
+
+  let leads = getLeads();
+  const toDelete = Array.from(selectedLeadIds);
+  leads = leads.filter(l => !selectedLeadIds.has(l.id));
+  saveLeads(leads);
+
+  if (window.BongBanglaSupabase) {
+    for (const id of toDelete) {
+      window.BongBanglaSupabase.deleteLead(id).catch(() => {});
+    }
+  }
+
+  alert(`${toDelete.length} টি ইনকোয়ারি সফলভাবে মুছে ফেলা হয়েছে!`);
+  selectedLeadIds.clear();
+  const filter = document.getElementById('lead-filter-status');
+  renderLeadsTable(filter ? filter.value : 'all');
+  updateStats();
+};
+
 function renderLeadsTable(filter = 'all') {
   const tbody = document.getElementById('leads-table-body');
   const emptyState = document.getElementById('leads-empty-state');
+  const selectAll = document.getElementById('leads-select-all');
   if (!tbody) return;
 
   let leads = getLeads();
@@ -653,9 +762,28 @@ function renderLeadsTable(filter = 'all') {
     leads = leads.filter(l => l.status === filter);
   }
 
+  if (selectAll && !selectAll.dataset.initialized) {
+    selectAll.dataset.initialized = 'true';
+    selectAll.addEventListener('change', () => {
+      const isChecked = selectAll.checked;
+      const checkboxes = document.querySelectorAll('.lead-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = isChecked;
+        const id = cb.getAttribute('data-id');
+        if (id) {
+          if (isChecked) selectedLeadIds.add(id);
+          else selectedLeadIds.delete(id);
+        }
+      });
+      updateLeadsBulkUI();
+    });
+  }
+
   if (leads.length === 0) {
     tbody.innerHTML = '';
     if (emptyState) emptyState.classList.remove('hidden');
+    selectedLeadIds.clear();
+    updateLeadsBulkUI();
     return;
   }
 
@@ -663,6 +791,12 @@ function renderLeadsTable(filter = 'all') {
 
   tbody.innerHTML = leads.map(l => `
     <tr class="hover:bg-[#fff8fa] transition-colors border-b border-[#ED96D7]/15">
+      <td class="py-3.5 px-3 text-center">
+        <input type="checkbox" class="lead-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer"
+               data-id="${l.id}"
+               ${selectedLeadIds.has(l.id) ? 'checked' : ''}
+               onchange="toggleLeadSelection('${l.id}', this.checked)">
+      </td>
       <td class="py-3.5 px-4 font-mono text-[11px] text-[#8c4f75]">
         <div class="font-bold text-[#2b0e23]">${l.id || 'N/A'}</div>
         <div class="text-[10px] text-gray-400">${l.date || ''}</div>
@@ -691,6 +825,8 @@ function renderLeadsTable(filter = 'all') {
       </td>
     </tr>
   `).join('');
+
+  updateLeadsBulkUI();
 }
 
 window.updateAdminLeadStatus = function(id, newStatus) {
@@ -713,6 +849,7 @@ window.deleteAdminLead = function(id) {
     if (window.BongBanglaSupabase) {
       window.BongBanglaSupabase.deleteLead(id);
     }
+    selectedLeadIds.delete(id);
     const filter = document.getElementById('lead-filter-status');
     renderLeadsTable(filter ? filter.value : 'all');
     updateStats();
@@ -934,18 +1071,204 @@ window.setReelViewMode = function(mode) {
   }
 };
 
+let selectedReelIds = new Set();
+let selectedModelIds = new Set();
+
+function updateReelsBulkUI() {
+  const bulkBar = document.getElementById('reels-bulk-bar');
+  const countEl = document.getElementById('reels-selected-count');
+  const selectAll = document.getElementById('reels-select-all');
+
+  const count = selectedReelIds.size;
+  if (countEl) countEl.textContent = count.toLocaleString('bn-BD');
+
+  if (bulkBar) {
+    if (count > 0) bulkBar.classList.remove('hidden');
+    else bulkBar.classList.add('hidden');
+  }
+
+  const allCheckboxes = document.querySelectorAll('.reel-checkbox');
+  if (selectAll && allCheckboxes.length > 0) {
+    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+    const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+    selectAll.checked = allChecked;
+    selectAll.indeterminate = someChecked && !allChecked;
+  }
+}
+
+window.toggleReelSelection = function(id, checked) {
+  if (checked) selectedReelIds.add(id);
+  else selectedReelIds.delete(id);
+  updateReelsBulkUI();
+};
+
+window.deselectAllReels = function() {
+  selectedReelIds.clear();
+  document.querySelectorAll('.reel-checkbox').forEach(cb => cb.checked = false);
+  const selectAll = document.getElementById('reels-select-all');
+  if (selectAll) {
+    selectAll.checked = false;
+    selectAll.indeterminate = false;
+  }
+  updateReelsBulkUI();
+};
+
+window.applyBulkReelsCategory = async function() {
+  if (selectedReelIds.size === 0) return;
+  const select = document.getElementById('reels-bulk-category-select');
+  const newCategory = select ? select.value : 'cinema-ads';
+
+  let reels = window.BongBanglaReels ? window.BongBanglaReels.getReels('all') : [];
+  reels.forEach(r => {
+    if (selectedReelIds.has(r.id)) {
+      r.category = newCategory;
+    }
+  });
+
+  if (window.BongBanglaReels) {
+    window.BongBanglaReels.saveReels(reels);
+  }
+
+  if (window.BongBanglaSupabase && window.BongBanglaSupabase.getClient()) {
+    const client = window.BongBanglaSupabase.getClient();
+    for (const id of Array.from(selectedReelIds)) {
+      client.from('reels').update({ category: newCategory }).eq('id', id).catch(() => {});
+    }
+  }
+
+  alert(`${selectedReelIds.size} টি রিলসের ক্যাটাগরি সফলভাবে পরিবর্তন করা হয়েছে!`);
+  selectedReelIds.clear();
+  const filter = document.getElementById('admin-reel-filter');
+  renderAdminReels(filter ? filter.value : 'all');
+};
+
+window.applyBulkReelsDelete = async function() {
+  if (selectedReelIds.size === 0) return;
+  if (!confirm(`আপনি কি নিশ্চিতভাবে নির্বাচিত ${selectedReelIds.size} টি রিলস মুছে ফেলতে চান?`)) return;
+
+  const toDelete = Array.from(selectedReelIds);
+  if (window.BongBanglaReels) {
+    let reels = window.BongBanglaReels.getReels('all');
+    reels = reels.filter(r => !selectedReelIds.has(r.id));
+    window.BongBanglaReels.saveReels(reels);
+  }
+
+  if (window.BongBanglaSupabase) {
+    for (const id of toDelete) {
+      window.BongBanglaSupabase.deleteReel(id).catch(() => {});
+    }
+  }
+
+  alert(`${toDelete.length} টি রিলস সফলভাবে মুছে ফেলা হয়েছে!`);
+  selectedReelIds.clear();
+  const filter = document.getElementById('admin-reel-filter');
+  renderAdminReels(filter ? filter.value : 'all');
+};
+
+function updateModelsBulkUI() {
+  const bulkBar = document.getElementById('models-bulk-bar');
+  const countEl = document.getElementById('models-selected-count');
+  const toggleBtn = document.getElementById('models-toggle-all-btn');
+
+  const count = selectedModelIds.size;
+  if (countEl) countEl.textContent = count.toLocaleString('bn-BD');
+
+  if (bulkBar) {
+    if (count > 0) bulkBar.classList.remove('hidden');
+    else bulkBar.classList.add('hidden');
+  }
+
+  const allCheckboxes = document.querySelectorAll('.model-checkbox');
+  if (toggleBtn && allCheckboxes.length > 0) {
+    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+    if (allChecked) {
+      toggleBtn.innerHTML = '<i class="fa-solid fa-square-check text-[#db2777]"></i> সিলেকশন সরান';
+    } else {
+      toggleBtn.innerHTML = '<i class="fa-regular fa-square-check text-[#db2777]"></i> সব সিলেক্ট';
+    }
+  }
+}
+
+window.toggleModelSelection = function(id, checked) {
+  if (checked) selectedModelIds.add(id);
+  else selectedModelIds.delete(id);
+  updateModelsBulkUI();
+};
+
+window.toggleSelectAllModels = function() {
+  const checkboxes = document.querySelectorAll('.model-checkbox');
+  if (checkboxes.length === 0) return;
+
+  const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+  checkboxes.forEach(cb => {
+    cb.checked = !allChecked;
+    const id = cb.getAttribute('data-id');
+    if (id) {
+      if (!allChecked) selectedModelIds.add(id);
+      else selectedModelIds.delete(id);
+    }
+  });
+  updateModelsBulkUI();
+};
+
+window.deselectAllModels = function() {
+  selectedModelIds.clear();
+  document.querySelectorAll('.model-checkbox').forEach(cb => cb.checked = false);
+  updateModelsBulkUI();
+};
+
+window.applyBulkModelsDelete = async function() {
+  if (selectedModelIds.size === 0) return;
+  if (!confirm(`আপনি কি নিশ্চিতভাবে নির্বাচিত ${selectedModelIds.size} জন মডেলকে মুছে ফেলতে চান?`)) return;
+
+  const toDelete = Array.from(selectedModelIds);
+  let models = getModels();
+  models = models.filter(m => !selectedModelIds.has(m.id));
+  saveModels(models);
+
+  if (window.BongBanglaSupabase) {
+    for (const id of toDelete) {
+      window.BongBanglaSupabase.deleteModel(id).catch(() => {});
+    }
+  }
+
+  alert(`${toDelete.length} জন মডেলের প্রোফাইল সফলভাবে মুছে ফেলা হয়েছে!`);
+  selectedModelIds.clear();
+  renderModelsGrid();
+};
+
 function renderAdminReels(category = 'all') {
   const grid = document.getElementById('admin-reels-grid');
   const listBody = document.getElementById('admin-reels-list-body');
   const emptyState = document.getElementById('reels-empty-state');
+  const selectAll = document.getElementById('reels-select-all');
   if (!window.BongBanglaReels) return;
 
   const reels = window.BongBanglaReels.getReels(category);
+
+  if (selectAll && !selectAll.dataset.initialized) {
+    selectAll.dataset.initialized = 'true';
+    selectAll.addEventListener('change', () => {
+      const isChecked = selectAll.checked;
+      const checkboxes = document.querySelectorAll('.reel-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = isChecked;
+        const id = cb.getAttribute('data-id');
+        if (id) {
+          if (isChecked) selectedReelIds.add(id);
+          else selectedReelIds.delete(id);
+        }
+      });
+      updateReelsBulkUI();
+    });
+  }
 
   if (reels.length === 0) {
     if (grid) grid.innerHTML = '';
     if (listBody) listBody.innerHTML = '';
     if (emptyState) emptyState.classList.remove('hidden');
+    selectedReelIds.clear();
+    updateReelsBulkUI();
     return;
   }
 
@@ -963,6 +1286,14 @@ function renderAdminReels(category = 'all') {
   if (listBody) {
     listBody.innerHTML = reels.map(r => `
       <tr class="hover:bg-[#fff8fa] transition-colors border-b border-[#ED96D7]/15">
+        <!-- Checkbox -->
+        <td class="py-3 px-3 text-center">
+          <input type="checkbox" class="reel-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer"
+                 data-id="${r.id}"
+                 ${selectedReelIds.has(r.id) ? 'checked' : ''}
+                 onchange="toggleReelSelection('${r.id}', this.checked)">
+        </td>
+
         <!-- Thumbnail -->
         <td class="py-3 px-4">
           <div class="w-12 h-16 rounded-xl overflow-hidden bg-black relative border border-[#ED96D7]/30 shrink-0 shadow-xs cursor-pointer group"
@@ -1033,18 +1364,24 @@ function renderAdminReels(category = 'all') {
   // 2. Render Grid View
   if (grid) {
     grid.innerHTML = reels.map(r => `
-      <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/35 group hover:border-[#db2777] shadow-sm hover:shadow-md transition-all bg-white flex flex-col justify-between">
+      <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/35 group hover:border-[#db2777] shadow-sm hover:shadow-md transition-all bg-white flex flex-col justify-between relative">
         
         <!-- 9:16 Thumbnail Preview -->
         <div class="aspect-[9/16] relative overflow-hidden bg-black">
           <img src="${r.thumbnail}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
 
-          <!-- Top Badges & Delete Button -->
-          <div class="absolute top-2 inset-x-2 flex items-center justify-between">
-            <span class="px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-[#db2777] shadow-sm">
-              ${r.tag || '4K'}
-            </span>
+          <!-- Top Badges, Checkbox & Delete Button -->
+          <div class="absolute top-2 inset-x-2 flex items-center justify-between z-10">
+            <div class="flex items-center gap-1.5">
+              <input type="checkbox" class="reel-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer bg-white/90 shadow-sm"
+                     data-id="${r.id}"
+                     ${selectedReelIds.has(r.id) ? 'checked' : ''}
+                     onchange="toggleReelSelection('${r.id}', this.checked)">
+              <span class="px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-[#db2777] shadow-sm">
+                ${r.tag || '4K'}
+              </span>
+            </div>
             <button onclick="deleteAdminReel('${r.id}')" class="w-7 h-7 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-colors" title="রিলস ডিলিট করুন">
               <i class="fa-solid fa-trash-can"></i>
             </button>
@@ -1085,6 +1422,7 @@ function renderAdminReels(category = 'all') {
   }
 
   setReelViewMode(currentReelViewMode);
+  updateReelsBulkUI();
 }
 
 window.deleteAdminReel = async function(id) {
@@ -1099,6 +1437,7 @@ window.deleteAdminReel = async function(id) {
         console.warn('Supabase deleteReel error:', err);
       }
     }
+    selectedReelIds.delete(id);
     const filter = document.getElementById('admin-reel-filter');
     renderAdminReels(filter ? filter.value : 'all');
   }
@@ -1137,16 +1476,26 @@ function renderModelsGrid() {
         কোনো মডেল পাওয়া যায়নি। উপরে "নতুন মডেল যুক্ত করুন" বাটনে ক্লিক করে প্রোফাইল যুক্ত করুন।
       </div>
     `;
+    selectedModelIds.clear();
+    updateModelsBulkUI();
     return;
   }
 
   grid.innerHTML = models.map(m => `
-    <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/30 group hover:border-[#ED96D7] shadow-sm hover:shadow-md transition-all bg-white">
+    <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/30 group hover:border-[#ED96D7] shadow-sm hover:shadow-md transition-all bg-white relative">
       <div class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8]">
         <img src="${m.image}" alt="${m.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-        <button onclick="deleteModel('${m.id}')" class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-colors" title="মডেল রিমুভ করুন">
-          <i class="fa-solid fa-trash-can"></i>
-        </button>
+        
+        <!-- Top Checkbox and Delete Button -->
+        <div class="absolute top-2.5 inset-x-2.5 flex items-center justify-between z-10">
+          <input type="checkbox" class="model-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer bg-white/90 shadow-sm"
+                 data-id="${m.id}"
+                 ${selectedModelIds.has(m.id) ? 'checked' : ''}
+                 onchange="toggleModelSelection('${m.id}', this.checked)">
+          <button onclick="deleteModel('${m.id}')" class="w-8 h-8 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-colors" title="মডেল রিমুভ করুন">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
       </div>
       <div class="p-4 space-y-1.5 font-bangla text-xs">
         <div class="font-bold text-[#2b0e23] text-sm">${m.name}</div>
@@ -1158,6 +1507,8 @@ function renderModelsGrid() {
       </div>
     </div>
   `).join('');
+
+  updateModelsBulkUI();
 }
 
 window.deleteModel = async function(id) {
@@ -1171,6 +1522,7 @@ window.deleteModel = async function(id) {
         console.warn('Supabase deleteModel error:', err);
       }
     }
+    selectedModelIds.delete(id);
     renderModelsGrid();
   }
 };
