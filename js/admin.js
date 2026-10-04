@@ -1716,7 +1716,16 @@ async function renderDashboard() {
   try { updateStats(); } catch(e) { console.error('updateStats error:', e); }
   try { renderLeadsTable('all'); } catch(e) { console.error('renderLeadsTable error:', e); }
   try { renderModelsGrid(); } catch(e) { console.error('renderModelsGrid error:', e); }
-  try { renderAdminReels('all'); } catch(e) { console.error('renderAdminReels error:', e); }
+  try {
+    let cloudReels = null;
+    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.fetchReels === 'function') {
+      cloudReels = await window.BongBanglaSupabase.fetchReels('all').catch(() => null);
+    }
+    renderAdminReels('all', cloudReels);
+  } catch(e) {
+    console.error('renderAdminReels error:', e);
+    renderAdminReels('all');
+  }
   try { renderAdminHeroSlides(); } catch(e) { console.error('renderAdminHeroSlides error:', e); }
   try { initReelsAdmin(); } catch(e) { console.error('initReelsAdmin error:', e); }
   try { initHeroSlidesAdmin(); } catch(e) { console.error('initHeroSlidesAdmin error:', e); }
@@ -1778,6 +1787,11 @@ function initSupabaseAdmin() {
         renderModelsGrid();
       }).catch(() => {});
 
+      window.BongBanglaSupabase.fetchReels('all').then((reels) => {
+        const filter = document.getElementById('admin-reel-filter');
+        renderAdminReels(filter ? filter.value : 'all', reels);
+      }).catch(() => {});
+
       // Realtime multi-tab / multi-device listeners
       window.BongBanglaSupabase.subscribeToLeads(() => {
         window.BongBanglaSupabase.fetchLeads().then(() => {
@@ -1788,8 +1802,13 @@ function initSupabaseAdmin() {
       });
 
       window.BongBanglaSupabase.subscribeToReels(() => {
-        const filter = document.getElementById('admin-reel-filter');
-        renderAdminReels(filter ? filter.value : 'all');
+        window.BongBanglaSupabase.fetchReels('all').then((reels) => {
+          const filter = document.getElementById('admin-reel-filter');
+          renderAdminReels(filter ? filter.value : 'all', reels);
+        }).catch(() => {
+          const filter = document.getElementById('admin-reel-filter');
+          renderAdminReels(filter ? filter.value : 'all');
+        });
       });
 
       window.BongBanglaSupabase.subscribeToModels(() => {
@@ -1964,8 +1983,12 @@ function initReelsAdmin() {
   const reelFilter = document.getElementById('admin-reel-filter');
   if (reelFilter && !reelFilter.dataset.initialized) {
     reelFilter.dataset.initialized = 'true';
-    reelFilter.addEventListener('change', () => {
-      renderAdminReels(reelFilter.value);
+    reelFilter.addEventListener('change', async () => {
+      let cloudReels = null;
+      if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.fetchReels === 'function') {
+        cloudReels = await window.BongBanglaSupabase.fetchReels(reelFilter.value).catch(() => null);
+      }
+      renderAdminReels(reelFilter.value, cloudReels);
     });
   }
 
@@ -2130,9 +2153,11 @@ function initReelsAdmin() {
         if (window.BongBanglaReels) {
           window.BongBanglaReels.addReel(newReel);
         }
+        let cloudSuccess = false;
         if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.addReel === 'function') {
           try {
             await window.BongBanglaSupabase.addReel(newReel);
+            cloudSuccess = true;
           } catch (err) {
             console.warn('Supabase addReel error:', err);
           }
@@ -2143,8 +2168,12 @@ function initReelsAdmin() {
         clearReelThumbSelection();
         addReelModal.classList.add('hidden');
         const reelFilter = document.getElementById('admin-reel-filter');
-        renderAdminReels(reelFilter ? reelFilter.value : 'all');
-        alert('নতুন রিলস ভিডিও সফলভাবে আপলোড ও লাইভ করা হয়েছে!');
+        let freshCloudReels = null;
+        if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.fetchReels === 'function') {
+          freshCloudReels = await window.BongBanglaSupabase.fetchReels(reelFilter ? reelFilter.value : 'all').catch(() => null);
+        }
+        renderAdminReels(reelFilter ? reelFilter.value : 'all', freshCloudReels);
+        alert(cloudSuccess ? 'নতুন রিলস ভিডিও সফলভাবে ক্লাউডে আপলোড ও সব ডিভাইসে লাইভ করা হয়েছে!' : 'রিলস সেভ করা হয়েছে (লোকাল ক্যাশে সংরক্ষিত)');
       } catch (err) {
         console.error('Error adding reel:', err);
         alert('রিলস আপলোড করতে সমস্যা হয়েছে: ' + (err.message || ''));
@@ -2328,26 +2357,22 @@ function initReelsAdmin() {
           window.BongBanglaReels.saveReels(reels);
         }
 
-        if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.getClient === 'function') {
-          const client = window.BongBanglaSupabase.getClient();
-          if (client) {
-            try {
-              await client.from('reels').update({
-                title: reel.title,
-                client: reel.client,
-                category: reel.category,
-                tag: reel.tag,
-                views: reel.views,
-                video_url: reel.videoUrl,
-                thumbnail: reel.thumbnail
-              }).eq('id', reel.id);
-            } catch (e) { console.warn('Supabase reel update error:', e); }
+        if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.addReel === 'function') {
+          try {
+            await window.BongBanglaSupabase.addReel(reel);
+          } catch (e) {
+            console.warn('Supabase reel upsert error:', e);
           }
+        }
+
+        let freshCloudReels = null;
+        if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.fetchReels === 'function') {
+          freshCloudReels = await window.BongBanglaSupabase.fetchReels('all').catch(() => null);
         }
 
         closeEditReelModal();
         const reelFilter = document.getElementById('admin-reel-filter');
-        renderAdminReels(reelFilter ? reelFilter.value : 'all');
+        renderAdminReels(reelFilter ? reelFilter.value : 'all', freshCloudReels);
         alert('রিলস ভিডিও সফলভাবে আপডেট করা হয়েছে!');
       } catch (err) {
         console.error('Error updating reel:', err);
@@ -2480,8 +2505,11 @@ window.applyBulkReelsDelete = async function() {
 
   if (window.BongBanglaSupabase) {
     for (const id of toDelete) {
-      window.BongBanglaSupabase.deleteReel(id).catch(() => {});
+      await window.BongBanglaSupabase.deleteReel(id).catch(() => {});
     }
+    const fresh = await window.BongBanglaSupabase.fetchReels('all').catch(() => null);
+    const filter = document.getElementById('admin-reel-filter');
+    renderAdminReels(filter ? filter.value : 'all', fresh);
   }
 
   alert(`${toDelete.length} টি রিলস সফলভাবে মুছে ফেলা হয়েছে!`);
@@ -2562,14 +2590,18 @@ window.applyBulkModelsDelete = async function() {
   renderModelsGrid();
 };
 
-function renderAdminReels(category = 'all') {
+function renderAdminReels(category = 'all', preloadedReels = null) {
   const grid = document.getElementById('admin-reels-grid');
   const listBody = document.getElementById('admin-reels-list-body');
   const emptyState = document.getElementById('reels-empty-state');
   const selectAll = document.getElementById('reels-select-all');
-  if (!window.BongBanglaReels) return;
 
-  const reels = window.BongBanglaReels.getReels(category);
+  let reels = [];
+  if (Array.isArray(preloadedReels)) {
+    reels = category === 'all' ? preloadedReels : preloadedReels.filter(r => r.category === category);
+  } else if (window.BongBanglaReels) {
+    reels = window.BongBanglaReels.getReels(category);
+  }
 
   if (selectAll && !selectAll.dataset.initialized) {
     selectAll.dataset.initialized = 'true';
@@ -2786,6 +2818,8 @@ window.deleteAdminReel = async function(id) {
   if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.deleteReel === 'function') {
     try {
       await window.BongBanglaSupabase.deleteReel(id);
+      const fresh = await window.BongBanglaSupabase.fetchReels('all').catch(() => null);
+      renderAdminReels(filter ? filter.value : 'all', fresh);
     } catch (err) {
       console.warn('Supabase deleteReel error:', err);
     }

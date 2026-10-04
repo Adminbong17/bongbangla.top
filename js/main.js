@@ -43,9 +43,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       // Fetch reels from Supabase
       if (typeof window.BongBanglaSupabase.fetchReels === 'function') {
-        await window.BongBanglaSupabase.fetchReels();
+        const cloudReels = await window.BongBanglaSupabase.fetchReels('all');
         const activeFilter = document.querySelector('.filter-btn.bg-gradient-to-r');
-        renderFrontendPortfolio(activeFilter ? activeFilter.getAttribute('data-filter') : 'all');
+        renderFrontendPortfolio(activeFilter ? activeFilter.getAttribute('data-filter') : 'all', cloudReels);
+      } else {
+        renderFrontendPortfolio('all');
       }
     } catch(e) {
       console.warn('Supabase fetch error on homepage:', e);
@@ -53,9 +55,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Real-time subscriptions for live updates
     if (typeof window.BongBanglaSupabase.subscribeToReels === 'function') {
-      window.BongBanglaSupabase.subscribeToReels(() => {
+      window.BongBanglaSupabase.subscribeToReels(async () => {
+        const cloudReels = await window.BongBanglaSupabase.fetchReels('all');
         const activeFilter = document.querySelector('.filter-btn.bg-gradient-to-r');
-        renderFrontendPortfolio(activeFilter ? activeFilter.getAttribute('data-filter') : 'all');
+        renderFrontendPortfolio(activeFilter ? activeFilter.getAttribute('data-filter') : 'all', cloudReels);
       });
     }
     if (typeof window.BongBanglaSupabase.subscribeToModels === 'function') {
@@ -232,12 +235,15 @@ function getFrontendCategoryBadge(category) {
   return map[category] || category || 'কমার্শিয়াল মিডিয়া';
 }
 
-function renderFrontendPortfolio(filter = 'all') {
+function renderFrontendPortfolio(filter = 'all', preloadedReels = null) {
   const container = document.getElementById('portfolio-grid');
   if (!container) return;
 
-  let reels = [];
-  if (window.BongBanglaReels && typeof window.BongBanglaReels.getReels === 'function') {
+  if (Array.isArray(preloadedReels) && preloadedReels.length > 0) {
+    window._cachedCloudReels = preloadedReels;
+  }
+  let reels = window._cachedCloudReels || (Array.isArray(preloadedReels) && preloadedReels.length > 0 ? preloadedReels : []);
+  if (reels.length === 0 && window.BongBanglaReels && typeof window.BongBanglaReels.getReels === 'function') {
     reels = window.BongBanglaReels.getReels('all');
   }
 

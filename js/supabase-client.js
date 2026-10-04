@@ -164,9 +164,18 @@
      2. Reels & Video Portfolio Sync
      ========================================================================== */
   async function fetchReels(category = 'all') {
-    if (supabaseClient) {
+    let client = supabaseClient;
+    if (!client && window.supabase && typeof window.supabase.createClient === 'function') {
+      const cfg = getConfig();
       try {
-        let query = supabaseClient.from('reels').select('*').order('created_at', { ascending: false });
+        client = window.supabase.createClient(cfg.url, cfg.anonKey);
+        supabaseClient = client;
+      } catch(e) {}
+    }
+
+    if (client) {
+      try {
+        let query = client.from('reels').select('*').order('created_at', { ascending: false });
         if (category !== 'all') {
           query = query.eq('category', category);
         }
@@ -184,6 +193,35 @@
             thumbnail: r.thumbnail_url,
             date: r.created_at ? r.created_at.split('T')[0] : '2026-10-01'
           }));
+
+          // Check for any un-synced local reels on this device and auto-upload them to Supabase
+          try {
+            const rawLocal = localStorage.getItem('bongbangla_reels');
+            const localReels = rawLocal ? JSON.parse(rawLocal) : [];
+            const deletedReels = JSON.parse(localStorage.getItem('bongbangla_deleted_reels') || '[]');
+
+            if (Array.isArray(localReels)) {
+              for (const lr of localReels) {
+                if (lr && lr.id && !deletedReels.includes(lr.id) && !mapped.some(m => m.id === lr.id)) {
+                  console.log('🔄 Auto-syncing un-synced local reel to Supabase:', lr.id, lr.title);
+                  addReel(lr).catch(e => console.warn('Auto-sync reel error:', e));
+                  if (category === 'all' || lr.category === category) {
+                    mapped.unshift(lr);
+                  }
+                }
+              }
+            }
+          } catch(syncErr) {
+            console.warn('Local reels sync check error:', syncErr);
+          }
+
+          // Always cache the latest cloud reels to localStorage so other parts of the site can read them synchronously
+          if (category === 'all') {
+            try {
+              localStorage.setItem('bongbangla_reels', JSON.stringify(mapped));
+            } catch(e) {}
+          }
+
           return mapped;
         }
       } catch (err) {
@@ -198,26 +236,61 @@
   }
 
   async function addReel(reel) {
-    if (supabaseClient) {
+    if (!reel) return null;
+    if (!reel.id) reel.id = 'reel-' + Date.now();
+
+    // Cache to localStorage first
+    try {
+      let local = [];
+      const raw = localStorage.getItem('bongbangla_reels');
+      if (raw) local = JSON.parse(raw) || [];
+      const idx = local.findIndex(r => r.id === reel.id);
+      if (idx >= 0) local[idx] = reel;
+      else local.unshift(reel);
+      localStorage.setItem('bongbangla_reels', JSON.stringify(local));
+    } catch(e) {}
+
+    // Ensure client
+    let client = supabaseClient;
+    if (!client && window.supabase && typeof window.supabase.createClient === 'function') {
+      const cfg = getConfig();
       try {
-        await supabaseClient
+        client = window.supabase.createClient(cfg.url, cfg.anonKey);
+        supabaseClient = client;
+      } catch(e) {}
+    }
+
+    if (client) {
+      try {
+        const payload = {
+          id: reel.id,
+          category: reel.category,
+          title: reel.title,
+          client: reel.client || 'BongBangla Client',
+          tag: reel.tag || '4K CINEMA',
+          views: reel.views || '১.৫M ভিউজ',
+          video_url: reel.videoUrl || reel.video_url || '',
+          thumbnail_url: reel.thumbnail || reel.thumbnail_url || '',
+          created_at: reel.created_at || new Date().toISOString()
+        };
+
+        const { data, error } = await client
           .from('reels')
-          .upsert([{
-            id: reel.id,
-            category: reel.category,
-            title: reel.title,
-            client: reel.client,
-            tag: reel.tag,
-            views: reel.views,
-            video_url: reel.videoUrl,
-            thumbnail_url: reel.thumbnail,
-            created_at: new Date().toISOString()
-          }]);
-        console.log('✅ Reel synced to Supabase:', reel.id);
+          .upsert([payload])
+          .select();
+
+        if (error) {
+          console.error('❌ Supabase addReel error:', error);
+          throw error;
+        } else {
+          console.log('✅ Reel synced to Supabase:', reel.id, data);
+        }
       } catch (err) {
         console.error('Error syncing reel to Supabase:', err);
+        throw err;
       }
     }
+    return reel;
   }
 
   async function deleteReel(id) {
