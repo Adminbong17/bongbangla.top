@@ -847,16 +847,18 @@
        Modal: Add New Model
        ======================================================================== -->
   <div id="add-model-modal" class="fixed inset-0 z-50 hidden bg-[#2b0e23]/60 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="max-w-md w-full glass-panel p-6 sm:p-8 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4">
+    <div class="max-w-md w-full glass-panel p-6 sm:p-7 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
       <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
-        <h4 class="text-base font-bold text-[#2b0e23] font-bangla">নতুন মডেল যোগ করুন</h4>
+        <h4 class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
+          <i class="fa-solid fa-user-plus text-[#db2777]"></i> নতুন মডেল যোগ করুন
+        </h4>
         <button id="close-add-model-btn" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
       </div>
 
       <form id="add-model-form" class="space-y-3.5 text-xs font-bangla">
         <div>
           <label class="block text-[#572449] font-bold mb-1">মডেলের নাম *</label>
-          <input type="text" name="name" required class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          <input type="text" name="name" required placeholder="উদাঃ অনন্যা রায়" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
         </div>
         <div>
           <label class="block text-[#572449] font-bold mb-1">ক্যাটাগরি / স্টাইল *</label>
@@ -872,19 +874,65 @@
             <input type="text" name="shoots" placeholder="৪০+" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
           </div>
         </div>
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-[#572449] font-bold">ছবির URL (Photo Image Link)</label>
-            <button type="button" onclick="setVaultHelperInput('model-image-input', 'models/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
-              <i class="fa-solid fa-cloud-arrow-up mr-0.5"></i> Vault CDN (+models/)
-            </button>
+
+        <!-- Model Photo: Direct Upload & URL Dual Mode -->
+        <div class="space-y-2 pt-1 border-t border-[#ED96D7]/20">
+          <div class="flex items-center justify-between">
+            <label class="block text-[#572449] font-bold">মডেলের ছবি (Photo) *</label>
+            <!-- Mode Tabs -->
+            <div class="inline-flex rounded-lg bg-pink-50 p-0.5 border border-[#ED96D7]/30 text-[10px]">
+              <button type="button" id="model-tab-file-btn" onclick="setModelPhotoInputMode('file')" class="px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs">
+                <i class="fa-solid fa-cloud-arrow-up mr-1"></i>ফাইল আপলোড
+              </button>
+              <button type="button" id="model-tab-url-btn" onclick="setModelPhotoInputMode('url')" class="px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]">
+                <i class="fa-solid fa-link mr-1"></i>লিঙ্ক
+              </button>
+            </div>
           </div>
-          <input type="text" id="model-image-input" name="image" placeholder="https://vault.bongbangla.top/models/model1.jpg" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
-          <span class="text-[10px] text-[#8c4f75] mt-0.5 block">সরাসরি Vault CDN লিংক বা Unsplash ফটো URL সাপোর্ট করে</span>
+
+          <!-- File Upload Dropzone View -->
+          <div id="model-file-upload-view" class="space-y-2">
+            <input type="file" id="model-image-file" accept="image/*" class="hidden">
+            
+            <div id="model-file-dropzone" onclick="document.getElementById('model-image-file').click()" class="border-2 border-dashed border-[#ED96D7] hover:border-[#db2777] bg-[#fff8fa] hover:bg-[#fdf2f8] rounded-2xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 group">
+              <div class="w-10 h-10 rounded-full bg-pink-100 text-[#db2777] flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-image"></i>
+              </div>
+              <p class="font-bold text-[#2b0e23] text-xs">ছবি নির্বাচন করতে এখানে ক্লিক করুন</p>
+              <p class="text-[10px] text-[#8c4f75]">বা ফাইল ড্র্যাগ করে ছেড়ে দিন (JPG, PNG, WEBP)</p>
+            </div>
+
+            <!-- Live Photo Preview Container -->
+            <div id="model-file-preview-box" class="hidden p-2.5 bg-pink-50/70 border border-[#ED96D7]/40 rounded-xl flex items-center gap-3">
+              <img id="model-file-preview-img" src="" alt="Model Preview" class="w-12 h-16 object-cover rounded-lg border border-[#ED96D7]/50 shadow-xs shrink-0">
+              <div class="flex-1 min-w-0">
+                <div id="model-file-name" class="font-bold text-[#2b0e23] text-[11px] truncate">photo.jpg</div>
+                <div id="model-file-size" class="text-[10px] text-[#8c4f75]">0 KB</div>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[9px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 mt-0.5">
+                  vault.bongbangla.top/models/
+                </span>
+              </div>
+              <button type="button" id="model-file-remove-btn" onclick="clearModelFileSelection()" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors shrink-0" title="ছবি বাতিল">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- URL Input View -->
+          <div id="model-url-view" class="hidden space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-[#8c4f75]">Vault CDN লিংক বা অনলাইন ছবির URL:</span>
+              <button type="button" onclick="setVaultHelperInput('model-image-input', 'models/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
+                <i class="fa-solid fa-cloud-arrow-up mr-0.5"></i> Vault (+models/)
+              </button>
+            </div>
+            <input type="text" id="model-image-input" name="image" placeholder="https://vault.bongbangla.top/models/model1.jpg" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          </div>
         </div>
 
-        <button type="submit" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2">
-          মডেল প্রোফাইল সেভ করুন
+        <button type="submit" id="model-submit-btn" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-check"></i>
+          <span>মডেল প্রোফাইল সেভ করুন</span>
         </button>
       </form>
     </div>
@@ -894,7 +942,7 @@
        Modal: Add New Reel / Video Upload
        ======================================================================== -->
   <div id="add-reel-modal" class="fixed inset-0 z-50 hidden bg-[#2b0e23]/60 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="max-w-md w-full glass-panel p-6 sm:p-8 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4">
+    <div class="max-w-md w-full glass-panel p-6 sm:p-7 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-3.5 max-h-[92vh] overflow-y-auto custom-scrollbar">
       <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
         <h4 class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
           <i class="fa-solid fa-video text-[#db2777]"></i> নতুন ৯:১৬ রিলস ভিডিও আপলোড
@@ -946,29 +994,117 @@
           </div>
         </div>
 
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-[#572449] font-bold">ভিডিও লিংক (Direct MP4 URL) *</label>
-            <button type="button" onclick="setVaultHelperInput('reel-video-input', 'reels/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
-              <i class="fa-solid fa-bolt mr-0.5"></i> Vault (+reels/)
-            </button>
+        <!-- 1. Video Source: File Upload vs URL -->
+        <div class="space-y-2 pt-1 border-t border-[#ED96D7]/20">
+          <div class="flex items-center justify-between">
+            <label class="block text-[#572449] font-bold">ভিডিও ফাইল (৯:১৬ Video) *</label>
+            <!-- Mode Tabs -->
+            <div class="inline-flex rounded-lg bg-pink-50 p-0.5 border border-[#ED96D7]/30 text-[10px]">
+              <button type="button" id="reel-video-tab-file-btn" onclick="setReelVideoInputMode('file')" class="px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs">
+                <i class="fa-solid fa-file-video mr-1"></i>ফাইল আপলোড
+              </button>
+              <button type="button" id="reel-video-tab-url-btn" onclick="setReelVideoInputMode('url')" class="px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]">
+                <i class="fa-solid fa-link mr-1"></i>লিঙ্ক
+              </button>
+            </div>
           </div>
-          <input type="text" id="reel-video-input" name="videoUrl" required placeholder="https://vault.bongbangla.top/reels/video1.mp4" value="https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-studio-setting-41793-large.mp4" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
-          <span class="text-[10px] text-[#8c4f75] mt-0.5 block">সরাসরি Vault CDN লিংক বা যেকোনো ডিরেক্ট MP4 সাপোর্ট করে</span>
+
+          <!-- Video File Upload Dropzone View -->
+          <div id="reel-video-upload-view" class="space-y-2">
+            <input type="file" id="reel-video-file" accept="video/mp4,video/quicktime,video/webm" class="hidden">
+            
+            <div id="reel-video-dropzone" onclick="document.getElementById('reel-video-file').click()" class="border-2 border-dashed border-[#ED96D7] hover:border-[#db2777] bg-[#fff8fa] hover:bg-[#fdf2f8] rounded-2xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 group">
+              <div class="w-10 h-10 rounded-full bg-pink-100 text-[#db2777] flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-film"></i>
+              </div>
+              <p class="font-bold text-[#2b0e23] text-xs">ভিডিও ফাইল নির্বাচন করুন (MP4, MOV)</p>
+              <p class="text-[10px] text-[#8c4f75]">ডিভাইস থেকে ৯:১৬ রিলস ভিডিও ফাইল দিন</p>
+            </div>
+
+            <!-- Live Video Preview Container -->
+            <div id="reel-video-preview-box" class="hidden p-2.5 bg-pink-50/70 border border-[#ED96D7]/40 rounded-xl space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="min-w-0 flex-1 mr-2">
+                  <div id="reel-video-file-name" class="font-bold text-[#2b0e23] text-[11px] truncate">video.mp4</div>
+                  <div id="reel-video-file-size" class="text-[10px] text-[#8c4f75]">0 MB</div>
+                </div>
+                <button type="button" onclick="clearReelVideoSelection()" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors" title="ভিডিও বাতিল">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+              <video id="reel-video-preview-player" class="w-full max-h-36 rounded-lg bg-black object-contain" controls muted></video>
+            </div>
+          </div>
+
+          <!-- Video URL View -->
+          <div id="reel-video-url-view" class="hidden space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-[#8c4f75]">Vault CDN বা সরাসরি MP4 ভিডিও URL:</span>
+              <button type="button" onclick="setVaultHelperInput('reel-video-input', 'reels/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
+                <i class="fa-solid fa-bolt mr-0.5"></i> Vault (+reels/)
+              </button>
+            </div>
+            <input type="text" id="reel-video-input" name="videoUrl" placeholder="https://vault.bongbangla.top/reels/video1.mp4" value="https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-studio-setting-41793-large.mp4" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          </div>
         </div>
 
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-[#572449] font-bold">পোস্টার / থাম্বনেইল ছবির URL *</label>
-            <button type="button" onclick="setVaultHelperInput('reel-thumb-input', 'thumbnails/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
-              <i class="fa-solid fa-image mr-0.5"></i> Vault (+thumbnails/)
-            </button>
+        <!-- 2. Thumbnail Source: File Upload vs URL -->
+        <div class="space-y-2 pt-1 border-t border-[#ED96D7]/20">
+          <div class="flex items-center justify-between">
+            <label class="block text-[#572449] font-bold">পোস্টার / থাম্বনেইল ছবি *</label>
+            <!-- Mode Tabs -->
+            <div class="inline-flex rounded-lg bg-pink-50 p-0.5 border border-[#ED96D7]/30 text-[10px]">
+              <button type="button" id="reel-thumb-tab-file-btn" onclick="setReelThumbInputMode('file')" class="px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs">
+                <i class="fa-solid fa-image mr-1"></i>ফাইল আপলোড
+              </button>
+              <button type="button" id="reel-thumb-tab-url-btn" onclick="setReelThumbInputMode('url')" class="px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]">
+                <i class="fa-solid fa-link mr-1"></i>লিঙ্ক
+              </button>
+            </div>
           </div>
-          <input type="text" id="reel-thumb-input" name="thumbnail" required placeholder="https://vault.bongbangla.top/thumbnails/thumb1.jpg" value="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=720&h=1280&q=80" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+
+          <!-- Thumb File Upload Dropzone View -->
+          <div id="reel-thumb-upload-view" class="space-y-2">
+            <input type="file" id="reel-thumb-file" accept="image/*" class="hidden">
+            
+            <div id="reel-thumb-dropzone" onclick="document.getElementById('reel-thumb-file').click()" class="border-2 border-dashed border-[#ED96D7] hover:border-[#db2777] bg-[#fff8fa] hover:bg-[#fdf2f8] rounded-2xl p-3 text-center cursor-pointer transition-all flex items-center justify-center gap-2.5 group">
+              <div class="w-8 h-8 rounded-full bg-pink-100 text-[#db2777] flex items-center justify-center text-sm group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-camera"></i>
+              </div>
+              <div class="text-left">
+                <p class="font-bold text-[#2b0e23] text-xs">থাম্বনেইল ছবি নির্বাচন করুন</p>
+                <p class="text-[10px] text-[#8c4f75]">JPG, PNG বা WEBP ছবি</p>
+              </div>
+            </div>
+
+            <!-- Live Thumb Preview Container -->
+            <div id="reel-thumb-preview-box" class="hidden p-2 bg-pink-50/70 border border-[#ED96D7]/40 rounded-xl flex items-center gap-3">
+              <img id="reel-thumb-preview-img" src="" alt="Thumbnail Preview" class="w-10 h-14 object-cover rounded-lg border border-[#ED96D7]/50 shadow-xs shrink-0">
+              <div class="flex-1 min-w-0">
+                <div id="reel-thumb-file-name" class="font-bold text-[#2b0e23] text-[11px] truncate">thumb.jpg</div>
+                <div id="reel-thumb-file-size" class="text-[10px] text-[#8c4f75]">0 KB</div>
+              </div>
+              <button type="button" onclick="clearReelThumbSelection()" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors shrink-0" title="থাম্বনেইল বাতিল">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Thumb URL View -->
+          <div id="reel-thumb-url-view" class="hidden space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-[#8c4f75]">পোস্টার ইমেজের URL:</span>
+              <button type="button" onclick="setVaultHelperInput('reel-thumb-input', 'thumbnails/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
+                <i class="fa-solid fa-image mr-0.5"></i> Vault (+thumbnails/)
+              </button>
+            </div>
+            <input type="text" id="reel-thumb-input" name="thumbnail" placeholder="https://vault.bongbangla.top/thumbnails/thumb1.jpg" value="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=720&h=1280&q=80" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          </div>
         </div>
 
-        <button type="submit" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2">
-          রিলস ভিডিও সেভ ও লাইভ করুন
+        <button type="submit" id="reel-submit-btn" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>রিলস ভিডিও সেভ ও লাইভ করুন</span>
         </button>
       </form>
     </div>
@@ -978,7 +1114,7 @@
        Modal: Add New Hero Slide
        ======================================================================== -->
   <div id="add-hero-slide-modal" class="fixed inset-0 z-50 hidden bg-[#2b0e23]/60 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="max-w-md w-full glass-panel p-6 sm:p-8 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4 bg-white">
+    <div class="max-w-md w-full glass-panel p-6 sm:p-7 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4 bg-white max-h-[90vh] overflow-y-auto custom-scrollbar">
       <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
         <h4 class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
           <i class="fa-solid fa-image text-[#db2777]"></i> নতুন হিরো ইমেজ / কার্ড যোগ করুন
@@ -987,15 +1123,59 @@
       </div>
 
       <form id="add-hero-slide-form" class="space-y-3.5 text-xs font-bangla">
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-[#572449] font-bold">ইমেজের URL (Photo Link) *</label>
-            <button type="button" onclick="setVaultHelperInput('hero-slide-image-input', 'hero/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
-              <i class="fa-solid fa-cloud-arrow-up mr-0.5"></i> Vault (+hero/)
-            </button>
+        <!-- Hero Photo: Direct Upload & URL Dual Mode -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-[#572449] font-bold">হিরো ইমেজ (৯:১৬ Photo) *</label>
+            <!-- Mode Tabs -->
+            <div class="inline-flex rounded-lg bg-pink-50 p-0.5 border border-[#ED96D7]/30 text-[10px]">
+              <button type="button" id="hero-slide-tab-file-btn" onclick="setHeroSlideInputMode('file')" class="px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs">
+                <i class="fa-solid fa-cloud-arrow-up mr-1"></i>ফাইল আপলোড
+              </button>
+              <button type="button" id="hero-slide-tab-url-btn" onclick="setHeroSlideInputMode('url')" class="px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]">
+                <i class="fa-solid fa-link mr-1"></i>লিঙ্ক
+              </button>
+            </div>
           </div>
-          <input type="text" id="hero-slide-image-input" name="image" required placeholder="https://vault.bongbangla.top/hero/slide1.jpg" class="w-full bg-[#fdf2f8] border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
-          <span class="text-[10px] text-[#8c4f75] mt-0.5 block">৯:১৬ রেশিওর পোর্ট্রেট ইমেজ লিংক দিন (Vault CDN বা Unsplash)</span>
+
+          <!-- File Upload Dropzone View -->
+          <div id="hero-slide-file-upload-view" class="space-y-2">
+            <input type="file" id="hero-slide-image-file" accept="image/*" class="hidden">
+            
+            <div id="hero-slide-file-dropzone" onclick="document.getElementById('hero-slide-image-file').click()" class="border-2 border-dashed border-[#ED96D7] hover:border-[#db2777] bg-[#fff8fa] hover:bg-[#fdf2f8] rounded-2xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 group">
+              <div class="w-10 h-10 rounded-full bg-pink-100 text-[#db2777] flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-images"></i>
+              </div>
+              <p class="font-bold text-[#2b0e23] text-xs">৯:১৬ ছবি নির্বাচন করতে এখানে ক্লিক করুন</p>
+              <p class="text-[10px] text-[#8c4f75]">JPG, PNG, WEBP (হোমপেজ টপ কার্ড)</p>
+            </div>
+
+            <!-- Live Photo Preview Container -->
+            <div id="hero-slide-file-preview-box" class="hidden p-2.5 bg-pink-50/70 border border-[#ED96D7]/40 rounded-xl flex items-center gap-3">
+              <img id="hero-slide-file-preview-img" src="" alt="Hero Preview" class="w-12 h-16 object-cover rounded-lg border border-[#ED96D7]/50 shadow-xs shrink-0">
+              <div class="flex-1 min-w-0">
+                <div id="hero-slide-file-name" class="font-bold text-[#2b0e23] text-[11px] truncate">hero.jpg</div>
+                <div id="hero-slide-file-size" class="text-[10px] text-[#8c4f75]">0 KB</div>
+                <span class="inline-block px-1.5 py-0.2 rounded text-[9px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 mt-0.5">
+                  vault.bongbangla.top/hero/
+                </span>
+              </div>
+              <button type="button" onclick="clearHeroSlideFileSelection()" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors shrink-0" title="ছবি বাতিল">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- URL Input View -->
+          <div id="hero-slide-url-view" class="hidden space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-[#8c4f75]">ইমেজের URL (Vault CDN বা Unsplash):</span>
+              <button type="button" onclick="setVaultHelperInput('hero-slide-image-input', 'hero/')" class="text-[10px] text-[#db2777] hover:underline font-bold">
+                <i class="fa-solid fa-cloud-arrow-up mr-0.5"></i> Vault (+hero/)
+              </button>
+            </div>
+            <input type="text" id="hero-slide-image-input" name="image" placeholder="https://vault.bongbangla.top/hero/slide1.jpg" class="w-full bg-[#fdf2f8] border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          </div>
         </div>
 
         <div>
@@ -1008,8 +1188,9 @@
           <input type="text" name="tag" placeholder="উদাঃ 4K REC, TRENDING, TOP MODEL" class="w-full bg-[#fdf2f8] border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
         </div>
 
-        <button type="submit" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2">
-          হিরো ইমেজ সেভ করুন
+        <button type="submit" id="hero-slide-submit-btn" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-check"></i>
+          <span>হিরো ইমেজ সেভ করুন</span>
         </button>
       </form>
     </div>

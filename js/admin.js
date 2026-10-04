@@ -588,47 +588,177 @@ function initDashboard() {
     });
   }
 
-  // Add Model Modal
+  // Add Model Modal & Photo File Upload Setup
   const openAddModelBtn = document.getElementById('open-add-model-btn');
   const closeAddModelBtn = document.getElementById('close-add-model-btn');
   const addModelModal = document.getElementById('add-model-modal');
   const addModelForm = document.getElementById('add-model-form');
 
+  let selectedModelFile = null;
+
+  window.setModelPhotoInputMode = function(mode) {
+    const tabFileBtn = document.getElementById('model-tab-file-btn');
+    const tabUrlBtn = document.getElementById('model-tab-url-btn');
+    const fileView = document.getElementById('model-file-upload-view');
+    const urlView = document.getElementById('model-url-view');
+
+    if (mode === 'file') {
+      if (tabFileBtn) tabFileBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs';
+      if (tabUrlBtn) tabUrlBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]';
+      if (fileView) fileView.classList.remove('hidden');
+      if (urlView) urlView.classList.add('hidden');
+    } else {
+      if (tabUrlBtn) tabUrlBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs';
+      if (tabFileBtn) tabFileBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]';
+      if (urlView) urlView.classList.remove('hidden');
+      if (fileView) fileView.classList.add('hidden');
+    }
+  };
+
+  window.clearModelFileSelection = function() {
+    selectedModelFile = null;
+    const fileInput = document.getElementById('model-image-file');
+    const dropzone = document.getElementById('model-file-dropzone');
+    const previewBox = document.getElementById('model-file-preview-box');
+    const previewImg = document.getElementById('model-file-preview-img');
+    const urlInput = document.getElementById('model-image-input');
+
+    if (fileInput) fileInput.value = '';
+    if (previewImg) previewImg.src = '';
+    if (previewBox) previewBox.classList.add('hidden');
+    if (dropzone) dropzone.classList.remove('hidden');
+    if (urlInput && urlInput.value.includes('vault.bongbangla.top/models/')) {
+      urlInput.value = '';
+    }
+  };
+
+  function handleModelFileChange(file) {
+    if (!file) return;
+    selectedModelFile = file;
+    const dropzone = document.getElementById('model-file-dropzone');
+    const previewBox = document.getElementById('model-file-preview-box');
+    const previewImg = document.getElementById('model-file-preview-img');
+    const nameEl = document.getElementById('model-file-name');
+    const sizeEl = document.getElementById('model-file-size');
+    const urlInput = document.getElementById('model-image-input');
+
+    const localUrl = URL.createObjectURL(file);
+    if (previewImg) previewImg.src = localUrl;
+    if (nameEl) nameEl.textContent = file.name;
+    if (sizeEl) sizeEl.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+    const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const vaultUrl = `https://vault.bongbangla.top/models/${cleanFileName}`;
+    if (urlInput) urlInput.value = vaultUrl;
+
+    if (dropzone) dropzone.classList.add('hidden');
+    if (previewBox) previewBox.classList.remove('hidden');
+  }
+
+  const modelFileInput = document.getElementById('model-image-file');
+  if (modelFileInput && !modelFileInput.dataset.initialized) {
+    modelFileInput.dataset.initialized = 'true';
+    modelFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleModelFileChange(e.target.files[0]);
+      }
+    });
+  }
+
+  const modelDropzone = document.getElementById('model-file-dropzone');
+  if (modelDropzone && !modelDropzone.dataset.initialized) {
+    modelDropzone.dataset.initialized = 'true';
+    ['dragenter', 'dragover'].forEach(eventName => {
+      modelDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        modelDropzone.classList.add('border-[#db2777]', 'bg-pink-100/60');
+      });
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      modelDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        modelDropzone.classList.remove('border-[#db2777]', 'bg-pink-100/60');
+      });
+    });
+    modelDropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleModelFileChange(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
   if (openAddModelBtn && addModelModal && !openAddModelBtn.dataset.initialized) {
     openAddModelBtn.dataset.initialized = 'true';
-    openAddModelBtn.addEventListener('click', () => addModelModal.classList.remove('hidden'));
+    openAddModelBtn.addEventListener('click', () => {
+      clearModelFileSelection();
+      setModelPhotoInputMode('file');
+      addModelModal.classList.remove('hidden');
+    });
     closeAddModelBtn.addEventListener('click', () => addModelModal.classList.add('hidden'));
 
     addModelForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(addModelForm);
-      const models = getModels();
-      const rawImage = formData.get('image') || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
-      const formattedImage = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImage, 'models') : rawImage;
-      const newModel = {
-        id: 'M-' + Date.now(),
-        name: formData.get('name'),
-        category: formData.get('category'),
-        height: formData.get('height') || '৫\'৭"',
-        shoots: formData.get('shoots') || '২৫+',
-        image: formattedImage,
-        available: true
-      };
-      models.push(newModel);
-      saveModels(models);
-
-      if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.addModel === 'function') {
-        try {
-          await window.BongBanglaSupabase.addModel(newModel);
-        } catch (err) {
-          console.warn('Supabase addModel error:', err);
-        }
+      const submitBtn = document.getElementById('model-submit-btn');
+      const originalText = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সেভ ও আপলোড হচ্ছে...';
       }
 
-      addModelForm.reset();
-      addModelModal.classList.add('hidden');
-      renderModelsGrid();
-      alert('নতুন মডেল সফলভাবে যুক্ত ও লাইভ করা হয়েছে!');
+      try {
+        const formData = new FormData(addModelForm);
+        let photoUrl = (formData.get('image') || '').toString().trim();
+
+        // If direct file was selected, upload via Vault API
+        if (selectedModelFile && window.BongBanglaVault) {
+          const uploadRes = await window.BongBanglaVault.uploadMedia(selectedModelFile, 'models');
+          if (uploadRes && uploadRes.url) {
+            photoUrl = uploadRes.url;
+          }
+        }
+
+        if (!photoUrl) {
+          photoUrl = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+        }
+
+        const formattedImage = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(photoUrl, 'models') : photoUrl;
+        const models = getModels();
+        const newModel = {
+          id: 'M-' + Date.now(),
+          name: formData.get('name'),
+          category: formData.get('category'),
+          height: formData.get('height') || '৫\'৭"',
+          shoots: formData.get('shoots') || '২৫+',
+          image: formattedImage,
+          available: true
+        };
+        models.push(newModel);
+        saveModels(models);
+
+        if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.addModel === 'function') {
+          try {
+            await window.BongBanglaSupabase.addModel(newModel);
+          } catch (err) {
+            console.warn('Supabase addModel error:', err);
+          }
+        }
+
+        addModelForm.reset();
+        clearModelFileSelection();
+        addModelModal.classList.add('hidden');
+        renderModelsGrid();
+        alert('নতুন মডেলের ছবি ও প্রোফাইল সফলভাবে আপলোড ও লাইভ করা হয়েছে!');
+      } catch (err) {
+        console.error('Error saving model:', err);
+        alert('মডেল সেভ করতে সমস্যা হয়েছে: ' + (err.message || ''));
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+        }
+      }
     });
   }
 }
@@ -1038,6 +1168,122 @@ function initSupabaseAdmin() {
   }
 }
 
+let selectedReelVideoFile = null;
+let selectedReelThumbFile = null;
+
+window.setReelVideoInputMode = function(mode) {
+  const tabFileBtn = document.getElementById('reel-video-tab-file-btn');
+  const tabUrlBtn = document.getElementById('reel-video-tab-url-btn');
+  const fileView = document.getElementById('reel-video-upload-view');
+  const urlView = document.getElementById('reel-video-url-view');
+
+  if (mode === 'file') {
+    if (tabFileBtn) tabFileBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs';
+    if (tabUrlBtn) tabUrlBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]';
+    if (fileView) fileView.classList.remove('hidden');
+    if (urlView) urlView.classList.add('hidden');
+  } else {
+    if (tabUrlBtn) tabUrlBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs';
+    if (tabFileBtn) tabFileBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]';
+    if (urlView) urlView.classList.remove('hidden');
+    if (fileView) fileView.classList.add('hidden');
+  }
+};
+
+window.setReelThumbInputMode = function(mode) {
+  const tabFileBtn = document.getElementById('reel-thumb-tab-file-btn');
+  const tabUrlBtn = document.getElementById('reel-thumb-tab-url-btn');
+  const fileView = document.getElementById('reel-thumb-upload-view');
+  const urlView = document.getElementById('reel-thumb-url-view');
+
+  if (mode === 'file') {
+    if (tabFileBtn) tabFileBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs';
+    if (tabUrlBtn) tabUrlBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]';
+    if (fileView) fileView.classList.remove('hidden');
+    if (urlView) urlView.classList.add('hidden');
+  } else {
+    if (tabUrlBtn) tabUrlBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs';
+    if (tabFileBtn) tabFileBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]';
+    if (urlView) urlView.classList.remove('hidden');
+    if (fileView) fileView.classList.add('hidden');
+  }
+};
+
+window.clearReelVideoSelection = function() {
+  selectedReelVideoFile = null;
+  const fileInput = document.getElementById('reel-video-file');
+  const dropzone = document.getElementById('reel-video-dropzone');
+  const previewBox = document.getElementById('reel-video-preview-box');
+  const player = document.getElementById('reel-video-preview-player');
+
+  if (fileInput) fileInput.value = '';
+  if (player) {
+    player.pause();
+    player.src = '';
+  }
+  if (previewBox) previewBox.classList.add('hidden');
+  if (dropzone) dropzone.classList.remove('hidden');
+};
+
+window.clearReelThumbSelection = function() {
+  selectedReelThumbFile = null;
+  const fileInput = document.getElementById('reel-thumb-file');
+  const dropzone = document.getElementById('reel-thumb-dropzone');
+  const previewBox = document.getElementById('reel-thumb-preview-box');
+  const previewImg = document.getElementById('reel-thumb-preview-img');
+
+  if (fileInput) fileInput.value = '';
+  if (previewImg) previewImg.src = '';
+  if (previewBox) previewBox.classList.add('hidden');
+  if (dropzone) dropzone.classList.remove('hidden');
+};
+
+function handleReelVideoFileChange(file) {
+  if (!file) return;
+  selectedReelVideoFile = file;
+  const dropzone = document.getElementById('reel-video-dropzone');
+  const previewBox = document.getElementById('reel-video-preview-box');
+  const player = document.getElementById('reel-video-preview-player');
+  const nameEl = document.getElementById('reel-video-file-name');
+  const sizeEl = document.getElementById('reel-video-file-size');
+  const urlInput = document.getElementById('reel-video-input');
+
+  const localUrl = URL.createObjectURL(file);
+  if (player) player.src = localUrl;
+  if (nameEl) nameEl.textContent = file.name;
+  if (sizeEl) sizeEl.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+  const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const vaultUrl = `https://vault.bongbangla.top/reels/${cleanFileName}`;
+  if (urlInput) urlInput.value = vaultUrl;
+
+  if (dropzone) dropzone.classList.add('hidden');
+  if (previewBox) previewBox.classList.remove('hidden');
+}
+
+function handleReelThumbFileChange(file) {
+  if (!file) return;
+  selectedReelThumbFile = file;
+  const dropzone = document.getElementById('reel-thumb-dropzone');
+  const previewBox = document.getElementById('reel-thumb-preview-box');
+  const previewImg = document.getElementById('reel-thumb-preview-img');
+  const nameEl = document.getElementById('reel-thumb-file-name');
+  const sizeEl = document.getElementById('reel-thumb-file-size');
+  const urlInput = document.getElementById('reel-thumb-input');
+
+  const localUrl = URL.createObjectURL(file);
+  if (previewImg) previewImg.src = localUrl;
+  if (nameEl) nameEl.textContent = file.name;
+  if (sizeEl) sizeEl.textContent = (file.size / 1024).toFixed(1) + ' KB';
+
+  const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const vaultUrl = `https://vault.bongbangla.top/thumbnails/${cleanFileName}`;
+  if (urlInput) urlInput.value = vaultUrl;
+
+  if (dropzone) dropzone.classList.add('hidden');
+  if (previewBox) previewBox.classList.remove('hidden');
+}
+
 function initReelsAdmin() {
   const reelFilter = document.getElementById('admin-reel-filter');
   if (reelFilter && !reelFilter.dataset.initialized) {
@@ -1061,6 +1307,75 @@ function initReelsAdmin() {
     });
   }
 
+  // Setup video & thumbnail file listeners & dropzones
+  const reelVideoFileInput = document.getElementById('reel-video-file');
+  if (reelVideoFileInput && !reelVideoFileInput.dataset.initialized) {
+    reelVideoFileInput.dataset.initialized = 'true';
+    reelVideoFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleReelVideoFileChange(e.target.files[0]);
+      }
+    });
+  }
+
+  const reelVideoDropzone = document.getElementById('reel-video-dropzone');
+  if (reelVideoDropzone && !reelVideoDropzone.dataset.initialized) {
+    reelVideoDropzone.dataset.initialized = 'true';
+    ['dragenter', 'dragover'].forEach(eventName => {
+      reelVideoDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        reelVideoDropzone.classList.add('border-[#db2777]', 'bg-pink-100/60');
+      });
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      reelVideoDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        reelVideoDropzone.classList.remove('border-[#db2777]', 'bg-pink-100/60');
+      });
+    });
+    reelVideoDropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleReelVideoFileChange(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
+  const reelThumbFileInput = document.getElementById('reel-thumb-file');
+  if (reelThumbFileInput && !reelThumbFileInput.dataset.initialized) {
+    reelThumbFileInput.dataset.initialized = 'true';
+    reelThumbFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleReelThumbFileChange(e.target.files[0]);
+      }
+    });
+  }
+
+  const reelThumbDropzone = document.getElementById('reel-thumb-dropzone');
+  if (reelThumbDropzone && !reelThumbDropzone.dataset.initialized) {
+    reelThumbDropzone.dataset.initialized = 'true';
+    ['dragenter', 'dragover'].forEach(eventName => {
+      reelThumbDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        reelThumbDropzone.classList.add('border-[#db2777]', 'bg-pink-100/60');
+      });
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      reelThumbDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        reelThumbDropzone.classList.remove('border-[#db2777]', 'bg-pink-100/60');
+      });
+    });
+    reelThumbDropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleReelThumbFileChange(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
   const openAddReelBtn = document.getElementById('open-add-reel-btn');
   const closeAddReelBtn = document.getElementById('close-add-reel-btn');
   const addReelModal = document.getElementById('add-reel-modal');
@@ -1068,45 +1383,97 @@ function initReelsAdmin() {
 
   if (openAddReelBtn && addReelModal && !openAddReelBtn.dataset.initialized) {
     openAddReelBtn.dataset.initialized = 'true';
-    openAddReelBtn.addEventListener('click', () => addReelModal.classList.remove('hidden'));
-    closeAddReelBtn.addEventListener('click', () => addReelModal.classList.add('hidden'));
+    openAddReelBtn.addEventListener('click', () => {
+      clearReelVideoSelection();
+      clearReelThumbSelection();
+      setReelVideoInputMode('file');
+      setReelThumbInputMode('file');
+      addReelModal.classList.remove('hidden');
+    });
+    closeAddReelBtn.addEventListener('click', () => {
+      clearReelVideoSelection();
+      addReelModal.classList.add('hidden');
+    });
 
     addReelForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(addReelForm);
-      const rawVideoUrl = formData.get('videoUrl');
-      const rawThumb = formData.get('thumbnail');
-
-      const videoUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawVideoUrl, 'reels') : rawVideoUrl;
-      const thumbnail = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawThumb, 'thumbnails') : rawThumb;
-
-      const newReel = {
-        id: 'reel-' + Date.now(),
-        title: formData.get('title'),
-        client: formData.get('client'),
-        category: formData.get('category'),
-        tag: formData.get('tag') || '4K CINEMA',
-        views: formData.get('views') || '১.৫M ভিউজ',
-        videoUrl: videoUrl,
-        thumbnail: thumbnail,
-        date: new Date().toISOString().split('T')[0]
-      };
-
-      if (window.BongBanglaReels) {
-        window.BongBanglaReels.addReel(newReel);
+      const submitBtn = document.getElementById('reel-submit-btn');
+      const originalText = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ভিডিও আপলোড ও সেভ হচ্ছে...';
       }
-      if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.addReel === 'function') {
-        try {
-          await window.BongBanglaSupabase.addReel(newReel);
-        } catch (err) {
-          console.warn('Supabase addReel error:', err);
+
+      try {
+        const formData = new FormData(addReelForm);
+        let rawVideoUrl = (formData.get('videoUrl') || '').toString().trim();
+        let rawThumb = (formData.get('thumbnail') || '').toString().trim();
+
+        // 1. Upload Video if file selected
+        if (selectedReelVideoFile && window.BongBanglaVault) {
+          const videoRes = await window.BongBanglaVault.uploadMedia(selectedReelVideoFile, 'reels');
+          if (videoRes && videoRes.url) {
+            rawVideoUrl = videoRes.url;
+          }
+        }
+
+        // 2. Upload Thumb if file selected
+        if (selectedReelThumbFile && window.BongBanglaVault) {
+          const thumbRes = await window.BongBanglaVault.uploadMedia(selectedReelThumbFile, 'thumbnails');
+          if (thumbRes && thumbRes.url) {
+            rawThumb = thumbRes.url;
+          }
+        }
+
+        if (!rawVideoUrl) {
+          rawVideoUrl = 'https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-a-studio-setting-41793-large.mp4';
+        }
+        if (!rawThumb) {
+          rawThumb = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=720&h=1280&q=80';
+        }
+
+        const videoUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawVideoUrl, 'reels') : rawVideoUrl;
+        const thumbnail = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawThumb, 'thumbnails') : rawThumb;
+
+        const newReel = {
+          id: 'reel-' + Date.now(),
+          title: formData.get('title'),
+          client: formData.get('client'),
+          category: formData.get('category'),
+          tag: formData.get('tag') || '4K CINEMA',
+          views: formData.get('views') || '১.৫M ভিউজ',
+          videoUrl: videoUrl,
+          thumbnail: thumbnail,
+          date: new Date().toISOString().split('T')[0]
+        };
+
+        if (window.BongBanglaReels) {
+          window.BongBanglaReels.addReel(newReel);
+        }
+        if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.addReel === 'function') {
+          try {
+            await window.BongBanglaSupabase.addReel(newReel);
+          } catch (err) {
+            console.warn('Supabase addReel error:', err);
+          }
+        }
+
+        addReelForm.reset();
+        clearReelVideoSelection();
+        clearReelThumbSelection();
+        addReelModal.classList.add('hidden');
+        const reelFilter = document.getElementById('admin-reel-filter');
+        renderAdminReels(reelFilter ? reelFilter.value : 'all');
+        alert('নতুন রিলস ভিডিও সফলভাবে আপলোড ও লাইভ করা হয়েছে!');
+      } catch (err) {
+        console.error('Error adding reel:', err);
+        alert('রিলস আপলোড করতে সমস্যা হয়েছে: ' + (err.message || ''));
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
         }
       }
-      addReelForm.reset();
-      addReelModal.classList.add('hidden');
-      const reelFilter = document.getElementById('admin-reel-filter');
-      renderAdminReels(reelFilter ? reelFilter.value : 'all');
-      alert('নতুন রিলস সফলভাবে আপলোড ও লাইভ করা হয়েছে!');
     });
   }
 }
@@ -1779,48 +2146,176 @@ function renderAdminHeroSlides() {
   updateHeroSlidesBulkUI();
 }
 
+let selectedHeroSlideFile = null;
+
+window.setHeroSlideInputMode = function(mode) {
+  const tabFileBtn = document.getElementById('hero-slide-tab-file-btn');
+  const tabUrlBtn = document.getElementById('hero-slide-tab-url-btn');
+  const fileView = document.getElementById('hero-slide-file-upload-view');
+  const urlView = document.getElementById('hero-slide-url-view');
+
+  if (mode === 'file') {
+    if (tabFileBtn) tabFileBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs';
+    if (tabUrlBtn) tabUrlBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]';
+    if (fileView) fileView.classList.remove('hidden');
+    if (urlView) urlView.classList.add('hidden');
+  } else {
+    if (tabUrlBtn) tabUrlBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all bg-[#db2777] text-white shadow-xs';
+    if (tabFileBtn) tabFileBtn.className = 'px-2 py-0.5 rounded-md font-bold transition-all text-[#572449] hover:text-[#db2777]';
+    if (urlView) urlView.classList.remove('hidden');
+    if (fileView) fileView.classList.add('hidden');
+  }
+};
+
+window.clearHeroSlideFileSelection = function() {
+  selectedHeroSlideFile = null;
+  const fileInput = document.getElementById('hero-slide-image-file');
+  const dropzone = document.getElementById('hero-slide-file-dropzone');
+  const previewBox = document.getElementById('hero-slide-file-preview-box');
+  const previewImg = document.getElementById('hero-slide-file-preview-img');
+  const urlInput = document.getElementById('hero-slide-image-input');
+
+  if (fileInput) fileInput.value = '';
+  if (previewImg) previewImg.src = '';
+  if (previewBox) previewBox.classList.add('hidden');
+  if (dropzone) dropzone.classList.remove('hidden');
+  if (urlInput && urlInput.value.includes('vault.bongbangla.top/hero/')) {
+    urlInput.value = '';
+  }
+};
+
+function handleHeroSlideFileChange(file) {
+  if (!file) return;
+  selectedHeroSlideFile = file;
+  const dropzone = document.getElementById('hero-slide-file-dropzone');
+  const previewBox = document.getElementById('hero-slide-file-preview-box');
+  const previewImg = document.getElementById('hero-slide-file-preview-img');
+  const nameEl = document.getElementById('hero-slide-file-name');
+  const sizeEl = document.getElementById('hero-slide-file-size');
+  const urlInput = document.getElementById('hero-slide-image-input');
+
+  const localUrl = URL.createObjectURL(file);
+  if (previewImg) previewImg.src = localUrl;
+  if (nameEl) nameEl.textContent = file.name;
+  if (sizeEl) sizeEl.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+  const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const vaultUrl = `https://vault.bongbangla.top/hero/${cleanFileName}`;
+  if (urlInput) urlInput.value = vaultUrl;
+
+  if (dropzone) dropzone.classList.add('hidden');
+  if (previewBox) previewBox.classList.remove('hidden');
+}
+
 function initHeroSlidesAdmin() {
   const openBtn = document.getElementById('open-add-hero-slide-btn');
   const closeBtn = document.getElementById('close-add-hero-slide-btn');
   const modal = document.getElementById('add-hero-slide-modal');
   const form = document.getElementById('add-hero-slide-form');
 
+  const heroFileInput = document.getElementById('hero-slide-image-file');
+  if (heroFileInput && !heroFileInput.dataset.initialized) {
+    heroFileInput.dataset.initialized = 'true';
+    heroFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleHeroSlideFileChange(e.target.files[0]);
+      }
+    });
+  }
+
+  const heroDropzone = document.getElementById('hero-slide-file-dropzone');
+  if (heroDropzone && !heroDropzone.dataset.initialized) {
+    heroDropzone.dataset.initialized = 'true';
+    ['dragenter', 'dragover'].forEach(eventName => {
+      heroDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        heroDropzone.classList.add('border-[#db2777]', 'bg-pink-100/60');
+      });
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      heroDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        heroDropzone.classList.remove('border-[#db2777]', 'bg-pink-100/60');
+      });
+    });
+    heroDropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleHeroSlideFileChange(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
   if (openBtn && modal && !openBtn.dataset.initialized) {
     openBtn.dataset.initialized = 'true';
-    openBtn.addEventListener('click', () => modal.classList.remove('hidden'));
-    if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    openBtn.addEventListener('click', () => {
+      clearHeroSlideFileSelection();
+      setHeroSlideInputMode('file');
+      modal.classList.remove('hidden');
+    });
+    if (closeBtn) closeBtn.addEventListener('click', () => {
+      clearHeroSlideFileSelection();
+      modal.classList.add('hidden');
+    });
 
     if (form && !form.dataset.initialized) {
       form.dataset.initialized = 'true';
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const formData = new FormData(form);
-        const rawImage = (formData.get('image') || '').toString().trim();
-        const title = (formData.get('title') || '').toString().trim();
-        const tag = (formData.get('tag') || '4K REC').toString().trim();
-
-        if (!rawImage || !title) {
-          alert('অনুগ্রহ করে ছবির লিংক এবং শিরোনাম লিখুন!');
-          return;
+        const submitBtn = document.getElementById('hero-slide-submit-btn');
+        const originalText = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> আপলোড ও সেভ হচ্ছে...';
         }
 
-        const formattedImage = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImage, 'hero') : rawImage;
+        try {
+          const formData = new FormData(form);
+          let rawImage = (formData.get('image') || '').toString().trim();
+          const title = (formData.get('title') || '').toString().trim();
+          const tag = (formData.get('tag') || '4K REC').toString().trim();
 
-        const newSlide = {
-          id: 'hero-' + Date.now(),
-          image: formattedImage,
-          title: title,
-          tag: tag
-        };
+          // Upload hero image if file was selected
+          if (selectedHeroSlideFile && window.BongBanglaVault) {
+            const uploadRes = await window.BongBanglaVault.uploadMedia(selectedHeroSlideFile, 'hero');
+            if (uploadRes && uploadRes.url) {
+              rawImage = uploadRes.url;
+            }
+          }
 
-        const slides = getHeroSlides();
-        slides.unshift(newSlide);
-        saveHeroSlides(slides);
+          if (!rawImage || !title) {
+            alert('অনুগ্রহ করে ছবির ফাইল বা লিংক এবং শিরোনাম লিখুন!');
+            return;
+          }
 
-        form.reset();
-        modal.classList.add('hidden');
-        renderAdminHeroSlides();
-        alert('নতুন হিরো ইমেজ সফলভাবে যুক্ত করা হয়েছে!');
+          const formattedImage = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImage, 'hero') : rawImage;
+
+          const newSlide = {
+            id: 'hero-' + Date.now(),
+            image: formattedImage,
+            title: title,
+            tag: tag
+          };
+
+          const slides = getHeroSlides();
+          slides.unshift(newSlide);
+          saveHeroSlides(slides);
+
+          form.reset();
+          clearHeroSlideFileSelection();
+          modal.classList.add('hidden');
+          renderAdminHeroSlides();
+          alert('নতুন হিরো ইমেজ সফলভাবে যুক্ত করা হয়েছে!');
+        } catch(err) {
+          console.error('Error adding hero slide:', err);
+          alert('হিরো ইমেজ সেভ করতে সমস্যা হয়েছে: ' + (err.message || ''));
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+          }
+        }
       });
     }
   }
