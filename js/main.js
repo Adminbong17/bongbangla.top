@@ -746,7 +746,7 @@ function handleFormSubmit(form, isModal) {
   }
 
   const newLead = {
-    id: 'L-' + (Math.floor(100 + Math.random() * 900)),
+    id: 'L-' + Date.now() + '-' + Math.floor(100 + Math.random() * 900),
     name: name,
     brand: brand || 'ব্যক্তিগত / নতুন ব্র্যান্ড',
     phone: phone,

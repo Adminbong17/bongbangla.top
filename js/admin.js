@@ -563,7 +563,7 @@ function initDashboard() {
       e.preventDefault();
       const formData = new FormData(addLeadForm);
       const newLead = {
-        id: 'L-' + (Math.floor(100 + Math.random() * 900)),
+        id: 'L-' + Date.now() + '-' + Math.floor(100 + Math.random() * 900),
         name: formData.get('name'),
         brand: formData.get('brand'),
         phone: formData.get('phone'),

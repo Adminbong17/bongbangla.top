@@ -54,10 +54,20 @@
      1. Leads & Inquiries Sync
      ========================================================================== */
   async function submitLead(lead) {
+    if (!lead) return null;
+    if (!lead.id) {
+      lead.id = 'L-' + Date.now() + '-' + Math.floor(100 + Math.random() * 900);
+    }
+    if (!lead.date) {
+      lead.date = new Date().toISOString().split('T')[0];
+    }
+
     try {
       const leads = JSON.parse(localStorage.getItem('bongbangla_leads') || '[]');
-      leads.unshift(lead);
-      localStorage.setItem('bongbangla_leads', JSON.stringify(leads));
+      if (!leads.some(l => l.id === lead.id)) {
+        leads.unshift(lead);
+        localStorage.setItem('bongbangla_leads', JSON.stringify(leads));
+      }
     } catch (e) {}
 
     if (supabaseClient) {
@@ -572,6 +582,7 @@
     isConfigured,
     initClient,
     submitLead,
+    saveLead: submitLead,
     fetchLeads,
     updateLeadStatus,
     deleteLead,

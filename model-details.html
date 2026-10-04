@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="bn" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
@@ -60,7 +60,7 @@
   <!-- Google Fonts & Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap">
-  <link rel="stylesheet" href="css/style.css?v=20261004_v11">
+  <link rel="stylesheet" href="css/style.css?v=20261004_v12">
 </head>
 <body class="bg-[#fff8fa] text-[#572449] antialiased selection:bg-[#ED96D7]/40 selection:text-[#2b0e23] overflow-x-hidden min-h-screen flex flex-col justify-between">
 
@@ -718,9 +718,9 @@
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/vault-config.js?v=20261004_v11"></script>
-  <script src="js/supabase-config.js?v=20261004_v11"></script>
-  <script src="js/supabase-client.js?v=20261004_v11"></script>
+  <script src="js/vault-config.js?v=20261004_v12"></script>
+  <script src="js/supabase-config.js?v=20261004_v12"></script>
+  <script src="js/supabase-client.js?v=20261004_v12"></script>
   <script>
     // Model Details Dynamic Page Logic
     document.addEventListener('DOMContentLoaded', async () => {
@@ -979,19 +979,22 @@
         directForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           const submitBtn = document.getElementById('direct-form-submit-btn');
-          const origText = submitBtn.innerHTML;
-          submitBtn.disabled = true;
-          submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> রিকোয়েস্ট জমা হচ্ছে...';
+          const origText = submitBtn ? submitBtn.innerHTML : 'বুকিং কনফার্ম করুন';
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> রিকোয়েস্ট জমা হচ্ছে...';
+          }
 
           try {
             const fd = new FormData(directForm);
             const leadData = {
-              id: 'L-' + Date.now(),
+              id: 'L-' + Date.now() + '-' + Math.floor(100 + Math.random() * 900),
               name: fd.get('name'),
               brand: fd.get('brand'),
               phone: fd.get('phone'),
-              service: `${fd.get('service')} (মডেল: ${model.name})`,
+              service: `${fd.get('service') || 'মডেল ফটোশুট'} (মডেল: ${model.name})`,
               budget: '৳ ২৫,০০০+',
+              date: new Date().toISOString().split('T')[0],
               status: 'New',
               notes: `মডেল বুকিং: ${model.name} (ID: ${model.id}). ক্লায়েন্ট নোটস: ${fd.get('notes') || 'N/A'}`
             };
@@ -1004,9 +1007,10 @@
             } catch(err) {}
 
             // Save to Supabase
-            if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.saveLead === 'function') {
+            const submitFn = window.BongBanglaSupabase ? (window.BongBanglaSupabase.submitLead || window.BongBanglaSupabase.saveLead) : null;
+            if (typeof submitFn === 'function') {
               try {
-                await window.BongBanglaSupabase.saveLead(leadData);
+                await submitFn(leadData);
               } catch(err) {
                 console.warn('Supabase save lead error:', err);
               }
@@ -1017,8 +1021,69 @@
           } catch(err) {
             alert('সাবমিট করতে সমস্যা হয়েছে। অনুগ্রহ করে WhatsApp বাটনে ক্লিক করে সরাসরি যোগাযোগ করুন।');
           } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = origText;
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = origText;
+            }
+          }
+        });
+      }
+
+      // Handle Modal Booking Form Submission
+      const modalBookingForm = document.getElementById('booking-form');
+      if (modalBookingForm && !modalBookingForm.dataset.initialized) {
+        modalBookingForm.dataset.initialized = 'true';
+        modalBookingForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const submitBtn = document.getElementById('booking-submit-btn');
+          const origText = submitBtn ? submitBtn.innerHTML : 'বুকিং রিকোয়েস্ট পাঠান';
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> রিকোয়েস্ট জমা হচ্ছে...';
+          }
+
+          try {
+            const fd = new FormData(modalBookingForm);
+            const leadData = {
+              id: 'L-' + Date.now() + '-' + Math.floor(100 + Math.random() * 900),
+              name: fd.get('name'),
+              brand: fd.get('brand'),
+              phone: fd.get('phone'),
+              service: `মডেল বুকিং: ${model ? model.name : 'Unknown'}`,
+              budget: '৳ ২৫,০০০+',
+              date: new Date().toISOString().split('T')[0],
+              status: 'New',
+              notes: `মডেল বুকিং (পপআপ মোডাল): ${model ? model.name : ''} (ID: ${model ? model.id : ''})`
+            };
+
+            // Save to local leads
+            try {
+              const leads = JSON.parse(localStorage.getItem('bongbangla_leads') || '[]');
+              leads.unshift(leadData);
+              localStorage.setItem('bongbangla_leads', JSON.stringify(leads));
+            } catch(err) {}
+
+            // Save to Supabase
+            const submitFn = window.BongBanglaSupabase ? (window.BongBanglaSupabase.submitLead || window.BongBanglaSupabase.saveLead) : null;
+            if (typeof submitFn === 'function') {
+              try {
+                await submitFn(leadData);
+              } catch(err) {
+                console.warn('Supabase save lead error:', err);
+              }
+            }
+
+            alert(`ধন্যবাদ ${leadData.name}! মডেল "${model ? model.name : ''}"-এর জন্য আপনার কাস্টিং রিকোয়েস্ট সফলভাবে জমা হয়েছে। আমাদের টিম দ্রুত আপনার সাথে যোগাযোগ করবে।`);
+            modalBookingForm.reset();
+            const modal = document.getElementById('booking-modal');
+            if (modal) modal.classList.add('hidden');
+          } catch(err) {
+            alert('সাবমিট করতে সমস্যা হয়েছে। অনুগ্রহ করে WhatsApp বাটনে ক্লিক করে সরাসরি যোগাযোগ করুন।');
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = origText;
+            }
           }
         });
       }
