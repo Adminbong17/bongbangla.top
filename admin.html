@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
@@ -214,6 +214,13 @@
               <i class="fa-solid fa-images w-4 text-center"></i>
               <span class="sidebar-label">হিরো স্লাইডার ও ইমেজ</span>
             </button>
+            <button type="button" id="nav-btn-insta-grabber" onclick="switchSection('section-insta-grabber', this)" class="admin-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
+              <span class="flex items-center gap-2.5">
+                <i class="fa-brands fa-instagram w-4 text-center text-[#e1306c]"></i>
+                <span class="sidebar-label">ইনস্টাগ্রাম গ্র্যাবার</span>
+              </span>
+              <span class="px-1.5 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[9px] font-bold shadow-xs">FastDL</span>
+            </button>
           </div>
         </div>
 
@@ -378,8 +385,8 @@
           </div>
 
           <!-- Quick Action Shortcuts -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-bangla">
-            <button onclick="switchSection('section-leads', document.querySelectorAll('.admin-nav-item')[1])" class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/30 hover:border-[#db2777] flex items-center gap-4 text-left transition-all group bg-white">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-bangla">
+            <button onclick="switchSection('section-leads', document.querySelectorAll('.admin-nav-item')[1])" class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/30 hover:border-[#db2777] flex items-center gap-4 text-left transition-all group bg-white shadow-xs hover:shadow-md">
               <div class="w-12 h-12 rounded-xl bg-pink-50 text-[#db2777] flex items-center justify-center text-xl group-hover:bg-[#db2777] group-hover:text-white transition-colors">
                 <i class="fa-solid fa-inbox"></i>
               </div>
@@ -389,7 +396,7 @@
               </div>
             </button>
 
-            <button onclick="switchSection('section-models', document.querySelectorAll('.admin-nav-item')[2])" class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/30 hover:border-[#db2777] flex items-center gap-4 text-left transition-all group bg-white">
+            <button onclick="switchSection('section-models', document.querySelectorAll('.admin-nav-item')[2])" class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/30 hover:border-[#db2777] flex items-center gap-4 text-left transition-all group bg-white shadow-xs hover:shadow-md">
               <div class="w-12 h-12 rounded-xl bg-purple-50 text-[#9333ea] flex items-center justify-center text-xl group-hover:bg-[#9333ea] group-hover:text-white transition-colors">
                 <i class="fa-solid fa-users"></i>
               </div>
@@ -399,13 +406,26 @@
               </div>
             </button>
 
-            <button onclick="switchSection('section-reels', document.querySelectorAll('.admin-nav-item')[3])" class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/30 hover:border-[#db2777] flex items-center gap-4 text-left transition-all group bg-white">
+            <button onclick="switchSection('section-reels', document.querySelectorAll('.admin-nav-item')[3])" class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/30 hover:border-[#db2777] flex items-center gap-4 text-left transition-all group bg-white shadow-xs hover:shadow-md">
               <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                 <i class="fa-solid fa-film"></i>
               </div>
               <div>
                 <h4 class="font-bold text-sm text-[#2b0e23]">রিলস পোর্টফোলিও</h4>
                 <p class="text-xs text-[#8c4f75] mt-0.5">৯:১৬ ভিডিও রিলস আপলোড ও ম্যানেজ করুন</p>
+              </div>
+            </button>
+
+            <button onclick="switchSection('section-insta-grabber', document.getElementById('nav-btn-insta-grabber'))" class="glass-panel p-5 rounded-2xl border border-[#ED96D7]/30 hover:border-[#db2777] flex items-center gap-4 text-left transition-all group bg-white shadow-xs hover:shadow-md">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] text-white flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform">
+                <i class="fa-brands fa-instagram"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-sm text-[#2b0e23] flex items-center gap-1.5">
+                  <span>ইনস্টাগ্রাম গ্র্যাবার</span>
+                  <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-pink-100 text-pink-700">Auto</span>
+                </h4>
+                <p class="text-xs text-[#8c4f75] mt-0.5">পোস্ট লিংক দিয়ে সরাসরি মডেল গ্যালারিতে ছবি পাঠান</p>
               </div>
             </button>
           </div>
@@ -550,6 +570,9 @@
                 </button>
                 <button id="open-add-model-btn" class="px-4 py-2 rounded-xl btn-pink-outline text-xs font-bold flex items-center gap-1.5 shadow-sm">
                   <i class="fa-solid fa-user-plus"></i> নতুন মডেল যোগ করুন
+                </button>
+                <button type="button" onclick="switchSection('section-insta-grabber', document.getElementById('nav-btn-insta-grabber'))" class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] hover:opacity-95 text-white text-xs font-bold font-bangla transition-all shadow-sm flex items-center gap-1.5">
+                  <i class="fa-brands fa-instagram text-sm"></i> ইনস্টাগ্রাম গ্র্যাবার
                 </button>
               </div>
             </div>
@@ -784,6 +807,203 @@
             </div>
 
           </div>
+        </section>
+
+        <!-- ================================================================
+             SECTION 6: INSTAGRAM MEDIA GRABBER & MODEL GALLERY IMPORTER
+             ================================================================ -->
+        <section id="section-insta-grabber" class="admin-section-view hidden space-y-6 font-bangla">
+          
+          <!-- Gradient Top Banner -->
+          <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] p-6 sm:p-8 text-white shadow-xl">
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div class="space-y-1.5 max-w-2xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-bold tracking-wide uppercase">
+                  <i class="fa-brands fa-instagram text-white"></i>
+                  <span>FastDL & Instagram Media Importer Engine</span>
+                </div>
+                <h3 class="text-2xl sm:text-3xl font-extrabold tracking-tight">ইনস্টাগ্রাম মিডিয়া গ্র্যাবার</h3>
+                <p class="text-xs sm:text-sm text-white/90 leading-relaxed">
+                  ইনস্টাগ্রাম পোস্ট, ক্যারোসেল বা রিলস-এর লিংক দিয়ে স্বয়ংক্রিয়ভাবে ফুল-রেজুলেশন ছবি ও ভিডিও সংগ্রহ করুন এবং ১ ক্লিকে সরাসরি Media Vault ও মডেলের লাইভ গ্যালারিতে পাঠান।
+                </p>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="bg-white/15 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/20 text-center">
+                  <div class="text-xs text-white/80">সিলেক্টেড মডেল</div>
+                  <div id="insta-selected-model-pill" class="font-bold text-sm text-white truncate max-w-[150px]">কোনো মডেল নেই</div>
+                </div>
+              </div>
+            </div>
+            <!-- Decorative circle blur -->
+            <div class="absolute -right-12 -top-12 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+          </div>
+
+          <!-- Main Input & Configuration Box -->
+          <div class="glass-panel rounded-3xl border border-[#ED96D7]/40 p-6 space-y-5 bg-white shadow-sm">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
+              
+              <!-- URL Input Field (7 cols) -->
+              <div class="lg:col-span-7 space-y-1.5">
+                <label class="block text-xs font-bold text-[#572449] flex items-center justify-between">
+                  <span><i class="fa-solid fa-link text-[#db2777] mr-1"></i> ইনস্টাগ্রাম পোস্ট বা রিলস লিংক *</span>
+                  <button type="button" onclick="pasteInstaUrl()" class="text-[#db2777] hover:underline text-[11px] font-semibold flex items-center gap-1">
+                    <i class="fa-regular fa-clipboard"></i> ক্লিপবোর্ড থেকে পেস্ট করুন
+                  </button>
+                </label>
+                <div class="relative flex items-center">
+                  <span class="absolute left-3.5 text-slate-400 text-sm pointer-events-none">
+                    <i class="fa-brands fa-instagram text-pink-500"></i>
+                  </span>
+                  <input type="url" id="insta-grab-url-input" placeholder="উদাঃ https://www.instagram.com/p/DcjX9lvEwfT/ অথবা /reel/..." class="w-full bg-[#fff8fa] border border-[#ED96D7]/50 rounded-2xl pl-10 pr-20 py-3 text-xs sm:text-sm text-[#2b0e23] placeholder-slate-400 focus:outline-none focus:border-[#db2777] focus:bg-white shadow-xs transition-all font-mono">
+                  <button type="button" onclick="clearInstaUrl()" class="absolute right-3 px-2 py-1 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-slate-100 text-xs font-bold transition-all" title="মুছে ফেলুন">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Target Model Dropdown (3 cols) -->
+              <div class="lg:col-span-3 space-y-1.5">
+                <label class="block text-xs font-bold text-[#572449]">
+                  <i class="fa-solid fa-user-check text-[#db2777] mr-1"></i> টার্গেট মডেল নির্বাচন করুন *
+                </label>
+                <select id="insta-grab-model-select" onchange="updateInstaSelectedModelPill()" class="w-full bg-[#fff8fa] border border-[#ED96D7]/50 rounded-2xl px-3.5 py-3 text-xs sm:text-sm text-[#2b0e23] font-bold focus:outline-none focus:border-[#db2777] shadow-xs cursor-pointer">
+                  <!-- Populated by JS -->
+                </select>
+              </div>
+
+              <!-- Grab Button (2 cols) -->
+              <div class="lg:col-span-2">
+                <button type="button" id="insta-grab-execute-btn" onclick="executeInstagramGrab()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] hover:opacity-95 active:scale-95 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-cloud-arrow-down text-base"></i>
+                  <span>মিডিয়া আনুন</span>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Advanced Destination & Upload Options -->
+            <div class="pt-3 border-t border-[#ED96D7]/20 flex flex-wrap items-center justify-between gap-3 text-xs text-[#8c4f75]">
+              <div class="flex items-center gap-4 flex-wrap">
+                <span class="font-bold text-[#572449] flex items-center gap-1">
+                  <i class="fa-solid fa-bullseye text-[#db2777]"></i> কোথায় যুক্ত হবে:
+                </span>
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="insta-destination" value="gallery" checked class="text-[#db2777] focus:ring-0">
+                  <span class="font-semibold text-[#2b0e23]">মডেল গ্যালারিতে (Gallery)</span>
+                </label>
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="insta-destination" value="avatar" class="text-[#db2777] focus:ring-0">
+                  <span class="font-semibold text-[#2b0e23]">মডেলের প্রধান ছবি (Main Avatar)</span>
+                </label>
+                <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="insta-destination" value="reel" class="text-[#db2777] focus:ring-0">
+                  <span class="font-semibold text-[#2b0e23]">রিলস পোর্টফোলিওতে (9:16 Video)</span>
+                </label>
+              </div>
+
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+                  <i class="fa-solid fa-server mr-1"></i> Media Vault CDN কানেক্টেড
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading State Card -->
+          <div id="insta-grab-loading" class="hidden glass-panel rounded-3xl border border-[#ED96D7]/40 p-8 text-center space-y-4 bg-white shadow-sm">
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] text-white flex items-center justify-center text-2xl shadow-lg animate-pulse">
+              <i class="fa-solid fa-spinner fa-spin"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-base text-[#2b0e23]">ইনস্টাগ্রাম থেকে মিডিয়া এক্সট্র্যাক্ট হচ্ছে...</h4>
+              <p class="text-xs text-[#8c4f75] mt-1">পোস্টের প্রতিটি ফুল-রেজুলেশন ছবি ও ভিডিও অনুসন্ধান করা হচ্ছে, অনুগ্রহ করে কয়েক সেকেন্ড অপেক্ষা করুন।</p>
+            </div>
+          </div>
+
+          <!-- Extracted Results Workspace -->
+          <div id="insta-results-container" class="hidden space-y-5">
+            
+            <!-- Results Header Toolbar -->
+            <div class="glass-panel rounded-2xl border border-[#ED96D7]/40 p-4 bg-white shadow-xs flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <span class="w-9 h-9 rounded-xl bg-pink-100 text-[#db2777] flex items-center justify-center text-sm font-bold shadow-xs">
+                  <i class="fa-solid fa-images"></i>
+                </span>
+                <div>
+                  <h4 class="font-bold text-sm text-[#2b0e23] flex items-center gap-2">
+                    <span id="insta-results-count">০ টি মিডিয়া পাওয়া গেছে</span>
+                  </h4>
+                  <p id="insta-results-caption" class="text-xs text-[#8c4f75] line-clamp-1 max-w-md"></p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 flex-wrap">
+                <button type="button" onclick="selectAllInstaItems(true)" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-[#572449] transition-all">
+                  <i class="fa-regular fa-square-check mr-1"></i> সব সিলেক্ট
+                </button>
+                <button type="button" onclick="selectAllInstaItems(false)" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-[#572449] transition-all">
+                  <i class="fa-regular fa-square mr-1"></i> বাতিল
+                </button>
+                <button type="button" id="insta-import-all-btn" onclick="importSelectedInstaMedia()" class="px-4 py-2 rounded-xl btn-primary-glow font-bold text-xs shadow-md flex items-center gap-2">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  <span id="insta-import-btn-label">মডেল গ্যালারিতে যোগ করুন</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Upload Progress Banner (Active during upload) -->
+            <div id="insta-upload-progress" class="hidden p-4 rounded-2xl bg-gradient-to-r from-[#2b0e23] to-[#4a153b] text-white shadow-lg space-y-2 border border-[#ED96D7]/40">
+              <div class="flex items-center justify-between text-xs font-bold">
+                <span class="flex items-center gap-2">
+                  <i class="fa-solid fa-circle-notch fa-spin text-pink-400"></i>
+                  <span id="insta-progress-text">Media Vault CDN-এ ফাইল আপলোড হচ্ছে...</span>
+                </span>
+                <span id="insta-progress-percent" class="text-pink-300">0%</span>
+              </div>
+              <div class="w-full bg-white/20 rounded-full h-2 overflow-hidden">
+                <div id="insta-progress-bar" class="bg-gradient-to-r from-pink-500 to-rose-400 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Cards Grid (FastDL style) -->
+            <div id="insta-media-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <!-- Dynamically populated cards -->
+            </div>
+
+          </div>
+
+          <!-- FastDL Direct Helper & Dropzone Fallback -->
+          <div class="glass-panel rounded-3xl border border-[#ED96D7]/30 p-6 bg-[#fffafc] space-y-4">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-bold">
+                  <i class="fa-solid fa-bolt"></i>
+                </span>
+                <div>
+                  <h4 class="font-bold text-xs sm:text-sm text-[#2b0e23]">বিকল্প ড্রপজোন বা FastDL ব্যবহার</h4>
+                  <p class="text-[11px] text-[#8c4f75]">ইনস্টাগ্রাম সিকিউরিটির কারণে সরাসরি এক্সট্র্যাক্ট না হলে যেকোনো ছবি বা ভিডিও এখানে ড্রপ করে সরাসরি মডেল গ্যালারিতে পাঠাতে পারেন।</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="openCurrentInFastDL()" class="px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/50 hover:border-[#db2777] text-xs font-bold text-[#572449] hover:text-[#db2777] flex items-center gap-1.5 transition-all shadow-xs">
+                  <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                  <span>FastDL-এ পোস্টটি খুলুন</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Multi-file Dropzone -->
+            <div id="insta-dropzone" onclick="document.getElementById('insta-manual-file-input').click()" class="border-2 border-dashed border-[#ED96D7]/60 hover:border-[#db2777] rounded-2xl p-6 text-center bg-white cursor-pointer transition-all group">
+              <input type="file" id="insta-manual-file-input" multiple accept="image/*,video/*" class="hidden" onchange="handleInstaManualFiles(this.files)">
+              <div class="w-12 h-12 mx-auto rounded-2xl bg-pink-50 text-[#db2777] group-hover:bg-[#db2777] group-hover:text-white flex items-center justify-center text-xl transition-all shadow-xs mb-2">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+              </div>
+              <p class="text-xs font-bold text-[#2b0e23]">কম্পিউটার বা ফোন থেকে ছবি/ভিডিও ড্র্যাগ ও ড্রপ করুন অথবা ক্লিক করুন</p>
+              <p class="text-[11px] text-[#8c4f75] mt-0.5">ফাইলগুলো স্বয়ংক্রিয়ভাবে Media Vault CDN-এ আপলোড হয়ে সিলেক্টেড মডেলের গ্যালারিতে সেভ হবে।</p>
+            </div>
+          </div>
+
         </section>
 
       </main>
@@ -1732,11 +1952,11 @@
 
   <!-- JavaScript Logics with Vault & Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/vault-config.js?v=20261004_v13"></script>
-  <script src="js/supabase-config.js?v=20261004_v13"></script>
-  <script src="js/supabase-client.js?v=20261004_v13"></script>
-  <script src="js/reels.js?v=20261004_v13"></script>
-  <script src="js/admin.js?v=20261004_v13"></script>
+  <script src="js/vault-config.js?v=20261004_v14"></script>
+  <script src="js/supabase-config.js?v=20261004_v14"></script>
+  <script src="js/supabase-client.js?v=20261004_v14"></script>
+  <script src="js/reels.js?v=20261004_v14"></script>
+  <script src="js/admin.js?v=20261004_v14"></script>
 </body>
 </html>
 

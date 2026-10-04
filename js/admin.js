@@ -24,6 +24,7 @@ function initAdminApp() {
   initLogoSwitcher();
   initAuth();
   initDashboard();
+  initInstaGrabber();
 }
 
 if (document.readyState === 'loading') {
@@ -1720,6 +1721,7 @@ async function renderDashboard() {
   try { initReelsAdmin(); } catch(e) { console.error('initReelsAdmin error:', e); }
   try { initHeroSlidesAdmin(); } catch(e) { console.error('initHeroSlidesAdmin error:', e); }
   try { initSupabaseAdmin(); } catch(e) { console.error('initSupabaseAdmin error:', e); }
+  try { populateInstaModelSelect(); } catch(e) { console.error('populateInstaModelSelect error:', e); }
 }
 
 function initSupabaseAdmin() {
@@ -3286,5 +3288,657 @@ function initHeroSlidesAdmin() {
     }
   }
 }
+
+/* ==========================================================================
+   Instagram Media Grabber & Importer Engine (FastDL Style)
+   ========================================================================== */
+let currentInstaExtractedMedia = [];
+
+function initInstaGrabber() {
+  populateInstaModelSelect();
+  setupInstaDropzone();
+}
+
+window.populateInstaModelSelect = function() {
+  const select = document.getElementById('insta-grab-model-select');
+  if (!select) return;
+
+  const models = getModels();
+  if (!models || models.length === 0) {
+    select.innerHTML = '<option value="">কোনো মডেল পাওয়া যায়নি</option>';
+    updateInstaSelectedModelPill();
+    return;
+  }
+
+  const currentVal = select.value;
+  select.innerHTML = models.map((m) => 
+    `<option value="${m.id}">${m.name || 'নামবিহীন'} (${m.category || 'মডেল'})</option>`
+  ).join('');
+
+  if (currentVal && models.some(m => m.id === currentVal)) {
+    select.value = currentVal;
+  }
+
+  updateInstaSelectedModelPill();
+};
+
+window.updateInstaSelectedModelPill = function() {
+  const select = document.getElementById('insta-grab-model-select');
+  const pill = document.getElementById('insta-selected-model-pill');
+  if (!pill) return;
+
+  if (!select || !select.value) {
+    pill.textContent = 'কোনো মডেল নেই';
+    return;
+  }
+
+  const models = getModels();
+  const found = models.find(m => m.id === select.value);
+  pill.textContent = found ? found.name : 'সিলেক্টেড মডেল';
+};
+
+window.pasteInstaUrl = async function() {
+  const input = document.getElementById('insta-grab-url-input');
+  if (!input) return;
+
+  try {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        input.value = text.trim();
+        input.focus();
+        showAdminToast('ক্লিপবোর্ড থেকে লিংক পেস্ট করা হয়েছে!', 'success');
+        return;
+      }
+    }
+  } catch(e) {}
+
+  input.focus();
+  input.select();
+  showAdminToast('লিংকটি ইনপুট বক্সে পেস্ট করুন (Ctrl+V)', 'info');
+};
+
+window.clearInstaUrl = function() {
+  const input = document.getElementById('insta-grab-url-input');
+  if (input) input.value = '';
+  const results = document.getElementById('insta-results-container');
+  if (results) results.classList.add('hidden');
+  currentInstaExtractedMedia = [];
+};
+
+window.openCurrentInFastDL = function() {
+  const input = document.getElementById('insta-grab-url-input');
+  const val = input ? input.value.trim() : '';
+  const fastDlUrl = val ? 'https://fastdl.app/' : 'https://fastdl.app/';
+  window.open(fastDlUrl, '_blank');
+};
+
+function parseJinaInstagramMarkdown(markdown) {
+  const mediaList = [];
+  const seenKeys = new Set();
+
+  // Extract all markdown images: ![alt](url)
+  const mdImgRegex = /!\[([^\]]*)\]\((https?:\/\/[^\s\)]+)\)/gi;
+  let match;
+  while ((match = mdImgRegex.exec(markdown)) !== null) {
+    const alt = match[1] || '';
+    let url = match[2];
+
+    // Filter out profile avatar / icons
+    if (url.includes('s100x100') || url.includes('s150x150') || url.includes('/t51.82787-19/') || url.includes('rsrc.php')) {
+      continue;
+    }
+
+    // Must be a CDN image
+    if (!url.includes('cdninstagram.com') && !url.includes('fbcdn.net')) {
+      continue;
+    }
+
+    // Unique key
+    const keyMatch = url.match(/\/([0-9]+_[0-9]+_[0-9]+_n\.[a-z0-9]+)/i);
+    const key = keyMatch ? keyMatch[1] : url.split('?')[0];
+
+    if (!seenKeys.has(key)) {
+      seenKeys.add(key);
+      mediaList.push({
+        type: 'photo',
+        url: url,
+        thumbnail: url,
+        title: alt || 'Instagram Photo',
+        key: key
+      });
+    }
+  }
+
+  // Also check for direct MP4 URLs
+  const videoRegex = /(https?:\/\/[^\s\)\"\']+\.mp4[^\s\)\"\']*)/gi;
+  let vMatch;
+  while ((vMatch = videoRegex.exec(markdown)) !== null) {
+    const vUrl = vMatch[1];
+    if (!seenKeys.has(vUrl)) {
+      seenKeys.add(vUrl);
+      mediaList.push({
+        type: 'video',
+        url: vUrl,
+        thumbnail: mediaList[0] ? mediaList[0].url : '',
+        title: 'Instagram Video / Reel'
+      });
+    }
+  }
+
+  // Extract caption from markdown text
+  let caption = '';
+  const lines = markdown.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith('!') && !trimmed.startsWith('[') && !trimmed.startsWith('#') && !trimmed.startsWith('Title:') && !trimmed.startsWith('URL Source:')) {
+      if (trimmed.length > 5 && !trimmed.includes('followers') && !trimmed.includes('likes,') && !trimmed.includes('View profile')) {
+        caption = trimmed;
+        break;
+      }
+    }
+  }
+
+  return { mediaList, caption };
+}
+
+window.executeInstagramGrab = async function() {
+  const input = document.getElementById('insta-grab-url-input');
+  const rawUrl = input ? input.value.trim() : '';
+
+  if (!rawUrl) {
+    alert('অনুগ্রহ করে ইনস্টাগ্রাম পোস্ট বা রিলসের লিংক লিখুন!');
+    if (input) input.focus();
+    return;
+  }
+
+  // Extract shortcode
+  let shortcode = '';
+  const match = rawUrl.match(/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/i);
+  if (match) {
+    shortcode = match[1];
+  } else if (/^[A-Za-z0-9_-]{8,15}$/.test(rawUrl)) {
+    shortcode = rawUrl;
+  }
+
+  if (!shortcode) {
+    alert('সঠিক ইনস্টাগ্রাম পোস্ট বা রিলসের লিংক দিন! (উদাঃ https://www.instagram.com/p/DcjX9lvEwfT/)');
+    return;
+  }
+
+  const modelSelect = document.getElementById('insta-grab-model-select');
+  if (!modelSelect || !modelSelect.value) {
+    alert('অনুগ্রহ করে প্রথমে একজন টার্গেট মডেল নির্বাচন করুন!');
+    return;
+  }
+
+  const execBtn = document.getElementById('insta-grab-execute-btn');
+  const loading = document.getElementById('insta-grab-loading');
+  const resultsContainer = document.getElementById('insta-results-container');
+
+  if (loading) loading.classList.remove('hidden');
+  if (resultsContainer) resultsContainer.classList.add('hidden');
+  if (execBtn) {
+    execBtn.disabled = true;
+    execBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>মিডিয়া খোঁজা হচ্ছে...</span>';
+  }
+
+  try {
+    let extracted = [];
+    let caption = '';
+
+    // Strategy 1: Jina AI Markdown Scraper for Instagram Embed
+    try {
+      const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
+      const jinaRes = await fetch(`https://r.jina.ai/${embedUrl}`, {
+        headers: { 'Accept': 'text/plain' },
+        signal: AbortSignal.timeout(12000)
+      });
+      if (jinaRes.ok) {
+        const text = await jinaRes.text();
+        const res = parseJinaInstagramMarkdown(text);
+        if (res.mediaList && res.mediaList.length > 0) {
+          extracted = res.mediaList;
+          caption = res.caption;
+        }
+      }
+    } catch(err1) {
+      console.warn('Jina grab error:', err1);
+    }
+
+    // Strategy 2: Microlink API fallback
+    if (extracted.length === 0) {
+      try {
+        const postUrl = `https://www.instagram.com/p/${shortcode}/`;
+        const microRes = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(postUrl)}&video=true`, {
+          signal: AbortSignal.timeout(10000)
+        });
+        if (microRes.ok) {
+          const json = await microRes.json();
+          if (json.data) {
+            caption = json.data.description || json.data.title || '';
+            if (json.data.video && json.data.video.url) {
+              extracted.push({
+                type: 'video',
+                url: json.data.video.url,
+                thumbnail: json.data.image ? json.data.image.url : '',
+                title: 'Instagram Video / Reel'
+              });
+            } else if (json.data.image && json.data.image.url) {
+              extracted.push({
+                type: 'photo',
+                url: json.data.image.url,
+                thumbnail: json.data.image.url,
+                title: 'Instagram Photo'
+              });
+            }
+          }
+        }
+      } catch(err2) {
+        console.warn('Microlink grab error:', err2);
+      }
+    }
+
+    if (extracted.length === 0) {
+      alert('ইনস্টাগ্রাম থেকে মিডিয়া এক্সট্র্যাক্ট করা সম্ভব হয়নি। পোস্টটি প্রাইভেট হতে পারে অথবা অতিরিক্ত সিকিউরিটি সক্রিয় রয়েছে।\n\nআপনি নিচে থাকা "FastDL-এ পোস্টটি খুলুন" বাটনে ক্লিক করে সহজে ডাউনলোড করে নিচের ড্রপজোনে ড্র্যাগ করতে পারেন।');
+      return;
+    }
+
+    currentInstaExtractedMedia = extracted;
+    renderInstaExtractedMedia(extracted, caption);
+    showAdminToast(`${extracted.length} টি ফুল-রেজুলেশন মিডিয়া পাওয়া গেছে!`, 'success');
+  } catch(e) {
+    console.error('executeInstagramGrab error:', e);
+    alert('মিডিয়া আনতে গিয়ে সমস্যা হয়েছে: ' + (e.message || ''));
+  } finally {
+    if (loading) loading.classList.add('hidden');
+    if (execBtn) {
+      execBtn.disabled = false;
+      execBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down text-base"></i><span>মিডিয়া আনুন</span>';
+    }
+  }
+};
+
+function renderInstaExtractedMedia(items, caption) {
+  const container = document.getElementById('insta-results-container');
+  const grid = document.getElementById('insta-media-grid');
+  const countEl = document.getElementById('insta-results-count');
+  const captionEl = document.getElementById('insta-results-caption');
+
+  if (!container || !grid) return;
+
+  if (countEl) countEl.textContent = `${items.length} টি মিডিয়া পাওয়া গেছে`;
+  if (captionEl) captionEl.textContent = caption ? `ক্যাপশন: ${caption}` : '';
+
+  grid.innerHTML = items.map((item, idx) => {
+    const isVideo = item.type === 'video';
+    return `
+      <div class="glass-panel rounded-2xl border border-[#ED96D7]/40 overflow-hidden bg-white shadow-xs hover:shadow-md transition-all flex flex-col group relative">
+        
+        <!-- Media Top Badges & Checkbox -->
+        <div class="absolute top-2.5 left-2.5 right-2.5 z-10 flex items-center justify-between pointer-events-none">
+          <label class="pointer-events-auto cursor-pointer p-1 rounded-lg bg-black/40 backdrop-blur-md text-white flex items-center">
+            <input type="checkbox" class="insta-item-checkbox w-4 h-4 rounded text-[#db2777] focus:ring-0 cursor-pointer" data-index="${idx}" checked onchange="updateInstaSelectionCount()">
+          </label>
+          <div class="flex items-center gap-1.5">
+            <span class="px-2 py-0.5 rounded-md bg-black/50 backdrop-blur-md text-white font-extrabold text-[10px] uppercase tracking-wide">
+              ${isVideo ? '<i class="fa-solid fa-video text-rose-400 mr-1"></i>REEL' : '<i class="fa-solid fa-image text-pink-300 mr-1"></i>PHOTO'}
+            </span>
+            <span class="px-1.5 py-0.5 rounded-md bg-pink-600/80 backdrop-blur-md text-white font-bold text-[10px]">
+              HD
+            </span>
+          </div>
+        </div>
+
+        <!-- Media Preview Area -->
+        <div class="relative w-full aspect-square bg-slate-900 overflow-hidden flex items-center justify-center">
+          ${isVideo 
+            ? `<video src="${item.url}" controls class="w-full h-full object-cover"></video>` 
+            : `<img src="${item.url}" alt="Instagram Media" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" referrerpolicy="no-referrer">`
+          }
+        </div>
+
+        <!-- Card Footer Actions -->
+        <div class="p-3.5 space-y-2.5 bg-gradient-to-b from-[#fffafc] to-white border-t border-[#ED96D7]/20 flex-1 flex flex-col justify-between">
+          <div class="text-[11px] font-bold text-[#2b0e23] truncate">
+            ${isVideo ? 'ইনস্টাগ্রাম ভিডিও/রিলস' : `ইনস্টাগ্রাম ছবি #${idx + 1}`}
+          </div>
+          
+          <div class="grid grid-cols-2 gap-2">
+            <a href="${item.url}" target="_blank" download="insta-media-${idx + 1}" class="px-2 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#572449] font-bold text-[11px] transition-all text-center flex items-center justify-center gap-1 shadow-2xs">
+              <i class="fa-solid fa-download text-[10px]"></i> ডাউনলোড
+            </a>
+            <button type="button" onclick="importSingleInstaItem(${idx})" class="px-2 py-2 rounded-xl btn-primary-glow font-bold text-[11px] text-white flex items-center justify-center gap-1 shadow-xs">
+              <i class="fa-solid fa-plus text-[10px]"></i> গ্যালারিতে
+            </button>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }).join('');
+
+  container.classList.remove('hidden');
+  updateInstaSelectionCount();
+}
+
+window.selectAllInstaItems = function(checked) {
+  const checkboxes = document.querySelectorAll('.insta-item-checkbox');
+  checkboxes.forEach(cb => cb.checked = checked);
+  updateInstaSelectionCount();
+};
+
+window.updateInstaSelectionCount = function() {
+  const checkboxes = document.querySelectorAll('.insta-item-checkbox:checked');
+  const count = checkboxes.length;
+  const label = document.getElementById('insta-import-btn-label');
+  const allBtn = document.getElementById('insta-import-all-btn');
+
+  if (label) {
+    label.textContent = count > 0 ? `মডেল গ্যালারিতে যোগ করুন (${count.toLocaleString('bn-BD')} টি)` : 'মডেল গ্যালারিতে যোগ করুন';
+  }
+  if (allBtn) {
+    allBtn.disabled = count === 0;
+    allBtn.style.opacity = count === 0 ? '0.6' : '1';
+  }
+};
+
+window.importSingleInstaItem = async function(index) {
+  const item = currentInstaExtractedMedia[index];
+  if (!item) return;
+
+  const modelSelect = document.getElementById('insta-grab-model-select');
+  const modelId = modelSelect ? modelSelect.value : '';
+  if (!modelId) {
+    alert('অনুগ্রহ করে টার্গেট মডেল নির্বাচন করুন!');
+    return;
+  }
+
+  const destRadio = document.querySelector('input[name="insta-destination"]:checked');
+  const destination = destRadio ? destRadio.value : 'gallery';
+
+  await executeUploadAndAttach([item], modelId, destination);
+};
+
+window.importSelectedInstaMedia = async function() {
+  const checkboxes = document.querySelectorAll('.insta-item-checkbox:checked');
+  if (checkboxes.length === 0) {
+    alert('অনুগ্রহ করে অন্তত একটি মিডিয়া সিলেক্ট করুন!');
+    return;
+  }
+
+  const modelSelect = document.getElementById('insta-grab-model-select');
+  const modelId = modelSelect ? modelSelect.value : '';
+  if (!modelId) {
+    alert('অনুগ্রহ করে টার্গেট মডেল নির্বাচন করুন!');
+    return;
+  }
+
+  const destRadio = document.querySelector('input[name="insta-destination"]:checked');
+  const destination = destRadio ? destRadio.value : 'gallery';
+
+  const selectedItems = [];
+  checkboxes.forEach(cb => {
+    const idx = parseInt(cb.dataset.index, 10);
+    if (currentInstaExtractedMedia[idx]) {
+      selectedItems.push(currentInstaExtractedMedia[idx]);
+    }
+  });
+
+  if (selectedItems.length === 0) return;
+
+  await executeUploadAndAttach(selectedItems, modelId, destination);
+};
+
+async function executeUploadAndAttach(items, modelId, destination = 'gallery') {
+  const models = getModels();
+  const model = models.find(m => m.id === modelId);
+  if (!model) {
+    alert('নির্বাচিত মডেল পাওয়া যায়নি!');
+    return;
+  }
+
+  const progressBox = document.getElementById('insta-upload-progress');
+  const progressBar = document.getElementById('insta-progress-bar');
+  const progressPercent = document.getElementById('insta-progress-percent');
+  const progressText = document.getElementById('insta-progress-text');
+  const importBtn = document.getElementById('insta-import-all-btn');
+
+  if (progressBox) progressBox.classList.remove('hidden');
+  if (importBtn) importBtn.disabled = true;
+
+  if (!Array.isArray(model.gallery)) {
+    model.gallery = [];
+  }
+
+  let successCount = 0;
+  const targetFolder = destination === 'reel' ? 'reels' : 'models';
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const pct = Math.round(((i + 1) / items.length) * 100);
+
+    if (progressBar) progressBar.style.width = `${pct}%`;
+    if (progressPercent) progressPercent.textContent = `${pct}%`;
+    if (progressText) {
+      progressText.textContent = `(${i + 1}/${items.length}) Media Vault CDN-এ আপলোড হচ্ছে...`;
+    }
+
+    try {
+      let blob = null;
+      try {
+        const fetchRes = await fetch(item.url, {
+          referrerPolicy: 'no-referrer',
+          signal: AbortSignal.timeout(15000)
+        });
+        if (fetchRes.ok) {
+          blob = await fetchRes.blob();
+        }
+      } catch(fetchErr) {
+        console.warn('Direct blob fetch error:', fetchErr);
+      }
+
+      let permanentUrl = '';
+      if (blob && window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
+        const uploadRes = await window.BongBanglaVault.uploadMedia(blob, targetFolder);
+        if (uploadRes && uploadRes.url) {
+          permanentUrl = uploadRes.url;
+        }
+      }
+
+      // Secondary Supabase Cloud Storage Fallback
+      if (!permanentUrl && blob && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+        try {
+          const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(blob, targetFolder);
+          if (cloudUrl) permanentUrl = cloudUrl;
+        } catch(sbErr) {
+          console.warn('Supabase fallback error:', sbErr);
+        }
+      }
+
+      // If upload didn't succeed, retain URL
+      if (!permanentUrl) {
+        permanentUrl = item.url;
+      }
+
+      if (destination === 'avatar') {
+        model.image = permanentUrl;
+        successCount++;
+      } else if (destination === 'reel') {
+        model.gallery.unshift({
+          type: 'video',
+          url: permanentUrl,
+          thumbnail: item.thumbnail || permanentUrl
+        });
+        saveNewReelFromInsta(permanentUrl, model);
+        successCount++;
+      } else {
+        model.gallery.unshift({
+          type: item.type || 'photo',
+          url: permanentUrl,
+          thumbnail: item.thumbnail || permanentUrl
+        });
+        successCount++;
+      }
+    } catch(itemErr) {
+      console.error('Error uploading item:', itemErr);
+    }
+  }
+
+  // Save model locally and to Supabase
+  saveModels(models);
+
+  if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.updateModel === 'function') {
+    try {
+      await window.BongBanglaSupabase.updateModel(model);
+    } catch(upErr) {
+      console.warn('Supabase model update error:', upErr);
+    }
+  }
+
+  if (progressBox) progressBox.classList.add('hidden');
+  if (importBtn) importBtn.disabled = false;
+
+  renderModelsGrid();
+  updateStats();
+
+  showAdminToast(`সফল হয়েছে! ${model.name}-এর প্রোফাইলে ${successCount} টি মিডিয়া সেভ করা হয়েছে।`, 'success');
+  alert(`অভিনন্দন! ${model.name}-এর প্রোফাইলে ${successCount} টি মিডিয়া সফলভাবে Media Vault CDN ও গ্যালারিতে যুক্ত করা হয়েছে।`);
+}
+
+function saveNewReelFromInsta(videoUrl, model) {
+  try {
+    let reels = [];
+    const saved = localStorage.getItem('bongbangla_reels');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) reels = parsed;
+    }
+    const newReel = {
+      id: 'reel-' + Date.now(),
+      title: `${model.name} Instagram Reel`,
+      model_id: model.id,
+      category: model.category || 'Fashion',
+      video: videoUrl,
+      thumbnail: model.image || '',
+      views: '১.২K',
+      likes: '৪৫০+'
+    };
+    reels.unshift(newReel);
+    localStorage.setItem('bongbangla_reels', JSON.stringify(reels));
+
+    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.getClient === 'function') {
+      const client = window.BongBanglaSupabase.getClient();
+      if (client) {
+        client.from('reels').insert([newReel]).then(() => {}).catch(() => {});
+      }
+    }
+  } catch(e) {
+    console.warn('saveNewReelFromInsta error:', e);
+  }
+}
+
+function setupInstaDropzone() {
+  const dropzone = document.getElementById('insta-dropzone');
+  if (!dropzone || dropzone.dataset.initialized) return;
+  dropzone.dataset.initialized = 'true';
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('border-[#db2777]', 'bg-pink-50/50');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('border-[#db2777]', 'bg-pink-50/50');
+    });
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleInstaManualFiles(e.dataTransfer.files);
+    }
+  });
+}
+
+window.handleInstaManualFiles = async function(fileList) {
+  if (!fileList || fileList.length === 0) return;
+
+  const modelSelect = document.getElementById('insta-grab-model-select');
+  const modelId = modelSelect ? modelSelect.value : '';
+  if (!modelId) {
+    alert('অনুগ্রহ করে প্রথমে একজন টার্গেট মডেল নির্বাচন করুন!');
+    return;
+  }
+
+  const models = getModels();
+  const model = models.find(m => m.id === modelId);
+  if (!model) {
+    alert('নির্বাচিত মডেল পাওয়া যায়নি!');
+    return;
+  }
+
+  const destRadio = document.querySelector('input[name="insta-destination"]:checked');
+  const destination = destRadio ? destRadio.value : 'gallery';
+
+  const files = Array.from(fileList);
+  showAdminToast(`${files.length} টি ফাইল আপলোড হচ্ছে...`, 'info');
+
+  if (!Array.isArray(model.gallery)) {
+    model.gallery = [];
+  }
+
+  let successCount = 0;
+  for (const file of files) {
+    const isVideo = file.type && file.type.startsWith('video/');
+    const folder = isVideo || destination === 'reel' ? 'reels' : 'models';
+
+    let permanentUrl = '';
+    if (window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
+      const res = await window.BongBanglaVault.uploadMedia(file, folder);
+      if (res && res.url) permanentUrl = res.url;
+    }
+
+    if (!permanentUrl && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+      const res = await window.BongBanglaSupabase.uploadStorageFile(file, folder);
+      if (res) permanentUrl = res;
+    }
+
+    if (permanentUrl) {
+      if (destination === 'avatar') {
+        model.image = permanentUrl;
+      } else if (destination === 'reel' || isVideo) {
+        model.gallery.unshift({
+          type: 'video',
+          url: permanentUrl,
+          thumbnail: model.image || ''
+        });
+        saveNewReelFromInsta(permanentUrl, model);
+      } else {
+        model.gallery.unshift({
+          type: 'photo',
+          url: permanentUrl,
+          thumbnail: permanentUrl
+        });
+      }
+      successCount++;
+    }
+  }
+
+  saveModels(models);
+  if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.updateModel === 'function') {
+    window.BongBanglaSupabase.updateModel(model).catch(() => {});
+  }
+
+  renderModelsGrid();
+  updateStats();
+  showAdminToast(`${successCount} টি ফাইল সফলভাবে মডেল গ্যালারিতে যুক্ত করা হয়েছে!`, 'success');
+};
+
 
 
