@@ -2602,6 +2602,7 @@ function renderAdminReels(category = 'all', preloadedReels = null) {
   } else if (window.BongBanglaReels) {
     reels = window.BongBanglaReels.getReels(category);
   }
+  reels = reels.filter(r => r && r.id && !r.id.match(/^reel-[csvfj]\d+$/));
 
   if (selectAll && !selectAll.dataset.initialized) {
     selectAll.dataset.initialized = 'true';

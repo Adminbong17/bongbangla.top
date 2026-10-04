@@ -16,6 +16,9 @@ function getReels(category = 'all') {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
         reels = parsed.filter(r => !r.id || !r.id.match(/^reel-[csvfj]\d+$/));
+        if (reels.length !== parsed.length) {
+          localStorage.setItem('bongbangla_reels', JSON.stringify(reels));
+        }
       }
     }
   } catch (e) {
@@ -31,10 +34,12 @@ function getReels(category = 'all') {
 }
 
 function saveReels(reels) {
-  localStorage.setItem('bongbangla_reels', JSON.stringify(reels));
+  const clean = Array.isArray(reels) ? reels.filter(r => !r.id || !r.id.match(/^reel-[csvfj]\d+$/)) : [];
+  localStorage.setItem('bongbangla_reels', JSON.stringify(clean));
 }
 
 function addReel(newReel) {
+  if (newReel && newReel.id && newReel.id.match(/^reel-[csvfj]\d+$/)) return getReels('all');
   const reels = getReels('all');
   reels.unshift(newReel);
   saveReels(reels);

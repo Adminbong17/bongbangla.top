@@ -182,38 +182,19 @@
 
         const { data, error } = await query;
         if (!error && Array.isArray(data)) {
-          const mapped = data.map(r => ({
-            id: r.id,
-            category: r.category,
-            title: r.title,
-            client: r.client,
-            tag: r.tag,
-            views: r.views,
-            videoUrl: r.video_url,
-            thumbnail: r.thumbnail_url,
-            date: r.created_at ? r.created_at.split('T')[0] : '2026-10-01'
-          }));
-
-          // Check for any un-synced local reels on this device and auto-upload them to Supabase
-          try {
-            const rawLocal = localStorage.getItem('bongbangla_reels');
-            const localReels = rawLocal ? JSON.parse(rawLocal) : [];
-            const deletedReels = JSON.parse(localStorage.getItem('bongbangla_deleted_reels') || '[]');
-
-            if (Array.isArray(localReels)) {
-              for (const lr of localReels) {
-                if (lr && lr.id && !deletedReels.includes(lr.id) && !mapped.some(m => m.id === lr.id)) {
-                  console.log('🔄 Auto-syncing un-synced local reel to Supabase:', lr.id, lr.title);
-                  addReel(lr).catch(e => console.warn('Auto-sync reel error:', e));
-                  if (category === 'all' || lr.category === category) {
-                    mapped.unshift(lr);
-                  }
-                }
-              }
-            }
-          } catch(syncErr) {
-            console.warn('Local reels sync check error:', syncErr);
-          }
+          const mapped = data
+            .filter(r => r && r.id && !r.id.match(/^reel-[csvfj]\d+$/))
+            .map(r => ({
+              id: r.id,
+              category: r.category,
+              title: r.title,
+              client: r.client,
+              tag: r.tag,
+              views: r.views,
+              videoUrl: r.video_url,
+              thumbnail: r.thumbnail_url,
+              date: r.created_at ? r.created_at.split('T')[0] : '2026-10-01'
+            }));
 
           // Always cache the latest cloud reels to localStorage so other parts of the site can read them synchronously
           if (category === 'all') {
@@ -237,6 +218,10 @@
 
   async function addReel(reel) {
     if (!reel) return null;
+    if (reel.id && reel.id.match(/^reel-[csvfj]\d+$/)) {
+      console.warn('Blocked attempt to save legacy demo reel:', reel.id);
+      return null;
+    }
     if (!reel.id) reel.id = 'reel-' + Date.now();
 
     // Cache to localStorage first
@@ -244,6 +229,7 @@
       let local = [];
       const raw = localStorage.getItem('bongbangla_reels');
       if (raw) local = JSON.parse(raw) || [];
+      local = local.filter(r => r && r.id && !r.id.match(/^reel-[csvfj]\d+$/));
       const idx = local.findIndex(r => r.id === reel.id);
       if (idx >= 0) local[idx] = reel;
       else local.unshift(reel);

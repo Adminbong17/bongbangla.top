@@ -246,6 +246,7 @@ function renderFrontendPortfolio(filter = 'all', preloadedReels = null) {
   if (reels.length === 0 && window.BongBanglaReels && typeof window.BongBanglaReels.getReels === 'function') {
     reels = window.BongBanglaReels.getReels('all');
   }
+  reels = reels.filter(r => r && r.id && !r.id.match(/^reel-[csvfj]\d+$/));
 
   // Filter category mapping
   let filtered = reels;
