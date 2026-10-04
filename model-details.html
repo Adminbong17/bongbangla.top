@@ -1452,6 +1452,12 @@
         }
       }
 
+      // Nav arrows visibility
+      const prevBtn = document.getElementById('slider-prev-btn');
+      const nextBtn = document.getElementById('slider-next-btn');
+      if (prevBtn) prevBtn.style.display = items.length > 1 ? 'flex' : 'none';
+      if (nextBtn) nextBtn.style.display = items.length > 1 ? 'flex' : 'none';
+
       if (counterEl) {
         const bnNums = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
         const toBn = n => String(n).split('').map(d => bnNums[d] || d).join('');
@@ -1467,14 +1473,18 @@
         if (imgEl) imgEl.classList.add('hidden');
         if (vidWrap) vidWrap.classList.remove('hidden');
         if (vidEl) {
-          vidEl.muted = true;
+          vidEl.muted = false;
           vidEl.playsInline = true;
+          vidEl.setAttribute('playsinline', '');
+          vidEl.setAttribute('webkit-playsinline', '');
           vidEl.src = formattedUrl;
           vidEl.load();
           const p = vidEl.play();
           if (p !== undefined) {
             p.catch(() => {
-              console.log('Mobile video autoplay waiting for user tap');
+              // Browser blocked unmuted autoplay, play muted
+              vidEl.muted = true;
+              vidEl.play().catch(() => {});
             });
           }
         }
@@ -1490,22 +1500,26 @@
         }
       }
 
-      // Render Thumbnail Strip
+      // Render Thumbnail Strip (Only show when there is more than 1 item)
+      const stripContainer = document.getElementById('slider-thumbnails-strip')?.parentElement;
       const strip = document.getElementById('slider-thumbnails-strip');
-      if (strip) {
+      if (stripContainer) {
+        stripContainer.style.display = items.length > 1 ? 'flex' : 'none';
+      }
+      if (strip && items.length > 1) {
         strip.innerHTML = items.map((it, idx) => {
           const itIsVideo = it.type === 'video';
-          const itRaw = it.url || it.thumbnail || '';
+          const itRaw = it.thumbnail || it.url || '';
           const itFormatted = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(itRaw, itIsVideo ? 'reels' : 'models') : itRaw;
           const isActive = idx === index;
 
           return `
             <button type="button" onclick="showGallerySlide(${idx})" class="w-12 h-14 sm:w-14 sm:h-16 rounded-xl overflow-hidden relative shrink-0 transition-all border-2 ${isActive ? 'border-[#db2777] ring-2 ring-[#ED96D7] scale-105 opacity-100' : 'border-white/30 opacity-50 hover:opacity-80 hover:scale-100'} bg-black cursor-pointer">
               ${itIsVideo ? `
-                <video src="${itFormatted}" preload="metadata" muted playsinline class="w-full h-full object-cover"></video>
-                <span class="absolute inset-0 flex items-center justify-center text-white/90 text-[10px]"><i class="fa-solid fa-play"></i></span>
+                <img src="${itFormatted}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';">
+                <span class="absolute inset-0 flex items-center justify-center text-white/90 text-[10px] bg-black/30"><i class="fa-solid fa-play"></i></span>
               ` : `
-                <img src="${itFormatted}" class="w-full h-full object-cover">
+                <img src="${itFormatted}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';">
               `}
             </button>
           `;
