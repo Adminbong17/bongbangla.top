@@ -927,15 +927,49 @@ function initReelsAdmin() {
   }
 }
 
+let currentReelViewMode = localStorage.getItem('bongbangla_reel_view_mode') || 'list';
+
+window.setReelViewMode = function(mode) {
+  currentReelViewMode = mode;
+  localStorage.setItem('bongbangla_reel_view_mode', mode);
+
+  const listBtn = document.getElementById('reel-view-list-btn');
+  const gridBtn = document.getElementById('reel-view-grid-btn');
+  const listView = document.getElementById('admin-reels-list-view');
+  const gridView = document.getElementById('admin-reels-grid');
+
+  if (mode === 'grid') {
+    if (gridBtn) {
+      gridBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold font-bangla transition-all bg-[#db2777] text-white shadow-xs flex items-center gap-1.5';
+    }
+    if (listBtn) {
+      listBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold font-bangla transition-all text-[#572449] hover:text-[#db2777] flex items-center gap-1.5';
+    }
+    if (listView) listView.classList.add('hidden');
+    if (gridView) gridView.classList.remove('hidden');
+  } else {
+    if (listBtn) {
+      listBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold font-bangla transition-all bg-[#db2777] text-white shadow-xs flex items-center gap-1.5';
+    }
+    if (gridBtn) {
+      gridBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold font-bangla transition-all text-[#572449] hover:text-[#db2777] flex items-center gap-1.5';
+    }
+    if (gridView) gridView.classList.add('hidden');
+    if (listView) listView.classList.remove('hidden');
+  }
+};
+
 function renderAdminReels(category = 'all') {
   const grid = document.getElementById('admin-reels-grid');
+  const listBody = document.getElementById('admin-reels-list-body');
   const emptyState = document.getElementById('reels-empty-state');
-  if (!grid || !window.BongBanglaReels) return;
+  if (!window.BongBanglaReels) return;
 
   const reels = window.BongBanglaReels.getReels(category);
 
   if (reels.length === 0) {
-    grid.innerHTML = '';
+    if (grid) grid.innerHTML = '';
+    if (listBody) listBody.innerHTML = '';
     if (emptyState) emptyState.classList.remove('hidden');
     return;
   }
@@ -950,50 +984,132 @@ function renderAdminReels(category = 'all') {
     'jewellery': 'জুয়েলারি ও লাক্সারি'
   };
 
-  grid.innerHTML = reels.map(r => `
-    <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/35 group hover:border-[#db2777] shadow-sm hover:shadow-md transition-all bg-white flex flex-col justify-between">
-      
-      <!-- 9:16 Thumbnail Preview -->
-      <div class="aspect-[9/16] relative overflow-hidden bg-black">
-        <img src="${r.thumbnail}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
+  // 1. Render Table / List View
+  if (listBody) {
+    listBody.innerHTML = reels.map(r => `
+      <tr class="hover:bg-[#fff8fa] transition-colors border-b border-[#ED96D7]/15">
+        <!-- Thumbnail -->
+        <td class="py-3 px-4">
+          <div class="w-12 h-16 rounded-xl overflow-hidden bg-black relative border border-[#ED96D7]/30 shrink-0 shadow-xs cursor-pointer group"
+               onclick="window.BongBanglaReels.openReelVideoModal('${r.videoUrl}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')">
+            <img src="${r.thumbnail}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+            <div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+              <i class="fa-solid fa-play"></i>
+            </div>
+          </div>
+        </td>
 
-        <!-- Top Badges & Delete Button -->
-        <div class="absolute top-2 inset-x-2 flex items-center justify-between">
-          <span class="px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-[#db2777] shadow-sm">
+        <!-- Title & Client -->
+        <td class="py-3 px-4">
+          <div class="font-bold text-[#2b0e23] text-xs">${r.title}</div>
+          <div class="text-[11px] text-[#db2777] font-semibold mt-0.5 flex items-center gap-1">
+            <i class="fa-solid fa-user-tag text-[9px]"></i>
+            <span>${r.client || 'BongBangla Client'}</span>
+          </div>
+        </td>
+
+        <!-- Category -->
+        <td class="py-3 px-4">
+          <span class="inline-block px-2.5 py-1 rounded-full bg-pink-50 text-[#be185d] border border-[#ED96D7]/30 text-[11px] font-semibold">
+            ${categoryNames[r.category] || r.category}
+          </span>
+        </td>
+
+        <!-- Tag / Resolution -->
+        <td class="py-3 px-4">
+          <span class="inline-block px-2 py-0.5 rounded bg-slate-100 text-[#572449] font-mono text-[10px] font-bold">
             ${r.tag || '4K'}
           </span>
-          <button onclick="deleteAdminReel('${r.id}')" class="w-7 h-7 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-colors" title="রিলস ডিলিট করুন">
-            <i class="fa-solid fa-trash-can"></i>
+        </td>
+
+        <!-- Views -->
+        <td class="py-3 px-4 font-mono font-bold text-xs text-[#2b0e23]">
+          ${r.views || '-'}
+        </td>
+
+        <!-- Date -->
+        <td class="py-3 px-4 text-gray-500 font-mono text-[11px]">
+          ${r.date || '২০২৬'}
+        </td>
+
+        <!-- Actions (View Video / Delete) -->
+        <td class="py-3 px-4 text-right">
+          <div class="flex items-center justify-end gap-1.5">
+            <!-- View / Play Button -->
+            <button onclick="window.BongBanglaReels.openReelVideoModal('${r.videoUrl}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')"
+                    class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#db2777] to-[#be185d] text-white text-xs font-bold flex items-center gap-1 shadow-xs hover:opacity-95 transition-all"
+                    title="ভিডিও ভিউ ও প্লে করুন">
+              <i class="fa-solid fa-eye text-[11px]"></i>
+              <span>ভিউ (View)</span>
+            </button>
+
+            <!-- Delete Button -->
+            <button onclick="deleteAdminReel('${r.id}')"
+                    class="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 inline-flex items-center justify-center transition-colors shadow-xs"
+                    title="রিলস ডিলিট করুন">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // 2. Render Grid View
+  if (grid) {
+    grid.innerHTML = reels.map(r => `
+      <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/35 group hover:border-[#db2777] shadow-sm hover:shadow-md transition-all bg-white flex flex-col justify-between">
+        
+        <!-- 9:16 Thumbnail Preview -->
+        <div class="aspect-[9/16] relative overflow-hidden bg-black">
+          <img src="${r.thumbnail}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
+
+          <!-- Top Badges & Delete Button -->
+          <div class="absolute top-2 inset-x-2 flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-[#db2777] shadow-sm">
+              ${r.tag || '4K'}
+            </span>
+            <button onclick="deleteAdminReel('${r.id}')" class="w-7 h-7 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-colors" title="রিলস ডিলিট করুন">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+
+          <!-- Play preview trigger -->
+          <button onclick="window.BongBanglaReels.openReelVideoModal('${r.videoUrl}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')" class="absolute inset-0 flex items-center justify-center text-white/90 hover:text-white transition-all">
+            <div class="w-11 h-11 rounded-full bg-[#db2777]/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <i class="fa-solid fa-play ml-0.5 text-sm"></i>
+            </div>
+          </button>
+
+          <!-- Bottom Client Name -->
+          <div class="absolute bottom-2 inset-x-2 text-left pointer-events-none">
+            <span class="inline-block px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-bold">
+              ${r.client}
+            </span>
+          </div>
+        </div>
+
+        <!-- Info Footer -->
+        <div class="p-3 space-y-1.5 font-bangla text-xs bg-white">
+          <div class="font-bold text-[#2b0e23] line-clamp-1" title="${r.title}">${r.title}</div>
+          <div class="flex items-center justify-between text-[11px] text-[#8c4f75] pt-1.5 border-t border-[#ED96D7]/20">
+            <span class="text-[#db2777] font-semibold">${categoryNames[r.category] || r.category}</span>
+            <span class="font-medium">${r.views || ''}</span>
+          </div>
+          <!-- View Button in card -->
+          <button onclick="window.BongBanglaReels.openReelVideoModal('${r.videoUrl}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')"
+                  class="w-full mt-2 py-1.5 rounded-xl bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
+            <i class="fa-solid fa-eye text-xs"></i>
+            <span>ভিডিও ভিউ করুন</span>
           </button>
         </div>
 
-        <!-- Play preview trigger -->
-        <button onclick="window.BongBanglaReels.openReelVideoModal('${r.videoUrl}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')" class="absolute inset-0 flex items-center justify-center text-white/90 hover:text-white transition-all">
-          <div class="w-11 h-11 rounded-full bg-[#db2777]/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-            <i class="fa-solid fa-play ml-0.5 text-sm"></i>
-          </div>
-        </button>
-
-        <!-- Bottom Client Name -->
-        <div class="absolute bottom-2 inset-x-2 text-left pointer-events-none">
-          <span class="inline-block px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-bold">
-            ${r.client}
-          </span>
-        </div>
       </div>
+    `).join('');
+  }
 
-      <!-- Info Footer -->
-      <div class="p-3 space-y-1.5 font-bangla text-xs bg-white">
-        <div class="font-bold text-[#2b0e23] line-clamp-1" title="${r.title}">${r.title}</div>
-        <div class="flex items-center justify-between text-[11px] text-[#8c4f75] pt-1.5 border-t border-[#ED96D7]/20">
-          <span class="text-[#db2777] font-semibold">${categoryNames[r.category] || r.category}</span>
-          <span class="font-medium">${r.views || ''}</span>
-        </div>
-      </div>
-
-    </div>
-  `).join('');
+  setReelViewMode(currentReelViewMode);
 }
 
 window.deleteAdminReel = function(id) {

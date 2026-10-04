@@ -515,6 +515,18 @@
               </div>
 
               <div class="flex items-center gap-2.5 flex-wrap">
+                <!-- View Mode Toggle (Grid vs List) -->
+                <div class="inline-flex items-center p-0.5 rounded-xl bg-slate-100 border border-[#ED96D7]/40 shadow-xs">
+                  <button type="button" id="reel-view-list-btn" onclick="setReelViewMode('list')" class="px-2.5 py-1.5 rounded-lg text-xs font-bold font-bangla transition-all bg-[#db2777] text-white shadow-xs flex items-center gap-1.5" title="লিস্ট ভিউ">
+                    <i class="fa-solid fa-list-ul"></i>
+                    <span>লিস্ট</span>
+                  </button>
+                  <button type="button" id="reel-view-grid-btn" onclick="setReelViewMode('grid')" class="px-2.5 py-1.5 rounded-lg text-xs font-bold font-bangla transition-all text-[#572449] hover:text-[#db2777] flex items-center gap-1.5" title="গ্রিড ভিউ">
+                    <i class="fa-solid fa-grip"></i>
+                    <span>গ্রিড</span>
+                  </button>
+                </div>
+
                 <!-- Filter by service -->
                 <select id="admin-reel-filter" class="bg-white border border-[#ED96D7]/50 rounded-xl px-3 py-2 text-xs text-[#2b0e23] font-medium focus:outline-none focus:border-[#db2777] cursor-pointer">
                   <option value="all">সব রিলস (All Services)</option>
@@ -537,8 +549,28 @@
               </div>
             </div>
 
+            <!-- Reels List View (Table with View Action) -->
+            <div id="admin-reels-list-view" class="overflow-x-auto rounded-2xl border border-[#ED96D7]/25">
+              <table class="w-full text-left text-xs bg-white">
+                <thead class="text-[11px] text-[#572449] font-bold uppercase bg-[#fdf2f8] border-b border-[#ED96D7]/30 font-bangla">
+                  <tr>
+                    <th class="py-3.5 px-4 w-16">প্রিভিউ</th>
+                    <th class="py-3.5 px-4">শিরোনাম ও ক্লায়েন্ট</th>
+                    <th class="py-3.5 px-4">সার্ভিস ক্যাটাগরি</th>
+                    <th class="py-3.5 px-4">ট্যাগ / রেজোলিউশন</th>
+                    <th class="py-3.5 px-4">ভিউ সংখ্যা</th>
+                    <th class="py-3.5 px-4">তারিখ</th>
+                    <th class="py-3.5 px-4 text-right">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-reels-list-body" class="divide-y divide-[#ED96D7]/15 font-bangla text-[#2b0e23]">
+                  <!-- Dynamically populated via JS -->
+                </tbody>
+              </table>
+            </div>
+
             <!-- Reels Grid in Admin -->
-            <div id="admin-reels-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div id="admin-reels-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               <!-- Dynamically populated via JS -->
             </div>
 
