@@ -274,6 +274,9 @@
             console.log('🔄 Auto-uploading local models to Supabase:', missingInCloud.length);
             for (const m of missingInCloud) {
               await addModel(m);
+            }
+          }
+
           try {
             const sanitized = mapped.map(m => {
               const c = { ...m };
