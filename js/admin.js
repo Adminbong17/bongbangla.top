@@ -593,52 +593,17 @@ function initDashboard() {
 }
 
 function getLeads() {
-  const defaultLeads = [
-    {
-      id: 'L-101',
-      name: 'তানজিলা ইসলাম',
-      brand: 'মায়াবী বুটিক',
-      phone: '01711223344',
-      service: 'শাড়ি ও মডেল ফটোশ্যুট',
-      budget: '৳ ৩৫,০০০',
-      date: '2026-10-02',
-      status: 'New',
-      notes: 'শারদীয় কালেকশনের ১০টি প্রিমিয়াম শাড়ির শ্যুট প্রয়োজন।'
-    },
-    {
-      id: 'L-102',
-      name: 'ফারহান করিম',
-      brand: 'ক্ল্যাসিক মোটরস',
-      phone: '01899887766',
-      service: '৪K কমার্শিয়াল সিনেমা অ্যাড',
-      budget: '৳ ৭৫,০০০',
-      date: '2026-10-01',
-      status: 'Booked',
-      notes: 'টিভি ও ডিজিটাল কমার্শিয়াল অ্যাড।'
-    },
-    {
-      id: 'L-103',
-      name: 'সুমাইয়া জাহান',
-      brand: 'গ্লো অ্যান্ড শাইন স্কিনকেয়ার',
-      phone: '01911002233',
-      service: 'ভাইরাল প্রোডাক্ট রিলস প্যাকেজ',
-      budget: '৳ ২৫,০০০',
-      date: '2026-09-30',
-      status: 'Contacted',
-      notes: 'ইনস্টাগ্রাম ও ফেসবুক রিলস ভিডিও।'
-    }
-  ];
-
   try {
     const saved = localStorage.getItem('bongbangla_leads');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) {
+        // filter out any mock sample IDs
+        return parsed.filter(l => !['L-101', 'L-102', 'L-103'].includes(l.id));
+      }
     }
   } catch (e) {}
-
-  localStorage.setItem('bongbangla_leads', JSON.stringify(defaultLeads));
-  return defaultLeads;
+  return [];
 }
 
 function saveLeads(leads) {
@@ -665,7 +630,7 @@ function updateStats() {
   if (totalEl) totalEl.textContent = total.toLocaleString('bn-BD');
   if (newEl) newEl.textContent = newCount.toLocaleString('bn-BD');
   if (bookedEl) bookedEl.textContent = bookedCount.toLocaleString('bn-BD');
-  if (pipelineEl) pipelineEl.textContent = '৳ ' + (totalPipeline > 0 ? totalPipeline.toLocaleString('bn-BD') : '১,৩৫,০০০');
+  if (pipelineEl) pipelineEl.textContent = '৳ ' + (totalPipeline > 0 ? totalPipeline.toLocaleString('bn-BD') : '০');
 
   const navBadge = document.getElementById('badge-nav-leads');
   if (navBadge) {
@@ -755,52 +720,17 @@ window.deleteAdminLead = function(id) {
 };
 
 function getModels() {
-  const defaultModels = [
-    {
-      id: 'M-1',
-      name: 'অনন্যা সেন',
-      category: 'শাড়ি ও বোল্ড ফ্যাশন',
-      height: '৫\'৮"',
-      shoots: '৫০+',
-      image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
-      available: true
-    },
-    {
-      id: 'M-2',
-      name: 'রাহুল আহমেদ',
-      category: 'পাঞ্জাবি ও টিভি কমার্শিয়াল',
-      height: '৬\'১"',
-      shoots: '৪০+',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
-      available: true
-    },
-    {
-      id: 'M-3',
-      name: 'রিয়া রায়',
-      category: 'কসমেটিক্স ও শর্ট রিলস',
-      height: '৫\'৬"',
-      shoots: '৬৫+',
-      image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80',
-      available: true
-    },
-    {
-      id: 'M-4',
-      name: 'সামি চৌধুরী',
-      category: 'ফিটনেস ও ক্যাজুয়াল পোশাক',
-      height: '৬\'০"',
-      shoots: '৩৫+',
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80',
-      available: true
-    }
-  ];
-
   try {
     const saved = localStorage.getItem('bongbangla_models');
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        // filter out any mock sample models
+        return parsed.filter(m => !['M-1', 'M-2', 'M-3', 'M-4'].includes(m.id));
+      }
+    }
   } catch (e) {}
-
-  localStorage.setItem('bongbangla_models', JSON.stringify(defaultModels));
-  return defaultModels;
+  return [];
 }
 
 function saveModels(models) {
@@ -1200,6 +1130,15 @@ function renderModelsGrid() {
   const grid = document.getElementById('admin-models-grid');
   if (!grid) return;
   const models = getModels();
+
+  if (models.length === 0) {
+    grid.innerHTML = `
+      <div class="col-span-full text-center py-12 text-[#8c4f75] text-sm font-bangla bg-[#fdf2f8] rounded-2xl border border-dashed border-[#ED96D7]/40">
+        কোনো মডেল পাওয়া যায়নি। উপরে "নতুন মডেল যুক্ত করুন" বাটনে ক্লিক করে প্রোফাইল যুক্ত করুন।
+      </div>
+    `;
+    return;
+  }
 
   grid.innerHTML = models.map(m => `
     <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/30 group hover:border-[#ED96D7] shadow-sm hover:shadow-md transition-all bg-white">

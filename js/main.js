@@ -6,7 +6,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  initSeedData();
+  cleanupMockData();
   initLogoSwitcher();
   initNavbar();
   initPortfolioFilter();
@@ -16,6 +16,30 @@ document.addEventListener('DOMContentLoaded', () => {
   initModals();
   initContactForm();
 });
+
+/* ==========================================================================
+   0. Cleanup Legacy Sample/Mock Data
+   ========================================================================== */
+function cleanupMockData() {
+  try {
+    const rawLeads = localStorage.getItem('bongbangla_leads');
+    if (rawLeads) {
+      const leads = JSON.parse(rawLeads);
+      if (Array.isArray(leads)) {
+        const cleaned = leads.filter(l => !['L-101', 'L-102', 'L-103'].includes(l.id));
+        localStorage.setItem('bongbangla_leads', JSON.stringify(cleaned));
+      }
+    }
+    const rawModels = localStorage.getItem('bongbangla_models');
+    if (rawModels) {
+      const models = JSON.parse(rawModels);
+      if (Array.isArray(models)) {
+        const cleanedModels = models.filter(m => !['M-1', 'M-2', 'M-3', 'M-4'].includes(m.id));
+        localStorage.setItem('bongbangla_models', JSON.stringify(cleanedModels));
+      }
+    }
+  } catch(e) {}
+}
 
 /* ==========================================================================
    0. Brand Logo Switcher (Bangla & English Official Versions)
@@ -46,50 +70,6 @@ window.setBrandLogoLang = function(lang) {
   }
   localStorage.setItem('bongbangla_logo_lang', lang);
 };
-
-/* ==========================================================================
-   0. Seed Default Inquiries (if first visit) for Admin Panel
-   ========================================================================== */
-function initSeedData() {
-  if (!localStorage.getItem('bongbangla_leads')) {
-    const sampleLeads = [
-      {
-        id: 'L-101',
-        name: 'তানভীর আহমেদ',
-        brand: 'Aarohi Silk & Jamdani',
-        phone: '01711223344',
-        service: 'Traditional Saree & Bold Shoot',
-        budget: '৳ 48,000',
-        date: '2026-10-02',
-        status: 'Booked',
-        notes: 'Eid Festive Collection catalog shoot with 2 top female models.'
-      },
-      {
-        id: 'L-102',
-        name: 'সাদিয়া তাসনিম',
-        brand: 'Luxe Glow Cosmetics BD',
-        phone: '01899887766',
-        service: 'Viral Product Reels Pack (10 Reels)',
-        budget: '৳ 32,000',
-        date: '2026-10-03',
-        status: 'New',
-        notes: 'Serum & lip tint texture macro video reels for TikTok and Meta Ads.'
-      },
-      {
-        id: 'L-103',
-        name: 'ফারহান করিম',
-        brand: 'Nawab Panjabi Heritage',
-        phone: '01912345678',
-        service: 'Cinema Ad Film (with Male Model)',
-        budget: '৳ 55,000',
-        date: '2026-10-03',
-        status: 'Contacted',
-        notes: 'Wedding & Pohela Boishakh Panjabi TVC with drone & heritage haveli location.'
-      }
-    ];
-    localStorage.setItem('bongbangla_leads', JSON.stringify(sampleLeads));
-  }
-}
 
 /* ==========================================================================
    1. Navbar & Mobile Menu Handling
