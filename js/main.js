@@ -166,11 +166,14 @@ function renderFrontendHeroSlides() {
   // Duplicate set to create seamless infinite sliding loop
   const displaySet = slides.length < 5 ? [...slides, ...slides, ...slides, ...slides] : [...slides, ...slides];
 
+  const defaultHeroFallback = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=720&h=1280&q=80';
+
   track.innerHTML = displaySet.map(s => {
-    const resolvedImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(s.image, 'hero') : s.image;
+    const rawImg = s.image || defaultHeroFallback;
+    const resolvedImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImg, 'hero') : rawImg;
     return `
       <div class="model-reel-card">
-        <img src="${resolvedImg}" alt="${s.title}" loading="lazy">
+        <img src="${resolvedImg || defaultHeroFallback}" alt="${s.title}" onerror="this.onerror=null; this.src='${defaultHeroFallback}';" loading="lazy">
         <div class="absolute inset-0 bg-gradient-to-t from-[#2b0e23]/85 via-transparent to-black/20"></div>
         <div class="absolute top-3 left-3 px-2.5 py-1 rounded-full model-card-badge text-[10px] font-bold text-[#db2777] flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-[#db2777] pulse-indicator"></span>
@@ -236,12 +239,14 @@ function renderFrontendPortfolio(filter = 'all') {
     return;
   }
 
+  const defaultReelFallback = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80';
+
   container.innerHTML = filtered.map(item => {
     const title = item.title || 'BongBangla Production';
     const client = item.client || 'BongBangla Client';
     const tag = item.tag || '4K';
     const views = item.views || '১.৫M ভিউজ';
-    const rawThumb = item.thumbnail || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80';
+    const rawThumb = item.thumbnail || defaultReelFallback;
     const rawVideo = item.videoUrl || '';
     const thumb = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawThumb, 'thumbnails') : rawThumb;
     const videoUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawVideo, 'reels') : rawVideo;
@@ -251,7 +256,7 @@ function renderFrontendPortfolio(filter = 'all') {
       <div class="portfolio-item gallery-card group cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden bg-white border border-[#ED96D7]/35 hover:border-[#db2777] shadow-sm hover:shadow-xl transition-all"
            onclick="if(window.BongBanglaReels){window.BongBanglaReels.openReelVideoModal('${videoUrl}', '${encodeURIComponent(title)}', '${encodeURIComponent(client)}')}">
         <div class="aspect-[3/4] overflow-hidden relative bg-black">
-          <img src="${thumb}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <img src="${thumb || defaultReelFallback}" alt="${title}" onerror="this.onerror=null; this.src='${defaultReelFallback}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
           
           <!-- Top Badges -->
           <div class="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none z-10">
@@ -313,14 +318,16 @@ function renderFrontendModels() {
     return;
   }
 
+  const defaultModelFallback = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+
   container.innerHTML = models.map(m => {
-    const rawImg = m.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+    const rawImg = m.image || defaultModelFallback;
     const modelImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImg, 'models') : rawImg;
 
     return `
       <div class="glass-panel rounded-3xl overflow-hidden group border border-[#ED96D7]/30 hover:border-[#ED96D7] transition-all hover:shadow-[0_15px_35px_rgba(237,150,215,0.3)] bg-white shadow-sm flex flex-col justify-between">
         <div class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8]">
-          <img src="${modelImg}" alt="${m.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <img src="${modelImg || defaultModelFallback}" alt="${m.name}" onerror="this.onerror=null; this.src='${defaultModelFallback}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
           <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full ${m.available !== false ? 'bg-white/90 text-[#be185d] border-[#ED96D7]/50' : 'bg-gray-100 text-gray-500 border-gray-300'} backdrop-blur-md text-[10px] font-bold border shadow-sm">
             ${m.available !== false ? 'AVAILABLE' : 'BOOKED'}
           </div>

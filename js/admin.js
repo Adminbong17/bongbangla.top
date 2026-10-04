@@ -595,6 +595,7 @@ function initDashboard() {
   const addModelForm = document.getElementById('add-model-form');
 
   let selectedModelFile = null;
+  let selectedModelDataUrl = '';
 
   window.setModelPhotoInputMode = function(mode) {
     const tabFileBtn = document.getElementById('model-tab-file-btn');
@@ -617,6 +618,7 @@ function initDashboard() {
 
   window.clearModelFileSelection = function() {
     selectedModelFile = null;
+    selectedModelDataUrl = '';
     const fileInput = document.getElementById('model-image-file');
     const dropzone = document.getElementById('model-file-dropzone');
     const previewBox = document.getElementById('model-file-preview-box');
@@ -627,12 +629,12 @@ function initDashboard() {
     if (previewImg) previewImg.src = '';
     if (previewBox) previewBox.classList.add('hidden');
     if (dropzone) dropzone.classList.remove('hidden');
-    if (urlInput && urlInput.value.includes('vault.bongbangla.top/models/')) {
+    if (urlInput && (urlInput.value.includes('vault.bongbangla.top/models/') || urlInput.value.startsWith('data:'))) {
       urlInput.value = '';
     }
   };
 
-  function handleModelFileChange(file) {
+  async function handleModelFileChange(file) {
     if (!file) return;
     selectedModelFile = file;
     const dropzone = document.getElementById('model-file-dropzone');
@@ -642,14 +644,18 @@ function initDashboard() {
     const sizeEl = document.getElementById('model-file-size');
     const urlInput = document.getElementById('model-image-input');
 
-    const localUrl = URL.createObjectURL(file);
-    if (previewImg) previewImg.src = localUrl;
     if (nameEl) nameEl.textContent = file.name;
     if (sizeEl) sizeEl.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
 
-    const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const vaultUrl = `https://vault.bongbangla.top/models/${cleanFileName}`;
-    if (urlInput) urlInput.value = vaultUrl;
+    // Compress to high quality data URL
+    if (window.BongBanglaVault && typeof window.BongBanglaVault.fileToDataUrl === 'function') {
+      selectedModelDataUrl = await window.BongBanglaVault.fileToDataUrl(file, 800, 0.85);
+    } else {
+      selectedModelDataUrl = URL.createObjectURL(file);
+    }
+
+    if (previewImg) previewImg.src = selectedModelDataUrl;
+    if (urlInput) urlInput.value = selectedModelDataUrl;
 
     if (dropzone) dropzone.classList.add('hidden');
     if (previewBox) previewBox.classList.remove('hidden');
@@ -711,12 +717,16 @@ function initDashboard() {
         const formData = new FormData(addModelForm);
         let photoUrl = (formData.get('image') || '').toString().trim();
 
-        // If direct file was selected, upload via Vault API
+        // If direct file was selected, upload via Vault API or use compressed DataURL
         if (selectedModelFile && window.BongBanglaVault) {
           const uploadRes = await window.BongBanglaVault.uploadMedia(selectedModelFile, 'models');
           if (uploadRes && uploadRes.url) {
             photoUrl = uploadRes.url;
           }
+        }
+
+        if (!photoUrl && selectedModelDataUrl) {
+          photoUrl = selectedModelDataUrl;
         }
 
         if (!photoUrl) {
@@ -1261,6 +1271,8 @@ function handleReelVideoFileChange(file) {
   if (previewBox) previewBox.classList.remove('hidden');
 }
 
+let selectedReelThumbDataUrl = '';
+
 function handleReelThumbFileChange(file) {
   if (!file) return;
   selectedReelThumbFile = file;
@@ -1271,14 +1283,20 @@ function handleReelThumbFileChange(file) {
   const sizeEl = document.getElementById('reel-thumb-file-size');
   const urlInput = document.getElementById('reel-thumb-input');
 
-  const localUrl = URL.createObjectURL(file);
-  if (previewImg) previewImg.src = localUrl;
   if (nameEl) nameEl.textContent = file.name;
   if (sizeEl) sizeEl.textContent = (file.size / 1024).toFixed(1) + ' KB';
 
-  const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const vaultUrl = `https://vault.bongbangla.top/thumbnails/${cleanFileName}`;
-  if (urlInput) urlInput.value = vaultUrl;
+  if (window.BongBanglaVault && typeof window.BongBanglaVault.fileToDataUrl === 'function') {
+    window.BongBanglaVault.fileToDataUrl(file, 800, 0.85).then(dataUrl => {
+      selectedReelThumbDataUrl = dataUrl;
+      if (previewImg) previewImg.src = dataUrl;
+      if (urlInput) urlInput.value = dataUrl;
+    });
+  } else {
+    const localUrl = URL.createObjectURL(file);
+    selectedReelThumbDataUrl = localUrl;
+    if (previewImg) previewImg.src = localUrl;
+  }
 
   if (dropzone) dropzone.classList.add('hidden');
   if (previewBox) previewBox.classList.remove('hidden');
@@ -1423,6 +1441,10 @@ function initReelsAdmin() {
           if (thumbRes && thumbRes.url) {
             rawThumb = thumbRes.url;
           }
+        }
+
+        if (!rawThumb && selectedReelThumbDataUrl) {
+          rawThumb = selectedReelThumbDataUrl;
         }
 
         if (!rawVideoUrl) {
@@ -1721,6 +1743,8 @@ function renderAdminReels(category = 'all') {
     'jewellery': 'জুয়েলারি ও লাক্সারি'
   };
 
+  const defaultFallbackThumb = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=720&h=1280&q=80';
+
   // 1. Render Table / List View
   if (listBody) {
     listBody.innerHTML = reels.map(r => {
@@ -1741,7 +1765,7 @@ function renderAdminReels(category = 'all') {
           <td class="py-3 px-4">
             <div class="w-12 h-16 rounded-xl overflow-hidden bg-black relative border border-[#ED96D7]/30 shrink-0 shadow-xs cursor-pointer group"
                  onclick="window.BongBanglaReels.openReelVideoModal('${video}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')">
-              <img src="${thumb}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+              <img src="${thumb || defaultFallbackThumb}" alt="${r.title}" onerror="this.onerror=null; this.src='${defaultFallbackThumb}';" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
               <div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
                 <i class="fa-solid fa-play"></i>
               </div>
@@ -1784,7 +1808,6 @@ function renderAdminReels(category = 'all') {
           <!-- Actions (View Video / Delete) -->
           <td class="py-3 px-4 text-right">
             <div class="flex items-center justify-end gap-1.5">
-              <!-- View / Play Button -->
               <button onclick="window.BongBanglaReels.openReelVideoModal('${video}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')"
                       class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#db2777] to-[#be185d] text-white text-xs font-bold flex items-center gap-1 shadow-xs hover:opacity-95 transition-all"
                       title="ভিডিও ভিউ ও প্লে করুন">
@@ -1792,7 +1815,6 @@ function renderAdminReels(category = 'all') {
                 <span>ভিউ (View)</span>
               </button>
 
-              <!-- Delete Button -->
               <button onclick="deleteAdminReel('${r.id}')"
                       class="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 inline-flex items-center justify-center transition-colors shadow-xs"
                       title="রিলস ডিলিট করুন">
@@ -1813,13 +1835,10 @@ function renderAdminReels(category = 'all') {
 
       return `
         <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/35 group hover:border-[#db2777] shadow-sm hover:shadow-md transition-all bg-white flex flex-col justify-between relative">
-          
-          <!-- 9:16 Thumbnail Preview -->
           <div class="aspect-[9/16] relative overflow-hidden bg-black">
-            <img src="${thumb}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <img src="${thumb || defaultFallbackThumb}" alt="${r.title}" onerror="this.onerror=null; this.src='${defaultFallbackThumb}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
 
-            <!-- Top Badges, Checkbox & Delete Button -->
             <div class="absolute top-2 inset-x-2 flex items-center justify-between z-10">
               <div class="flex items-center gap-1.5">
                 <input type="checkbox" class="reel-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer bg-white/90 shadow-sm"
@@ -1835,14 +1854,12 @@ function renderAdminReels(category = 'all') {
               </button>
             </div>
 
-            <!-- Play preview trigger -->
             <button onclick="window.BongBanglaReels.openReelVideoModal('${video}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')" class="absolute inset-0 flex items-center justify-center text-white/90 hover:text-white transition-all">
               <div class="w-11 h-11 rounded-full bg-[#db2777]/90 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                 <i class="fa-solid fa-play ml-0.5 text-sm"></i>
               </div>
             </button>
 
-            <!-- Bottom Client Name -->
             <div class="absolute bottom-2 inset-x-2 text-left pointer-events-none">
               <span class="inline-block px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-bold">
                 ${r.client}
@@ -1850,21 +1867,18 @@ function renderAdminReels(category = 'all') {
             </div>
           </div>
 
-          <!-- Info Footer -->
           <div class="p-3 space-y-1.5 font-bangla text-xs bg-white">
             <div class="font-bold text-[#2b0e23] line-clamp-1" title="${r.title}">${r.title}</div>
             <div class="flex items-center justify-between text-[11px] text-[#8c4f75] pt-1.5 border-t border-[#ED96D7]/20">
               <span class="text-[#db2777] font-semibold">${categoryNames[r.category] || r.category}</span>
               <span class="font-medium">${r.views || ''}</span>
             </div>
-            <!-- View Button in card -->
             <button onclick="window.BongBanglaReels.openReelVideoModal('${video}', '${encodeURIComponent(r.title)}', '${encodeURIComponent(r.client)}')"
                     class="w-full mt-2 py-1.5 rounded-xl bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
               <i class="fa-solid fa-eye text-xs"></i>
               <span>ভিডিও ভিউ করুন</span>
             </button>
           </div>
-
         </div>
       `;
     }).join('');
@@ -1930,14 +1944,16 @@ function renderModelsGrid() {
     return;
   }
 
+  const defaultModelFallback = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+
   grid.innerHTML = models.map(m => {
-    const rawImg = m.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+    const rawImg = m.image || defaultModelFallback;
     const modelImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImg, 'models') : rawImg;
 
     return `
       <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/30 group hover:border-[#ED96D7] shadow-sm hover:shadow-md transition-all bg-white relative">
         <div class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8]">
-          <img src="${modelImg}" alt="${m.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <img src="${modelImg || defaultModelFallback}" alt="${m.name}" onerror="this.onerror=null; this.src='${defaultModelFallback}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
           
           <!-- Top Checkbox and Delete Button -->
           <div class="absolute top-2.5 inset-x-2.5 flex items-center justify-between z-10">
@@ -2102,13 +2118,15 @@ function renderAdminHeroSlides() {
 
   if (emptyState) emptyState.classList.add('hidden');
 
+  const defaultHeroFallback = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=720&h=1280&q=80';
+
   grid.innerHTML = slides.map(s => {
     const slideImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(s.image, 'hero') : s.image;
 
     return `
       <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/35 group hover:border-[#db2777] shadow-sm hover:shadow-md transition-all bg-white flex flex-col justify-between relative">
         <div class="aspect-[9/16] relative overflow-hidden bg-black">
-          <img src="${slideImg}" alt="${s.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <img src="${slideImg || defaultHeroFallback}" alt="${s.title}" onerror="this.onerror=null; this.src='${defaultHeroFallback}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
           
           <!-- Top Checkbox & Delete -->
@@ -2147,6 +2165,7 @@ function renderAdminHeroSlides() {
 }
 
 let selectedHeroSlideFile = null;
+let selectedHeroSlideDataUrl = '';
 
 window.setHeroSlideInputMode = function(mode) {
   const tabFileBtn = document.getElementById('hero-slide-tab-file-btn');
@@ -2169,6 +2188,7 @@ window.setHeroSlideInputMode = function(mode) {
 
 window.clearHeroSlideFileSelection = function() {
   selectedHeroSlideFile = null;
+  selectedHeroSlideDataUrl = '';
   const fileInput = document.getElementById('hero-slide-image-file');
   const dropzone = document.getElementById('hero-slide-file-dropzone');
   const previewBox = document.getElementById('hero-slide-file-preview-box');
@@ -2179,7 +2199,7 @@ window.clearHeroSlideFileSelection = function() {
   if (previewImg) previewImg.src = '';
   if (previewBox) previewBox.classList.add('hidden');
   if (dropzone) dropzone.classList.remove('hidden');
-  if (urlInput && urlInput.value.includes('vault.bongbangla.top/hero/')) {
+  if (urlInput && (urlInput.value.includes('vault.bongbangla.top/hero/') || urlInput.value.startsWith('data:'))) {
     urlInput.value = '';
   }
 };
@@ -2194,14 +2214,20 @@ function handleHeroSlideFileChange(file) {
   const sizeEl = document.getElementById('hero-slide-file-size');
   const urlInput = document.getElementById('hero-slide-image-input');
 
-  const localUrl = URL.createObjectURL(file);
-  if (previewImg) previewImg.src = localUrl;
   if (nameEl) nameEl.textContent = file.name;
   if (sizeEl) sizeEl.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
 
-  const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const vaultUrl = `https://vault.bongbangla.top/hero/${cleanFileName}`;
-  if (urlInput) urlInput.value = vaultUrl;
+  if (window.BongBanglaVault && typeof window.BongBanglaVault.fileToDataUrl === 'function') {
+    window.BongBanglaVault.fileToDataUrl(file, 1080, 0.85).then(dataUrl => {
+      selectedHeroSlideDataUrl = dataUrl;
+      if (previewImg) previewImg.src = dataUrl;
+      if (urlInput) urlInput.value = dataUrl;
+    });
+  } else {
+    const localUrl = URL.createObjectURL(file);
+    selectedHeroSlideDataUrl = localUrl;
+    if (previewImg) previewImg.src = localUrl;
+  }
 
   if (dropzone) dropzone.classList.add('hidden');
   if (previewBox) previewBox.classList.remove('hidden');
@@ -2282,6 +2308,10 @@ function initHeroSlidesAdmin() {
             if (uploadRes && uploadRes.url) {
               rawImage = uploadRes.url;
             }
+          }
+
+          if (!rawImage && selectedHeroSlideDataUrl) {
+            rawImage = selectedHeroSlideDataUrl;
           }
 
           if (!rawImage || !title) {
