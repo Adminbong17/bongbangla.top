@@ -486,9 +486,11 @@
     try {
       const cleanName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const filePath = folder ? `${folder}/${cleanName}` : cleanName;
+      const mimeType = file.type || (file.name.match(/\.(mp4|mov|m4v)$/i) ? 'video/mp4' : (file.name.match(/\.(webm)$/i) ? 'video/webm' : (file.name.match(/\.(png)$/i) ? 'image/png' : 'image/jpeg')));
+      
       const { data, error } = await supabaseClient.storage
         .from(bucket)
-        .upload(filePath, file, { cacheControl: '3600', upsert: true });
+        .upload(filePath, file, { cacheControl: '3600', upsert: true, contentType: mimeType });
 
       if (error) {
         console.warn(`Supabase Storage upload to "${bucket}" notice:`, error.message);

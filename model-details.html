@@ -554,6 +554,15 @@
        ======================================================================== -->
   <div id="gallery-lightbox-slider-modal" class="fixed inset-0 z-50 hidden bg-black/95 backdrop-blur-xl flex flex-col justify-between p-2 sm:p-6 transition-all duration-300 select-none">
     
+    <!-- Floating Swipe/Slide Notification Pill -->
+    <div id="slider-swipe-hint" class="absolute top-16 sm:top-20 inset-x-0 z-40 flex justify-center pointer-events-none transition-all duration-700 opacity-100">
+      <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-black/85 border border-[#ED96D7]/70 text-white text-xs sm:text-sm font-bold font-bangla shadow-[0_4px_25px_rgba(237,150,215,0.4)] backdrop-blur-md animate-pulse">
+        <i class="fa-solid fa-arrows-left-right text-[#ED96D7] text-sm animate-bounce"></i>
+        <span>আরও দেখতে সোয়াইপ করুন</span>
+        <i class="fa-solid fa-hand-pointer text-[#db2777] text-xs"></i>
+      </div>
+    </div>
+
     <!-- Top Header Bar -->
     <div class="w-full flex items-center justify-between z-20 px-3 sm:px-6 py-2.5">
       <div class="flex items-center gap-2.5 sm:gap-3.5">
@@ -561,13 +570,12 @@
           <i class="fa-solid fa-camera"></i> <span id="slider-type-text">PHOTO</span>
         </span>
         <div class="text-white">
-          <h4 id="slider-item-title" class="font-bangla font-bold text-sm sm:text-base text-white truncate max-w-[180px] sm:max-w-md">মডেল গ্যালারি</h4>
-          <span id="slider-item-counter" class="text-[11px] text-pink-200/80 font-mono block">১ / ৪</span>
+          <span id="slider-item-counter" class="text-xs sm:text-sm font-bold text-pink-100 font-mono bg-white/10 px-2.5 py-1 rounded-full border border-white/15 inline-block">১ / ৪</span>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
-        <button type="button" onclick="closeGallerySliderModal()" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/15 hover:bg-[#db2777] text-white flex items-center justify-center text-lg sm:text-xl transition-all shadow-lg hover:scale-105 active:scale-95 border border-white/20" title="বন্ধ করুন (Esc)">
+        <button type="button" onclick="closeGallerySliderModal()" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/15 hover:bg-[#db2777] text-white flex items-center justify-center text-lg sm:text-xl transition-all shadow-lg hover:scale-105 active:scale-95 border border-white/20 cursor-pointer" title="বন্ধ করুন (Esc)">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
@@ -587,8 +595,8 @@
         <img id="slider-active-image" src="" alt="Gallery Preview" class="hidden max-h-[72vh] sm:max-h-[78vh] max-w-[92vw] sm:max-w-[85vw] object-contain rounded-2xl shadow-2xl transition-all duration-300">
         
         <!-- Video Element -->
-        <div id="slider-video-wrapper" class="hidden w-full max-w-sm aspect-[9/16] max-h-[72vh] sm:max-h-[78vh] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/20 relative">
-          <video id="slider-active-video" controls autoplay playsinline class="w-full h-full object-cover">
+        <div id="slider-video-wrapper" class="hidden w-full max-w-sm aspect-[9/16] max-h-[72vh] sm:max-h-[78vh] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/20 relative flex items-center justify-center">
+          <video id="slider-active-video" controls autoplay muted playsinline webkit-playsinline preload="auto" class="w-full h-full object-cover">
             <source src="" type="video/mp4">
           </video>
         </div>
@@ -605,10 +613,8 @@
       <div id="slider-thumbnails-strip" class="flex items-center gap-2 sm:gap-3 overflow-x-auto max-w-full py-1.5 px-4 scrollbar-none">
         <!-- Dynamically rendered thumbnails with active highlight border -->
       </div>
-      <div class="text-[10px] sm:text-xs text-white/60 font-bangla flex items-center gap-2">
-        <span class="flex items-center gap-1"><i class="fa-solid fa-arrows-left-right text-[#ED96D7]"></i> কীবোর্ড বা অ্যারো কী ক্লিক করে পরিবর্তন করুন</span>
-        <span class="hidden sm:inline text-white/30">•</span>
-        <span class="hidden sm:inline">স্ক্রিনে বামে/ডানে সোয়াইপ করুন</span>
+      <div class="text-[10px] sm:text-xs text-white/70 font-bangla flex items-center gap-2">
+        <span class="flex items-center gap-1"><i class="fa-solid fa-arrows-left-right text-[#ED96D7]"></i> ডানে/বামে সোয়াইপ করুন অথবা অ্যারো কী ব্যবহার করুন</span>
       </div>
     </div>
 
@@ -1294,20 +1300,18 @@
           return `
             <div class="group relative rounded-3xl overflow-hidden bg-black aspect-[9/16] shadow-md border border-[#ED96D7]/30 hover:border-[#db2777] transition-all cursor-pointer flex flex-col justify-between"
                  onclick="openGallerySliderModal(${idx})">
-              <video src="${formattedUrl}" preload="metadata" muted playsinline class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"></video>
-              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-between p-4 pointer-events-none">
+              <video src="${formattedUrl}" preload="metadata" muted playsinline webkit-playsinline class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"></video>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 flex flex-col justify-between p-4 pointer-events-none">
                 <div class="flex items-center justify-between">
                   <span class="px-2.5 py-1 rounded-full bg-red-600/90 text-white text-[10px] font-bold tracking-wider uppercase backdrop-blur-md flex items-center gap-1 shadow-sm font-mono">
                     <i class="fa-solid fa-play text-[8px]"></i> 4K REEL
                   </span>
                 </div>
-                <div class="space-y-1">
-                  <div class="w-12 h-12 mx-auto rounded-full bg-white/30 backdrop-blur-md text-white flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-[#db2777] transition-all shadow-lg">
-                    <i class="fa-solid fa-play ml-0.5"></i>
-                  </div>
-                  <div class="text-white font-bangla font-bold text-xs text-center truncate pt-2">
-                    ${item.title || 'ফ্যাশন ভিডিও রিলস'}
-                  </div>
+                <div class="w-12 h-12 mx-auto rounded-full bg-white/30 backdrop-blur-md text-white flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-[#db2777] transition-all shadow-lg">
+                  <i class="fa-solid fa-play ml-0.5"></i>
+                </div>
+                <div class="text-center">
+                  <span class="text-white/90 font-bangla font-semibold text-xs bg-black/50 px-3 py-1 rounded-full backdrop-blur-xs">ভিডিও দেখতে ক্লিক করুন</span>
                 </div>
               </div>
             </div>
@@ -1342,6 +1346,27 @@
       renderModelGalleryGrid(filter);
     };
 
+    let swipeHintTimeout = null;
+    function triggerSwipeHint() {
+      const hint = document.getElementById('slider-swipe-hint');
+      if (!hint) return;
+      hint.style.display = 'flex';
+      hint.style.opacity = '1';
+      if (swipeHintTimeout) clearTimeout(swipeHintTimeout);
+      swipeHintTimeout = setTimeout(() => {
+        hint.style.opacity = '0';
+        setTimeout(() => { hint.style.display = 'none'; }, 700);
+      }, 3500);
+    }
+
+    function dismissSwipeHint() {
+      const hint = document.getElementById('slider-swipe-hint');
+      if (hint) {
+        hint.style.opacity = '0';
+        setTimeout(() => { hint.style.display = 'none'; }, 500);
+      }
+    }
+
     // Open unified gallery slider
     window.openGallerySliderModal = function(indexOrUrl) {
       let items = window.currentFilteredGalleryItems || window.currentModelGalleryItems || [];
@@ -1366,6 +1391,7 @@
       if (modal) {
         modal.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
+        triggerSwipeHint();
       }
     };
 
@@ -1376,12 +1402,14 @@
         video.pause();
         video.src = '';
       }
+      dismissSwipeHint();
       if (modal) modal.classList.add('hidden');
       document.body.classList.remove('overflow-hidden');
     };
 
     window.prevGallerySlide = function(e) {
       if (e && e.stopPropagation) e.stopPropagation();
+      dismissSwipeHint();
       if (!currentSliderFilteredItems || currentSliderFilteredItems.length === 0) return;
       currentSliderIndex = (currentSliderIndex - 1 + currentSliderFilteredItems.length) % currentSliderFilteredItems.length;
       showGallerySlide(currentSliderIndex);
@@ -1389,6 +1417,7 @@
 
     window.nextGallerySlide = function(e) {
       if (e && e.stopPropagation) e.stopPropagation();
+      dismissSwipeHint();
       if (!currentSliderFilteredItems || currentSliderFilteredItems.length === 0) return;
       currentSliderIndex = (currentSliderIndex + 1) % currentSliderFilteredItems.length;
       showGallerySlide(currentSliderIndex);
@@ -1407,7 +1436,6 @@
       // Header Elements
       const typeBadge = document.getElementById('slider-type-badge');
       const typeText = document.getElementById('slider-type-text');
-      const titleEl = document.getElementById('slider-item-title');
       const counterEl = document.getElementById('slider-item-counter');
 
       if (typeBadge && typeText) {
@@ -1424,7 +1452,6 @@
         }
       }
 
-      if (titleEl) titleEl.textContent = item.title || (isVideo ? '৪K ফ্যাশন ভিডিও রিলস' : 'এক্সক্লুসিভ পোর্টফোলিও ফটো');
       if (counterEl) {
         const bnNums = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
         const toBn = n => String(n).split('').map(d => bnNums[d] || d).join('');
@@ -1440,9 +1467,16 @@
         if (imgEl) imgEl.classList.add('hidden');
         if (vidWrap) vidWrap.classList.remove('hidden');
         if (vidEl) {
+          vidEl.muted = true;
+          vidEl.playsInline = true;
           vidEl.src = formattedUrl;
           vidEl.load();
-          vidEl.play().catch(() => {});
+          const p = vidEl.play();
+          if (p !== undefined) {
+            p.catch(() => {
+              console.log('Mobile video autoplay waiting for user tap');
+            });
+          }
         }
       } else {
         if (vidEl) {
@@ -1466,9 +1500,9 @@
           const isActive = idx === index;
 
           return `
-            <button type="button" onclick="showGallerySlide(${idx})" class="w-12 h-14 sm:w-14 sm:h-16 rounded-xl overflow-hidden relative shrink-0 transition-all border-2 ${isActive ? 'border-[#db2777] ring-2 ring-[#ED96D7] scale-105 opacity-100' : 'border-white/30 opacity-50 hover:opacity-80 hover:scale-100'} bg-black">
+            <button type="button" onclick="showGallerySlide(${idx})" class="w-12 h-14 sm:w-14 sm:h-16 rounded-xl overflow-hidden relative shrink-0 transition-all border-2 ${isActive ? 'border-[#db2777] ring-2 ring-[#ED96D7] scale-105 opacity-100' : 'border-white/30 opacity-50 hover:opacity-80 hover:scale-100'} bg-black cursor-pointer">
               ${itIsVideo ? `
-                <video src="${itFormatted}" class="w-full h-full object-cover"></video>
+                <video src="${itFormatted}" preload="metadata" muted playsinline class="w-full h-full object-cover"></video>
                 <span class="absolute inset-0 flex items-center justify-center text-white/90 text-[10px]"><i class="fa-solid fa-play"></i></span>
               ` : `
                 <img src="${itFormatted}" class="w-full h-full object-cover">
@@ -1499,22 +1533,27 @@
     // Swipe and Keyboard support
     document.addEventListener('DOMContentLoaded', () => {
       let touchStartX = 0;
+      let touchStartY = 0;
       let touchEndX = 0;
-      const touchArea = document.getElementById('slider-touch-area');
+      let touchEndY = 0;
+      const modal = document.getElementById('gallery-lightbox-slider-modal');
       
-      if (touchArea) {
-        touchArea.addEventListener('touchstart', e => {
+      if (modal) {
+        modal.addEventListener('touchstart', e => {
           if (e.changedTouches && e.changedTouches[0]) {
             touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
           }
         }, { passive: true });
 
-        touchArea.addEventListener('touchend', e => {
+        modal.addEventListener('touchend', e => {
           if (e.changedTouches && e.changedTouches[0]) {
             touchEndX = e.changedTouches[0].screenX;
-            const diff = touchEndX - touchStartX;
-            if (Math.abs(diff) > 40) {
-              if (diff < 0) {
+            touchEndY = e.changedTouches[0].screenY;
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 35) {
+              if (diffX < 0) {
                 // Swiped Left -> Next Image
                 nextGallerySlide();
               } else {

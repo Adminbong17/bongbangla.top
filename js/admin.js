@@ -956,7 +956,7 @@ function initDashboard() {
           addModelGalleryItems.push({
             type: 'video',
             url: url,
-            title: file.name,
+            title: '',
             thumbnail: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=400&q=80'
           });
         }
@@ -982,7 +982,7 @@ function initDashboard() {
           editModelGalleryItems.push({
             type: 'video',
             url: url,
-            title: file.name,
+            title: '',
             thumbnail: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=400&q=80'
           });
         }
