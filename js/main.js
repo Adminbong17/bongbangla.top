@@ -301,8 +301,10 @@ function renderFrontendModels() {
   } catch(e) {}
 
   if (!Array.isArray(models) || models.length === 0) {
+    container.className = 'col-span-full w-full';
+    container.style.animation = 'none';
     container.innerHTML = `
-      <div class="col-span-full text-center py-12 bg-white rounded-3xl border border-dashed border-[#ED96D7]/50 p-8 shadow-xs">
+      <div class="text-center py-12 bg-white rounded-3xl border border-dashed border-[#ED96D7]/50 p-8 shadow-xs w-full max-w-xl mx-auto">
         <div class="w-16 h-16 mx-auto rounded-2xl bg-[#fff0f6] text-[#db2777] flex items-center justify-center text-2xl mb-3 shadow-xs">
           <i class="fa-solid fa-users-viewfinder"></i>
         </div>
@@ -316,50 +318,113 @@ function renderFrontendModels() {
     return;
   }
 
+  // Restore motion track class
+  container.className = 'models-motion-track';
+  container.style.animation = '';
+
+  // Duplicate set to create seamless continuous infinite loop like Hero section
+  let displayModels = [...models];
+  if (models.length < 4) {
+    displayModels = [...models, ...models, ...models, ...models];
+  } else if (models.length < 8) {
+    displayModels = [...models, ...models];
+  }
+
+  // Adjust animation speed based on card count
+  const animDuration = Math.max(25, displayModels.length * 4.5);
+  container.style.animationDuration = `${animDuration}s`;
+
   const defaultModelFallback = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
 
-  container.innerHTML = models.map(m => {
+  container.innerHTML = displayModels.map(m => {
     const rawImg = m.image || defaultModelFallback;
     const modelImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImg, 'models') : rawImg;
     const detailsUrl = `model-details.html?id=${encodeURIComponent(m.id)}`;
 
     return `
-      <div class="glass-panel rounded-3xl overflow-hidden group border border-[#ED96D7]/30 hover:border-[#db2777] transition-all hover:shadow-[0_15px_35px_rgba(237,150,215,0.3)] bg-white shadow-sm flex flex-col justify-between">
+      <div class="model-motion-card group">
         <a href="${detailsUrl}" class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8] block group-hover:opacity-95 transition-opacity">
           <img src="${modelImg || defaultModelFallback}" alt="${m.name}" onerror="this.onerror=null; this.src='${defaultModelFallback}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-          <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full ${m.available !== false ? 'bg-white/95 text-[#be185d] border-[#ED96D7]/50' : 'bg-gray-100 text-gray-500 border-gray-300'} backdrop-blur-md text-[10px] font-bold border shadow-sm">
-            ${m.available !== false ? 'AVAILABLE' : 'BOOKED'}
+          
+          <!-- Top Badges -->
+          <div class="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none z-10">
+            <span class="px-2.5 py-1 rounded-full model-card-badge text-[10px] font-bold text-[#db2777] flex items-center gap-1.5 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-[#db2777] pulse-indicator"></span>
+              <span>${m.category || 'মডেল'}</span>
+            </span>
+            <span class="px-2.5 py-1 rounded-full ${m.available !== false ? 'bg-white/95 text-[#be185d] border-[#ED96D7]/50' : 'bg-gray-100 text-gray-500 border-gray-300'} backdrop-blur-md text-[10px] font-bold border shadow-sm">
+              ${m.available !== false ? 'AVAILABLE' : 'BOOKED'}
+            </span>
           </div>
-          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
             <span class="text-white text-xs font-bold font-bangla flex items-center gap-1.5">
-              <span>সম্পূর্ণ প্রোফাইল দেখুন</span>
+              <span>সম্পূর্ণ প্রোফাইল ও গ্যালারি</span>
               <i class="fa-solid fa-arrow-right text-[10px]"></i>
             </span>
           </div>
         </a>
-        <div class="p-5 space-y-3 font-bangla">
+
+        <div class="p-4 space-y-2.5 font-bangla">
           <div class="flex items-center justify-between gap-2">
             <a href="${detailsUrl}" class="font-bangla font-bold text-[#2b0e23] text-base hover:text-[#db2777] transition-colors truncate">
               ${m.name}
             </a>
-            <span class="text-xs text-[#db2777] font-bold truncate">${m.category || 'মডেল'}</span>
+            <span class="text-[11px] text-[#8c4f75] font-semibold truncate"><i class="fa-solid fa-location-dot text-[#db2777] text-[10px] mr-0.5"></i>${m.location || 'ঢাকা'}</span>
           </div>
-          <div class="grid grid-cols-3 gap-2 text-center text-[10px] text-[#572449] bg-[#fdf2f8] p-2 rounded-xl border border-[#ED96D7]/20">
+
+          <div class="grid grid-cols-2 gap-2 text-center text-[10px] text-[#572449] bg-[#fdf2f8] p-2 rounded-xl border border-[#ED96D7]/25">
             <div>হাইট: <span class="text-[#2b0e23] font-bold">${m.height || "৫'৭\""}</span></div>
             <div>শ্যুট: <span class="text-[#2b0e23] font-bold">${m.shoots || '২০+'}</span></div>
-            <div>স্ট্যাটাস: <span class="text-[#db2777] font-bold">${m.available !== false ? 'অ্যাক্টিভ' : 'বুকড'}</span></div>
           </div>
-          <a href="${detailsUrl}"
-             class="w-full py-2.5 rounded-xl bg-[#fdf2f8] hover:bg-gradient-to-r hover:from-[#ED96D7] hover:to-[#db2777] hover:text-white text-[#be185d] text-xs font-bold transition-all border border-[#ED96D7]/40 shadow-sm flex items-center justify-center gap-2 group-hover:border-[#db2777]">
-            <i class="fa-solid fa-circle-user text-xs"></i>
-            <span>বিস্তারিত দেখুন</span>
-            <i class="fa-solid fa-arrow-right text-[10px]"></i>
-          </a>
+
+          <div class="grid grid-cols-2 gap-2 pt-0.5">
+            <a href="${detailsUrl}"
+               class="py-2 rounded-xl bg-white hover:bg-[#fdf2f8] text-[#be185d] text-xs font-bold transition-all border border-[#ED96D7]/50 shadow-xs flex items-center justify-center gap-1 hover:border-[#db2777]">
+              <i class="fa-solid fa-circle-user text-[11px]"></i>
+              <span>প্রোফাইল</span>
+            </a>
+            <button onclick="if(window.openBookingForModel){window.openBookingForModel('${encodeURIComponent(m.name)}')}else{const mBtn=document.querySelector('.open-booking-modal'); if(mBtn) mBtn.click();}"
+               class="py-2 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white text-xs font-bold transition-all shadow-xs hover:shadow-md flex items-center justify-center gap-1">
+              <i class="fa-solid fa-calendar-check text-[11px]"></i>
+              <span>বুকিং</span>
+            </button>
+          </div>
         </div>
       </div>
     `;
   }).join('');
+
+  initModelsMotionControls();
 }
+
+function initModelsMotionControls() {
+  const prevBtn = document.getElementById('models-slide-prev');
+  const nextBtn = document.getElementById('models-slide-next');
+  const viewport = document.getElementById('models-motion-viewport');
+  const track = document.getElementById('frontend-models-grid');
+
+  if (!viewport || !track) return;
+
+  if (prevBtn && !prevBtn.dataset.initialized) {
+    prevBtn.dataset.initialized = 'true';
+    prevBtn.addEventListener('click', () => {
+      track.classList.add('is-paused');
+      viewport.scrollBy({ left: -310, behavior: 'smooth' });
+      setTimeout(() => track.classList.remove('is-paused'), 3000);
+    });
+  }
+
+  if (nextBtn && !nextBtn.dataset.initialized) {
+    nextBtn.dataset.initialized = 'true';
+    nextBtn.addEventListener('click', () => {
+      track.classList.add('is-paused');
+      viewport.scrollBy({ left: 310, behavior: 'smooth' });
+      setTimeout(() => track.classList.remove('is-paused'), 3000);
+    });
+  }
+}
+
 
 function initPortfolioFilter() {
   const filterButtons = document.querySelectorAll('.filter-btn');

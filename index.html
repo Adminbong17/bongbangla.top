@@ -475,30 +475,49 @@
   </section>
 
   <!-- ========================================================================
-       Model Directory Preview
+       Model Directory Preview (Smooth Auto-Motion Slide Carousel)
        ======================================================================== -->
   <section id="models" class="py-10 md:py-14 relative overflow-hidden">
     <div class="ambient-glow glow-pink-primary w-[500px] h-[500px] top-20 right-0"></div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       
-      <div class="text-center max-w-3xl mx-auto mb-8 sm:mb-10 space-y-2.5">
-        <span class="badge-tag px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest inline-block">
-          ইন-হাউস মডেল নেটওয়ার্ক
-        </span>
-        <h2 class="font-heading font-extrabold text-3xl sm:text-4xl lg:text-5xl text-[#2b0e23]">
-          আপনার ক্যাম্পেইনের জন্য <span class="text-gradient-pink">সেরা মডেল ও মুখ</span>
-        </h2>
-        <p class="text-[#8c4f75] text-sm sm:text-base font-medium">
-          কোনো মিডলম্যান চার্জ ছাড়া সরাসরি আমাদের সাইনড নারী ও পুরুষ মডেল, ইনফ্লুয়েন্সার ও ব্রাইডাল আর্টিস্টদের আপনার ব্র্যান্ডের শ্যুটে সিলেক্ট করুন।
-        </p>
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10 gap-4">
+        <div class="text-left max-w-2xl space-y-2">
+          <span class="badge-tag px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest inline-block">
+            ইন-হাউস মডেল নেটওয়ার্ক
+          </span>
+          <h2 class="font-heading font-extrabold text-3xl sm:text-4xl lg:text-5xl text-[#2b0e23]">
+            আপনার ক্যাম্পেইনের জন্য <span class="text-gradient-pink">সেরা মডেল ও মুখ</span>
+          </h2>
+          <p class="text-[#8c4f75] text-sm sm:text-base font-medium font-bangla">
+            কোনো মিডলম্যান চার্জ ছাড়া সরাসরি আমাদের সাইনড নারী ও পুরুষ মডেল, ইনফ্লুয়েন্সার ও ব্রাইডাল আর্টিস্টদের সিলেক্ট করুন।
+          </p>
+        </div>
+
+        <!-- Slider Navigation Controls & Hint -->
+        <div class="flex items-center gap-3 self-start md:self-end">
+          <span class="text-[11px] text-[#8c4f75] font-bangla font-semibold hidden sm:inline-flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full border border-[#ED96D7]/40">
+            <span class="w-2 h-2 rounded-full bg-[#db2777] pulse-indicator"></span> অটো-স্লাইড হচ্ছে
+          </span>
+          <button id="models-slide-prev" class="model-nav-btn" title="পূর্ববর্তী মডেল" aria-label="Previous Model">
+            <i class="fa-solid fa-chevron-left text-xs"></i>
+          </button>
+          <button id="models-slide-next" class="model-nav-btn" title="পরবর্তী মডেল" aria-label="Next Model">
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+          </button>
+        </div>
       </div>
 
-      <!-- Models Grid (Populated dynamically by js/main.js from Supabase Cloud / LocalStorage) -->
-      <div id="frontend-models-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Dynamic loading placeholder -->
-        <div class="col-span-full text-center py-12 bg-white rounded-3xl border border-dashed border-[#ED96D7]/40 p-8 shadow-xs">
-          <div class="w-10 h-10 border-4 border-[#ED96D7]/30 border-t-[#db2777] rounded-full animate-spin mx-auto mb-3"></div>
-          <p class="text-xs text-[#8c4f75] font-bangla font-semibold">মডেল ও কাস্টিং প্রোফাইল লোড হচ্ছে...</p>
+      <!-- Models Motion Slider Viewport -->
+      <div class="models-motion-wrapper">
+        <div id="models-motion-viewport" class="models-motion-viewport">
+          <div id="frontend-models-grid" class="models-motion-track">
+            <!-- Dynamic loading placeholder -->
+            <div class="py-12 px-8 bg-white rounded-3xl border border-dashed border-[#ED96D7]/40 text-center w-full min-w-[300px]">
+              <div class="w-10 h-10 border-4 border-[#ED96D7]/30 border-t-[#db2777] rounded-full animate-spin mx-auto mb-3"></div>
+              <p class="text-xs text-[#8c4f75] font-bangla font-semibold">মডেল ও কাস্টিং প্রোফাইল লোড হচ্ছে...</p>
+            </div>
+          </div>
         </div>
       </div>
 

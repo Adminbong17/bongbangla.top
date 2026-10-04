@@ -565,3 +565,98 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
+/* ==========================================================================
+   Model Directory Continuous Smooth Motion Slider (Hero-Style Marquee)
+   ========================================================================== */
+.models-motion-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 1rem 0 1.5rem;
+}
+
+.models-motion-viewport {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+}
+
+.models-motion-track {
+  display: flex;
+  gap: 1.5rem;
+  width: max-content;
+  animation: modelsContinuousMarquee 38s linear infinite;
+  will-change: transform;
+}
+
+.models-motion-track:hover,
+.models-motion-track.is-paused {
+  animation-play-state: paused;
+}
+
+@keyframes modelsContinuousMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.model-motion-card {
+  width: 290px;
+  min-width: 290px;
+  max-width: 290px;
+  flex-shrink: 0;
+  border-radius: 1.75rem;
+  background: #ffffff;
+  border: 1.5px solid rgba(237, 150, 215, 0.35);
+  box-shadow: 0 12px 30px -5px rgba(237, 150, 215, 0.22), 0 4px 12px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.model-motion-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: #db2777;
+  box-shadow: 0 25px 45px -10px rgba(237, 150, 215, 0.55), 0 0 20px rgba(219, 39, 119, 0.2);
+}
+
+@media (max-width: 640px) {
+  .model-motion-card {
+    width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+  }
+}
+
+.model-nav-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid #ED96D7;
+  color: #db2777;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(237, 150, 215, 0.3);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+}
+
+.model-nav-btn:hover {
+  background: linear-gradient(135deg, #ED96D7 0%, #db2777 100%);
+  color: #ffffff;
+  border-color: #ffffff;
+  transform: scale(1.1);
+  box-shadow: 0 0 25px rgba(237, 150, 215, 0.7);
+}
+
+
