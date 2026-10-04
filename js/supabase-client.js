@@ -274,11 +274,26 @@
             console.log('🔄 Auto-uploading local models to Supabase:', missingInCloud.length);
             for (const m of missingInCloud) {
               await addModel(m);
-              mapped.push(m);
-            }
+          try {
+            const sanitized = mapped.map(m => {
+              const c = { ...m };
+              if (typeof c.image === 'string' && c.image.startsWith('data:') && c.image.length > 30000) {
+                c.image = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+              }
+              if (Array.isArray(c.gallery)) {
+                c.gallery = c.gallery.map(g => {
+                  if (g && typeof g.url === 'string' && g.url.startsWith('data:') && g.url.length > 30000) {
+                    return { ...g, url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80' };
+                  }
+                  return g;
+                });
+              }
+              return c;
+            });
+            localStorage.setItem('bongbangla_models', JSON.stringify(sanitized));
+          } catch(e) {
+            console.warn('localStorage quota warning in fetchModels, skipped local cache:', e);
           }
-
-          localStorage.setItem('bongbangla_models', JSON.stringify(mapped));
           return mapped;
         }
       } catch (err) {
@@ -484,9 +499,11 @@
   async function uploadStorageFile(file, bucket = 'reels', folder = '') {
     if (!supabaseClient || !file) return null;
     try {
-      const cleanName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const ext = file.type && file.type.includes('png') ? '.png' : (file.type && file.type.includes('webm') ? '.webm' : (file.type && (file.type.includes('video') || file.type.includes('mp4')) ? '.mp4' : '.jpg'));
+      const rawName = file.name || ('file_' + Date.now() + ext);
+      const cleanName = Date.now() + '_' + rawName.replace(/[^a-zA-Z0-9._-]/g, '_');
       const filePath = folder ? `${folder}/${cleanName}` : cleanName;
-      const mimeType = file.type || (file.name.match(/\.(mp4|mov|m4v)$/i) ? 'video/mp4' : (file.name.match(/\.(webm)$/i) ? 'video/webm' : (file.name.match(/\.(png)$/i) ? 'image/png' : 'image/jpeg')));
+      const mimeType = file.type || (cleanName.match(/\.(mp4|mov|m4v)$/i) ? 'video/mp4' : (cleanName.match(/\.(webm)$/i) ? 'video/webm' : (cleanName.match(/\.(png)$/i) ? 'image/png' : 'image/jpeg')));
       
       const { data, error } = await supabaseClient.storage
         .from(bucket)

@@ -710,30 +710,49 @@ function initDashboard() {
       const originalText = submitBtn ? submitBtn.innerHTML : '';
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সেভ ও আপলোড হচ্ছে...';
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ক্লাউডে আপলোড ও সেভ হচ্ছে...';
       }
 
       try {
         const formData = new FormData(addModelForm);
         let photoUrl = (formData.get('image') || '').toString().trim();
 
-        // If direct file was selected, upload via Vault API or use compressed DataURL
-        if (selectedModelFile && window.BongBanglaVault) {
-          const uploadRes = await window.BongBanglaVault.uploadMedia(selectedModelFile, 'models');
-          if (uploadRes && uploadRes.url) {
-            photoUrl = uploadRes.url;
+        // If direct file was selected, upload via Supabase Storage
+        if (selectedModelFile) {
+          if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+            const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(selectedModelFile, 'models');
+            if (cloudUrl) photoUrl = cloudUrl;
+          }
+          if (!photoUrl && window.BongBanglaVault) {
+            const uploadRes = await window.BongBanglaVault.uploadMedia(selectedModelFile, 'models');
+            if (uploadRes && uploadRes.url) photoUrl = uploadRes.url;
           }
         }
 
         if (!photoUrl && selectedModelDataUrl) {
-          photoUrl = selectedModelDataUrl;
+          const blob = dataUrlToBlob(selectedModelDataUrl);
+          if (blob && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+            const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(blob, 'models');
+            if (cloudUrl) photoUrl = cloudUrl;
+          }
+          if (!photoUrl) photoUrl = selectedModelDataUrl;
         }
 
         if (!photoUrl) {
           photoUrl = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
         }
 
-        const formattedImage = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(photoUrl, 'models') : photoUrl;
+        // Process gallery items to ensure all are uploaded to cloud
+        const cleanGallery = [];
+        for (const item of addModelGalleryItems) {
+          const finalUrl = await ensureCloudMediaUrl(item, item.type === 'video' ? 'reels' : 'models');
+          cleanGallery.push({
+            type: item.type || 'photo',
+            url: finalUrl,
+            thumbnail: item.thumbnail || (item.type === 'video' ? 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=400&q=80' : finalUrl)
+          });
+        }
+
         const models = getModels();
         const newModel = {
           id: 'M-' + Date.now(),
@@ -741,7 +760,7 @@ function initDashboard() {
           category: formData.get('category'),
           height: formData.get('height') || '৫\'৭"',
           shoots: formData.get('shoots') || '২৫+',
-          image: formattedImage,
+          image: photoUrl,
           available: formData.get('available') !== 'false',
           age: (formData.get('age') || '').toString().trim(),
           measurements: (formData.get('measurements') || '').toString().trim(),
@@ -753,8 +772,9 @@ function initDashboard() {
           instagram: (formData.get('instagram') || '').toString().trim(),
           specialties: (formData.get('specialties') || '').toString().trim(),
           bio: (formData.get('bio') || '').toString().trim(),
-          gallery: [...addModelGalleryItems]
+          gallery: cleanGallery
         };
+
         models.push(newModel);
         saveModels(models);
 
@@ -786,7 +806,72 @@ function initDashboard() {
   }
 
   // =========================================================================
-  // Model Gallery Handlers (Multiple Photos & Videos)
+  // Media Cloud Upload & Safe Quota Helper Functions
+  // =========================================================================
+  function dataUrlToBlob(dataUrl) {
+    try {
+      if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) return null;
+      const parts = dataUrl.split(',');
+      if (parts.length < 2) return null;
+      const mimeMatch = parts[0].match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+      const byteString = atob(parts[1]);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      return new Blob([ab], { type: mime });
+    } catch(e) {
+      console.warn('dataUrlToBlob error:', e);
+      return null;
+    }
+  }
+
+  async function ensureCloudMediaUrl(mediaUrlOrItem, defaultFolder = 'models') {
+    if (!mediaUrlOrItem) return '';
+    let url = typeof mediaUrlOrItem === 'string' ? mediaUrlOrItem : (mediaUrlOrItem.url || '');
+    let file = mediaUrlOrItem && mediaUrlOrItem.file ? mediaUrlOrItem.file : null;
+
+    if (!url && !file) return '';
+
+    // If already a permanent web URL, return
+    if (url.startsWith('https://') && !url.includes('localhost') && !url.startsWith('blob:')) {
+      return url;
+    }
+
+    const bucket = defaultFolder === 'reels' ? 'reels' : 'models';
+
+    // 1. Upload File directly to Supabase Storage
+    if (file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+      try {
+        const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(file, bucket);
+        if (cloudUrl) return cloudUrl;
+      } catch(e) {}
+    }
+
+    // 2. Upload DataURL to Supabase Storage as Blob
+    if (url.startsWith('data:') && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+      try {
+        const blob = dataUrlToBlob(url);
+        if (blob) {
+          const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(blob, bucket);
+          if (cloudUrl) return cloudUrl;
+        }
+      } catch(e) {}
+    }
+
+    // 3. Fallback to Vault CDN
+    if (file && window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
+      try {
+        const res = await window.BongBanglaVault.uploadMedia(file, defaultFolder);
+        if (res && res.url) return res.url;
+      } catch(e) {}
+    }
+
+    return url;
+  }
+
   // =========================================================================
   // 5. Model Gallery: Extra Photos & Videos State & Helpers
   // =========================================================================
@@ -815,6 +900,7 @@ function initDashboard() {
       const isVideo = item.type === 'video';
       const formattedUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(item.url, isVideo ? 'reels' : 'models') : item.url;
       const thumb = isVideo ? (item.thumbnail || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=300&q=80') : formattedUrl;
+      const isUploading = !!item.uploading;
       
       return `
         <div class="aspect-square relative rounded-xl overflow-hidden bg-black border border-[#ED96D7]/50 group shadow-xs">
@@ -833,7 +919,13 @@ function initDashboard() {
               ${isVideo ? 'VIDEO' : 'PHOTO'}
             </span>
           </div>
-          <button type="button" onclick="removeModelGalleryItem('${mode}', ${idx})" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-[9px] shadow-sm transition-colors z-10" title="মুছে ফেলুন">
+          ${isUploading ? `
+            <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white text-[9px] font-bangla gap-1 z-10">
+              <i class="fa-solid fa-spinner fa-spin text-sm text-[#db2777]"></i>
+              <span>আপলোড হচ্ছে...</span>
+            </div>
+          ` : ''}
+          <button type="button" onclick="removeModelGalleryItem('${mode}', ${idx})" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-[9px] shadow-sm transition-colors z-20" title="মুছে ফেলুন">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -904,17 +996,31 @@ function initDashboard() {
     addGalleryFileInput.dataset.initialized = 'true';
     addGalleryFileInput.addEventListener('change', async (e) => {
       if (e.target.files && e.target.files.length > 0) {
-        for (const file of Array.from(e.target.files)) {
-          let url = '';
-          if (window.BongBanglaVault && typeof window.BongBanglaVault.fileToDataUrl === 'function') {
-            url = await window.BongBanglaVault.fileToDataUrl(file, 900, 0.85);
-          } else {
-            url = URL.createObjectURL(file);
-          }
-          addModelGalleryItems.push({ type: 'photo', url: url });
+        const fileList = Array.from(e.target.files);
+        const newItems = [];
+        for (const file of fileList) {
+          const blobUrl = URL.createObjectURL(file);
+          const item = { type: 'photo', url: blobUrl, file: file, uploading: true };
+          addModelGalleryItems.push(item);
+          newItems.push(item);
         }
         renderModelGalleryPreview('add');
         addGalleryFileInput.value = '';
+
+        for (const item of newItems) {
+          try {
+            if (item.file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+              const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(item.file, 'models');
+              if (cloudUrl) item.url = cloudUrl;
+            }
+          } catch(err) {
+            console.warn('Gallery upload notice:', err);
+          } finally {
+            item.uploading = false;
+            delete item.file;
+            renderModelGalleryPreview('add');
+          }
+        }
       }
     });
   }
@@ -924,17 +1030,31 @@ function initDashboard() {
     editGalleryFileInput.dataset.initialized = 'true';
     editGalleryFileInput.addEventListener('change', async (e) => {
       if (e.target.files && e.target.files.length > 0) {
-        for (const file of Array.from(e.target.files)) {
-          let url = '';
-          if (window.BongBanglaVault && typeof window.BongBanglaVault.fileToDataUrl === 'function') {
-            url = await window.BongBanglaVault.fileToDataUrl(file, 900, 0.85);
-          } else {
-            url = URL.createObjectURL(file);
-          }
-          editModelGalleryItems.push({ type: 'photo', url: url });
+        const fileList = Array.from(e.target.files);
+        const newItems = [];
+        for (const file of fileList) {
+          const blobUrl = URL.createObjectURL(file);
+          const item = { type: 'photo', url: blobUrl, file: file, uploading: true };
+          editModelGalleryItems.push(item);
+          newItems.push(item);
         }
         renderModelGalleryPreview('edit');
         editGalleryFileInput.value = '';
+
+        for (const item of newItems) {
+          try {
+            if (item.file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+              const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(item.file, 'models');
+              if (cloudUrl) item.url = cloudUrl;
+            }
+          } catch(err) {
+            console.warn('Gallery upload notice:', err);
+          } finally {
+            item.uploading = false;
+            delete item.file;
+            renderModelGalleryPreview('edit');
+          }
+        }
       }
     });
   }
@@ -945,23 +1065,37 @@ function initDashboard() {
     addGalleryVideoFileInput.dataset.initialized = 'true';
     addGalleryVideoFileInput.addEventListener('change', async (e) => {
       if (e.target.files && e.target.files.length > 0) {
-        for (const file of Array.from(e.target.files)) {
-          let url = '';
-          if (window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
-            const res = await window.BongBanglaVault.uploadMedia(file, 'reels');
-            url = res.url;
-          } else {
-            url = URL.createObjectURL(file);
-          }
-          addModelGalleryItems.push({
+        const fileList = Array.from(e.target.files);
+        const newItems = [];
+        for (const file of fileList) {
+          const blobUrl = URL.createObjectURL(file);
+          const item = {
             type: 'video',
-            url: url,
-            title: '',
+            url: blobUrl,
+            file: file,
+            uploading: true,
             thumbnail: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=400&q=80'
-          });
+          };
+          addModelGalleryItems.push(item);
+          newItems.push(item);
         }
         renderModelGalleryPreview('add');
         addGalleryVideoFileInput.value = '';
+
+        for (const item of newItems) {
+          try {
+            if (item.file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+              const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(item.file, 'reels');
+              if (cloudUrl) item.url = cloudUrl;
+            }
+          } catch(err) {
+            console.warn('Gallery video upload notice:', err);
+          } finally {
+            item.uploading = false;
+            delete item.file;
+            renderModelGalleryPreview('add');
+          }
+        }
       }
     });
   }
@@ -971,23 +1105,37 @@ function initDashboard() {
     editGalleryVideoFileInput.dataset.initialized = 'true';
     editGalleryVideoFileInput.addEventListener('change', async (e) => {
       if (e.target.files && e.target.files.length > 0) {
-        for (const file of Array.from(e.target.files)) {
-          let url = '';
-          if (window.BongBanglaVault && typeof window.BongBanglaVault.uploadMedia === 'function') {
-            const res = await window.BongBanglaVault.uploadMedia(file, 'reels');
-            url = res.url;
-          } else {
-            url = URL.createObjectURL(file);
-          }
-          editModelGalleryItems.push({
+        const fileList = Array.from(e.target.files);
+        const newItems = [];
+        for (const file of fileList) {
+          const blobUrl = URL.createObjectURL(file);
+          const item = {
             type: 'video',
-            url: url,
-            title: '',
+            url: blobUrl,
+            file: file,
+            uploading: true,
             thumbnail: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=400&q=80'
-          });
+          };
+          editModelGalleryItems.push(item);
+          newItems.push(item);
         }
         renderModelGalleryPreview('edit');
         editGalleryVideoFileInput.value = '';
+
+        for (const item of newItems) {
+          try {
+            if (item.file && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+              const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(item.file, 'reels');
+              if (cloudUrl) item.url = cloudUrl;
+            }
+          } catch(err) {
+            console.warn('Gallery video upload notice:', err);
+          } finally {
+            item.uploading = false;
+            delete item.file;
+            renderModelGalleryPreview('edit');
+          }
+        }
       }
     });
   }
@@ -1122,7 +1270,7 @@ function initDashboard() {
       const originalText = submitBtn ? submitBtn.innerHTML : '';
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> আপডেট হচ্ছে...';
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ক্লাউডে আপডেট ও সেভ হচ্ছে...';
       }
 
       try {
@@ -1138,19 +1286,39 @@ function initDashboard() {
 
         let photoUrl = (formData.get('image') || '').toString().trim();
 
-        if (editSelectedModelFile && window.BongBanglaVault) {
-          const uploadRes = await window.BongBanglaVault.uploadMedia(editSelectedModelFile, 'models');
-          if (uploadRes && uploadRes.url) {
-            photoUrl = uploadRes.url;
+        if (editSelectedModelFile) {
+          if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+            const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(editSelectedModelFile, 'models');
+            if (cloudUrl) photoUrl = cloudUrl;
+          }
+          if (!photoUrl && window.BongBanglaVault) {
+            const uploadRes = await window.BongBanglaVault.uploadMedia(editSelectedModelFile, 'models');
+            if (uploadRes && uploadRes.url) photoUrl = uploadRes.url;
           }
         }
 
         if (!photoUrl && editSelectedModelDataUrl) {
-          photoUrl = editSelectedModelDataUrl;
+          const blob = dataUrlToBlob(editSelectedModelDataUrl);
+          if (blob && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.uploadStorageFile === 'function') {
+            const cloudUrl = await window.BongBanglaSupabase.uploadStorageFile(blob, 'models');
+            if (cloudUrl) photoUrl = cloudUrl;
+          }
+          if (!photoUrl) photoUrl = editSelectedModelDataUrl;
         }
 
         if (!photoUrl) {
           photoUrl = model.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+        }
+
+        // Process gallery items to ensure all are uploaded to cloud
+        const cleanGallery = [];
+        for (const item of editModelGalleryItems) {
+          const finalUrl = await ensureCloudMediaUrl(item, item.type === 'video' ? 'reels' : 'models');
+          cleanGallery.push({
+            type: item.type || 'photo',
+            url: finalUrl,
+            thumbnail: item.thumbnail || (item.type === 'video' ? 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=400&q=80' : finalUrl)
+          });
         }
 
         model.name = formData.get('name');
@@ -1171,7 +1339,7 @@ function initDashboard() {
         model.instagram = (formData.get('instagram') || '').toString().trim();
         model.specialties = (formData.get('specialties') || '').toString().trim();
         model.bio = (formData.get('bio') || '').toString().trim();
-        model.gallery = [...editModelGalleryItems];
+        model.gallery = cleanGallery;
 
         saveModels(models);
 
@@ -1477,7 +1645,38 @@ function getModels() {
 }
 
 function saveModels(models) {
-  localStorage.setItem('bongbangla_models', JSON.stringify(models));
+  try {
+    const cleanModels = (models || []).map(m => {
+      const clone = { ...m };
+      if (typeof clone.image === 'string' && clone.image.startsWith('data:') && clone.image.length > 30000) {
+        clone.image = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+      }
+      if (Array.isArray(clone.gallery)) {
+        clone.gallery = clone.gallery.map(g => {
+          if (g && typeof g.url === 'string' && g.url.startsWith('data:') && g.url.length > 30000) {
+            return { ...g, url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80' };
+          }
+          return g;
+        });
+      }
+      return clone;
+    });
+    localStorage.setItem('bongbangla_models', JSON.stringify(cleanModels));
+  } catch (e) {
+    console.warn('localStorage quota warning on saveModels, falling back to minimal cache:', e);
+    try {
+      const minimal = (models || []).map(m => ({
+        id: m.id,
+        name: m.name,
+        category: m.category,
+        image: m.image && !m.image.startsWith('data:') ? m.image : '',
+        available: m.available
+      }));
+      localStorage.setItem('bongbangla_models', JSON.stringify(minimal));
+    } catch(e2) {
+      console.warn('localStorage completely full, skipping local cache:', e2);
+    }
+  }
 }
 
 async function renderDashboard() {
