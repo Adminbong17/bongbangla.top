@@ -560,7 +560,7 @@ function initDashboard() {
     openAddModelBtn.addEventListener('click', () => addModelModal.classList.remove('hidden'));
     closeAddModelBtn.addEventListener('click', () => addModelModal.classList.add('hidden'));
 
-    addModelForm.addEventListener('submit', (e) => {
+    addModelForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(addModelForm);
       const models = getModels();
@@ -575,9 +575,19 @@ function initDashboard() {
       };
       models.push(newModel);
       saveModels(models);
+
+      if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.addModel === 'function') {
+        try {
+          await window.BongBanglaSupabase.addModel(newModel);
+        } catch (err) {
+          console.warn('Supabase addModel error:', err);
+        }
+      }
+
       addModelForm.reset();
       addModelModal.classList.add('hidden');
       renderModelsGrid();
+      alert('নতুন মডেল সফলভাবে যুক্ত ও লাইভ করা হয়েছে!');
     });
   }
 }
@@ -797,7 +807,7 @@ function saveModels(models) {
   localStorage.setItem('bongbangla_models', JSON.stringify(models));
 }
 
-function renderDashboard() {
+async function renderDashboard() {
   try { updateStats(); } catch(e) { console.error('updateStats error:', e); }
   try { renderLeadsTable('all'); } catch(e) { console.error('renderLeadsTable error:', e); }
   try { renderModelsGrid(); } catch(e) { console.error('renderModelsGrid error:', e); }
@@ -835,8 +845,35 @@ function initSupabaseAdmin() {
 
     if (!window._supabaseSubscribed) {
       window._supabaseSubscribed = true;
+      // Sync initial remote cloud data
+      window.BongBanglaSupabase.fetchLeads().then(() => {
+        updateStats();
+        const leadFilter = document.getElementById('lead-filter-status');
+        renderLeadsTable(leadFilter ? leadFilter.value : 'all');
+      }).catch(() => {});
+
+      window.BongBanglaSupabase.fetchModels().then(() => {
+        renderModelsGrid();
+      }).catch(() => {});
+
+      // Realtime multi-tab / multi-device listeners
       window.BongBanglaSupabase.subscribeToLeads(() => {
-        renderDashboard();
+        window.BongBanglaSupabase.fetchLeads().then(() => {
+          updateStats();
+          const leadFilter = document.getElementById('lead-filter-status');
+          renderLeadsTable(leadFilter ? leadFilter.value : 'all');
+        });
+      });
+
+      window.BongBanglaSupabase.subscribeToReels(() => {
+        const filter = document.getElementById('admin-reel-filter');
+        renderAdminReels(filter ? filter.value : 'all');
+      });
+
+      window.BongBanglaSupabase.subscribeToModels(() => {
+        window.BongBanglaSupabase.fetchModels().then(() => {
+          renderModelsGrid();
+        });
       });
     }
   }
@@ -901,7 +938,7 @@ function initReelsAdmin() {
     openAddReelBtn.addEventListener('click', () => addReelModal.classList.remove('hidden'));
     closeAddReelBtn.addEventListener('click', () => addReelModal.classList.add('hidden'));
 
-    addReelForm.addEventListener('submit', (e) => {
+    addReelForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(addReelForm);
       const newReel = {
@@ -919,8 +956,16 @@ function initReelsAdmin() {
       if (window.BongBanglaReels) {
         window.BongBanglaReels.addReel(newReel);
       }
+      if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.addReel === 'function') {
+        try {
+          await window.BongBanglaSupabase.addReel(newReel);
+        } catch (err) {
+          console.warn('Supabase addReel error:', err);
+        }
+      }
       addReelForm.reset();
       addReelModal.classList.add('hidden');
+      const reelFilter = document.getElementById('admin-reel-filter');
       renderAdminReels(reelFilter ? reelFilter.value : 'all');
       alert('নতুন রিলস সফলভাবে আপলোড ও লাইভ করা হয়েছে!');
     });
@@ -1112,13 +1157,20 @@ function renderAdminReels(category = 'all') {
   setReelViewMode(currentReelViewMode);
 }
 
-window.deleteAdminReel = function(id) {
+window.deleteAdminReel = async function(id) {
   if (confirm('আপনি কি নিশ্চিতভাবে এই রিলসটি মুছে ফেলতে চান?')) {
     if (window.BongBanglaReels) {
       window.BongBanglaReels.deleteReel(id);
-      const filter = document.getElementById('admin-reel-filter');
-      renderAdminReels(filter ? filter.value : 'all');
     }
+    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.deleteReel === 'function') {
+      try {
+        await window.BongBanglaSupabase.deleteReel(id);
+      } catch (err) {
+        console.warn('Supabase deleteReel error:', err);
+      }
+    }
+    const filter = document.getElementById('admin-reel-filter');
+    renderAdminReels(filter ? filter.value : 'all');
   }
 };
 
@@ -1169,10 +1221,17 @@ function renderModelsGrid() {
   `).join('');
 }
 
-window.deleteModel = function(id) {
+window.deleteModel = async function(id) {
   if (confirm('আপনি কি এই মডেলের প্রোফাইল রিমুভ করতে চান?')) {
     const models = getModels().filter(m => m.id !== id);
     saveModels(models);
+    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.deleteModel === 'function') {
+      try {
+        await window.BongBanglaSupabase.deleteModel(id);
+      } catch (err) {
+        console.warn('Supabase deleteModel error:', err);
+      }
+    }
     renderModelsGrid();
   }
 };

@@ -358,7 +358,7 @@ function initEstimator() {
 function initModals() {
   const bookingModal = document.getElementById('booking-modal');
   const openButtons = document.querySelectorAll('.open-booking-modal');
-  const closeButtons = document.querySelectorAll('.close-booking-modal');
+  const closeButtons = document.querySelectorAll('.close-booking-modal, #close-booking-modal-btn');
 
   openButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -368,8 +368,10 @@ function initModals() {
       if (selectEl && servicePreset) {
         selectEl.value = servicePreset;
       }
-      bookingModal.classList.remove('hidden');
-      document.body.classList.add('overflow-hidden');
+      if (bookingModal) {
+        bookingModal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      }
     });
   });
 
@@ -395,49 +397,51 @@ function closeBookingModal() {
 }
 
 /* ==========================================================================
-   6. Contact & Booking Form Submissions (Syncs directly to Admin Panel!)
+   6. Contact & Booking Form Submissions (Syncs directly to Supabase & Admin Panel!)
    ========================================================================== */
 function initContactForm() {
-  const modalForm = document.getElementById('booking-form');
-  const sectionForm = document.getElementById('direct-contact-form');
+  const forms = document.querySelectorAll('#booking-form, #modal-booking-form, #direct-contact-form, form[data-lead-form]');
 
-  if (modalForm) {
-    modalForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      handleFormSubmit(modalForm, true);
-    });
-  }
+  forms.forEach(form => {
+    if (form.dataset.boundSubmit) return;
+    form.dataset.boundSubmit = 'true';
 
-  if (sectionForm) {
-    sectionForm.addEventListener('submit', (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
-      handleFormSubmit(sectionForm, false);
+      const isModal = Boolean(form.closest('#booking-modal') || form.id === 'modal-booking-form' || form.id === 'booking-form');
+      handleFormSubmit(form, isModal);
     });
-  }
+  });
 }
 
 function handleFormSubmit(form, isModal) {
   const formData = new FormData(form);
-  const name = formData.get('name') || '';
-  const brand = formData.get('brand') || '';
-  const phone = formData.get('phone') || '';
-  const service = formData.get('service') || 'General Ad Consultation';
-  const notes = formData.get('notes') || '';
+  const name = (formData.get('name') || '').toString().trim();
+  const brand = (formData.get('brand') || '').toString().trim();
+  const phone = (formData.get('phone') || '').toString().trim();
+  const service = (formData.get('service') || 'General Ad Consultation').toString().trim();
+  const notes = (formData.get('notes') || '').toString().trim();
+  const budget = (formData.get('budget') || 'পেন্ডিং কোটেশন').toString().trim();
+
+  if (!name || !phone) {
+    showToast('অনুগ্রহ করে আপনার নাম ও ফোন নম্বর লিখুন!');
+    return;
+  }
 
   const newLead = {
     id: 'L-' + (Math.floor(100 + Math.random() * 900)),
     name: name,
-    brand: brand,
+    brand: brand || 'ব্যক্তিগত / নতুন ব্র্যান্ড',
     phone: phone,
     service: service,
-    budget: 'পেন্ডিং কোটেশন',
+    budget: budget || 'পেন্ডিং কোটেশন',
     date: new Date().toISOString().split('T')[0],
     status: 'New',
     notes: notes
   };
 
   // Sync with Supabase Database (with automatic LocalStorage fallback)
-  if (window.BongBanglaSupabase) {
+  if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.submitLead === 'function') {
     window.BongBanglaSupabase.submitLead(newLead);
   } else {
     try {
@@ -452,13 +456,15 @@ function handleFormSubmit(form, isModal) {
   // Direct WhatsApp dispatch option
   const agencyPhone = '8801700000000';
   const message = encodeURIComponent(
-    `🔥 নতুন শুটিং ইনকোয়ারি (BongBangla Website)\n\nক্লায়েন্ট: ${name}\nব্র্যান্ড: ${brand}\nমোবাইল/WhatsApp: ${phone}\nসার্ভিস: ${service}\nপ্রজেক্ট বিবরণ: ${notes}`
+    `🔥 নতুন শুটিং ইনকোয়ারি (BongBangla Website)\n\nক্লায়েন্ট: ${name}\nব্র্যান্ড: ${brand}\nমোবাইল/WhatsApp: ${phone}\nসার্ভিস: ${service}\nবাজেট: ${budget}\nপ্রজেক্ট বিবরণ: ${notes}`
   );
   
   showToast(`ধন্যবাদ ${name}! আপনার ইনকোয়ারি সেভ হয়েছে এবং ক্রিয়েটিভ ডিরেক্টরের সাথে WhatsApp কানেক্ট হচ্ছে...`);
 
   setTimeout(() => {
-    window.open(`https://wa.me/${agencyPhone}?text=${message}`, '_blank');
+    try {
+      window.open(`https://wa.me/${agencyPhone}?text=${message}`, '_blank');
+    } catch(e) {}
     form.reset();
     if (isModal) {
       closeBookingModal();

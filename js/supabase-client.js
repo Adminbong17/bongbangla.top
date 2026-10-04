@@ -16,8 +16,8 @@
     } catch (e) {}
     
     return {
-      url: window.SUPABASE_URL || '',
-      anonKey: window.SUPABASE_ANON_KEY || ''
+      url: window.SUPABASE_URL || 'https://sfnyuzemaqplpdeedsgg.supabase.co',
+      anonKey: window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmbnl1emVtYXFwbHBkZWVkc2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMzE3ODEsImV4cCI6MjEwNjYwNzc4MX0.z3YtkhMBSQnMMdCWWCRrFAYn2Yv4bAQcyZ3NGFZOlyw'
     };
   }
 
@@ -32,7 +32,7 @@
 
   function initClient() {
     const config = getConfig();
-    if (config.url && config.anonKey && window.supabase && window.supabase.createClient) {
+    if (config.url && config.anonKey && window.supabase && typeof window.supabase.createClient === 'function') {
       try {
         supabaseClient = window.supabase.createClient(config.url, config.anonKey);
         console.log('⚡ BongBangla Supabase Client Connected:', config.url);
@@ -228,13 +228,113 @@
     }
   }
 
-  // Realtime subscription helper
+  /* ==========================================================================
+     3. Models Roster Sync
+     ========================================================================== */
+  async function fetchModels() {
+    if (supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient
+          .from('models')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          const mapped = data.map(m => ({
+            id: m.id,
+            name: m.name,
+            category: m.category,
+            height: m.height,
+            shoots: m.shoots,
+            image: m.image_url,
+            available: m.available !== false
+          }));
+          localStorage.setItem('bongbangla_models', JSON.stringify(mapped));
+          return mapped;
+        }
+      } catch (err) {
+        console.warn('Error fetching models from Supabase:', err);
+      }
+    }
+
+    try {
+      return JSON.parse(localStorage.getItem('bongbangla_models') || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  async function addModel(model) {
+    if (supabaseClient) {
+      try {
+        await supabaseClient
+          .from('models')
+          .insert([{
+            id: model.id,
+            name: model.name,
+            category: model.category,
+            height: model.height,
+            shoots: model.shoots,
+            image_url: model.image,
+            available: model.available !== false,
+            created_at: new Date().toISOString()
+          }]);
+        console.log('✅ Model synced to Supabase:', model.id);
+      } catch (err) {
+        console.error('Error adding model to Supabase:', err);
+      }
+    }
+  }
+
+  async function deleteModel(id) {
+    if (supabaseClient) {
+      try {
+        await supabaseClient
+          .from('models')
+          .delete()
+          .eq('id', id);
+        console.log('🗑️ Model deleted from Supabase:', id);
+      } catch (err) {
+        console.error('Error deleting model from Supabase:', err);
+      }
+    }
+  }
+
+  // Realtime subscription helpers
   function subscribeToLeads(callback) {
     if (supabaseClient) {
       try {
         return supabaseClient
-          .channel('public:leads')
+          .channel('public:leads:realtime')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, payload => {
+            if (callback) callback(payload);
+          })
+          .subscribe();
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  function subscribeToReels(callback) {
+    if (supabaseClient) {
+      try {
+        return supabaseClient
+          .channel('public:reels:realtime')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'reels' }, payload => {
+            if (callback) callback(payload);
+          })
+          .subscribe();
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  function subscribeToModels(callback) {
+    if (supabaseClient) {
+      try {
+        return supabaseClient
+          .channel('public:models:realtime')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'models' }, payload => {
             if (callback) callback(payload);
           })
           .subscribe();
@@ -266,7 +366,12 @@
     fetchReels,
     addReel,
     deleteReel,
+    fetchModels,
+    addModel,
+    deleteModel,
     subscribeToLeads,
+    subscribeToReels,
+    subscribeToModels,
     getClient: () => supabaseClient
   };
 })();
