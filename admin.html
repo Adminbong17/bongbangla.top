@@ -204,6 +204,10 @@
               <i class="fa-solid fa-film w-4 text-center"></i>
               <span class="sidebar-label">রিলস ও ভিডিও পোর্টফোলিও</span>
             </button>
+            <button type="button" onclick="switchSection('section-hero-slides', this)" class="admin-nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
+              <i class="fa-solid fa-images w-4 text-center"></i>
+              <span class="sidebar-label">হিরো স্লাইডার ও ইমেজ</span>
+            </button>
           </div>
         </div>
 
@@ -706,6 +710,76 @@
           </div>
         </section>
 
+        <!-- ================================================================
+             SECTION 5: HERO SLIDESHOW & IMAGES MANAGEMENT
+             ================================================================ -->
+        <section id="section-hero-slides" class="admin-section-view hidden space-y-6">
+          <div class="glass-panel rounded-3xl border border-[#ED96D7]/35 p-6 space-y-6 bg-white">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#ED96D7]/20 pb-4">
+              <div>
+                <h3 class="text-xl font-bold font-bangla text-[#2b0e23] flex items-center gap-2">
+                  <i class="fa-solid fa-images text-[#db2777]"></i> হিরো সেকশন স্লাইডস ও ইমেজ পরিচালনা
+                </h3>
+                <p class="text-xs text-[#8c4f75] font-bangla mt-0.5">
+                  হোমপেজের টপ হিরো সেকশনের ৯:১৬ ব্যাকগ্রাউন্ড কার্ড ও ইমেজ যুক্ত, পরিচালনা ও ডিলিট করুন।
+                </p>
+              </div>
+
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <button type="button" id="hero-slides-toggle-all-btn" onclick="toggleSelectAllHeroSlides()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#572449] text-xs font-bold font-bangla transition-all shadow-xs flex items-center gap-1.5">
+                  <i class="fa-regular fa-square-check text-[#db2777]"></i> সব সিলেক্ট
+                </button>
+                <button type="button" onclick="clearAllHeroSlides()" class="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold font-bangla transition-all shadow-xs flex items-center gap-1.5" title="সব হিরো ইমেজ মুছে ফেলুন">
+                  <i class="fa-solid fa-trash-can"></i> সব খালি করুন
+                </button>
+                <button id="open-add-hero-slide-btn" class="px-4 py-2 rounded-xl btn-pink-outline text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                  <i class="fa-solid fa-plus"></i> নতুন হিরো ইমেজ যোগ করুন
+                </button>
+              </div>
+            </div>
+
+            <!-- Hero Slides Bulk Action Toolbar -->
+            <div id="hero-slides-bulk-bar" class="hidden p-3.5 rounded-2xl bg-gradient-to-r from-[#2b0e23] via-[#3b1230] to-[#2b0e23] text-white flex flex-wrap items-center justify-between gap-3 shadow-lg border border-[#ED96D7]/40 font-bangla animate-fadeIn">
+              <div class="flex items-center gap-2.5">
+                <span class="w-8 h-8 rounded-xl bg-[#db2777] flex items-center justify-center text-white text-xs font-bold shadow-xs">
+                  <i class="fa-solid fa-images"></i>
+                </span>
+                <div>
+                  <span id="hero-slides-selected-count" class="font-bold text-sm text-[#ED96D7]">0</span>
+                  <span class="text-xs text-white/90">টি ইমেজ সিলেক্টেড</span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="applyBulkHeroSlidesDelete()" class="px-3.5 py-1.5 rounded-xl bg-rose-600/90 hover:bg-rose-700 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs">
+                  <i class="fa-solid fa-trash-can text-[11px]"></i>
+                  <span>একসাথে ডিলিট করুন</span>
+                </button>
+
+                <button type="button" onclick="deselectAllHeroSlides()" class="px-2.5 py-1.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all text-xs" title="সিলেকশন বাতিল">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Hero Slides Grid -->
+            <div id="admin-hero-slides-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4">
+              <!-- Dynamically populated via JS -->
+            </div>
+
+            <!-- Empty state placeholder -->
+            <div id="hero-slides-empty-state" class="hidden text-center py-12 text-[#8c4f75] text-sm font-bangla bg-[#fdf2f8] rounded-2xl border border-dashed border-[#ED96D7]/40">
+              <div class="w-14 h-14 mx-auto rounded-2xl bg-white text-[#db2777] flex items-center justify-center text-xl mb-3 shadow-xs">
+                <i class="fa-solid fa-images"></i>
+              </div>
+              <h4 class="font-bold text-base text-[#2b0e23]">বর্তমানে কোনো হিরো ইমেজ যুক্ত নেই</h4>
+              <p class="text-xs text-[#8c4f75] mt-1">হোমপেজের হিরো সেকশনে ছবি দেখাতে ওপরের <strong>"নতুন হিরো ইমেজ যোগ করুন"</strong> বাটন ব্যবহার করুন।</p>
+            </div>
+
+          </div>
+        </section>
+
       </main>
 
       <!-- Footer -->
@@ -867,6 +941,42 @@
 
         <button type="submit" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2">
           রিলস ভিডিও সেভ ও লাইভ করুন
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       Modal: Add New Hero Slide
+       ======================================================================== -->
+  <div id="add-hero-slide-modal" class="fixed inset-0 z-50 hidden bg-[#2b0e23]/60 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="max-w-md w-full glass-panel p-6 sm:p-8 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4 bg-white">
+      <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
+        <h4 class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
+          <i class="fa-solid fa-image text-[#db2777]"></i> নতুন হিরো ইমেজ / কার্ড যোগ করুন
+        </h4>
+        <button id="close-add-hero-slide-btn" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
+      </div>
+
+      <form id="add-hero-slide-form" class="space-y-3.5 text-xs font-bangla">
+        <div>
+          <label class="block text-[#572449] font-bold mb-1">ইমেজের URL (Photo Link) *</label>
+          <input type="url" name="image" required placeholder="https://images.unsplash.com/..." class="w-full bg-[#fdf2f8] border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+          <span class="text-[10px] text-[#8c4f75] mt-0.5 block">৯:১৬ রেশিওর পোর্ট্রেট ইমেজ লিংক দিন</span>
+        </div>
+
+        <div>
+          <label class="block text-[#572449] font-bold mb-1">কার্ডের শিরোনাম / লেবেল *</label>
+          <input type="text" name="title" required placeholder="উদাঃ জামদানি ব্রাইডাল, লাক্সারি জুয়েলারি" class="w-full bg-[#fdf2f8] border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+        </div>
+
+        <div>
+          <label class="block text-[#572449] font-bold mb-1">ব্যাজ / ট্যাগ</label>
+          <input type="text" name="tag" placeholder="উদাঃ 4K REC, TRENDING, TOP MODEL" class="w-full bg-[#fdf2f8] border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23]">
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl btn-pink-primary font-bold text-xs mt-2">
+          হিরো ইমেজ সেভ করুন
         </button>
       </form>
     </div>

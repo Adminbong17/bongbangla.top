@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   cleanupMockData();
   initLogoSwitcher();
   initNavbar();
+  renderFrontendHeroSlides();
   renderFrontendPortfolio('all');
   renderFrontendModels();
   initPortfolioFilter();
@@ -137,8 +138,48 @@ function initNavbar() {
 }
 
 /* ==========================================================================
-   2. Dynamic Frontend Portfolio & Model Roster System
+   2. Dynamic Frontend Hero Slides, Portfolio & Model Roster System
    ========================================================================== */
+
+function renderFrontendHeroSlides() {
+  const container = document.getElementById('hero-slideshow-container');
+  const track = document.getElementById('hero-slideshow-track');
+  if (!track || !container) return;
+
+  let slides = [];
+  try {
+    const raw = localStorage.getItem('bongbangla_hero_slides');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) slides = parsed;
+    }
+  } catch(e) {}
+
+  if (slides.length === 0) {
+    track.innerHTML = '';
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = 'block';
+
+  // Duplicate set to create seamless infinite sliding loop
+  const displaySet = slides.length < 5 ? [...slides, ...slides, ...slides, ...slides] : [...slides, ...slides];
+
+  track.innerHTML = displaySet.map(s => `
+    <div class="model-reel-card">
+      <img src="${s.image}" alt="${s.title}" loading="lazy">
+      <div class="absolute inset-0 bg-gradient-to-t from-[#2b0e23]/85 via-transparent to-black/20"></div>
+      <div class="absolute top-3 left-3 px-2.5 py-1 rounded-full model-card-badge text-[10px] font-bold text-[#db2777] flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-[#db2777] pulse-indicator"></span>
+        <span>${s.tag || '4K REC'}</span>
+      </div>
+      <div class="absolute bottom-3 inset-x-3 text-center">
+        <span class="inline-block px-2.5 py-1 rounded-lg model-card-badge text-[11px] font-bold text-[#1a0515] font-bangla">${s.title}</span>
+      </div>
+    </div>
+  `).join('');
+}
 
 function getFrontendCategoryBadge(category) {
   const map = {

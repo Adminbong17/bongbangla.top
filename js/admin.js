@@ -879,7 +879,9 @@ async function renderDashboard() {
   try { renderLeadsTable('all'); } catch(e) { console.error('renderLeadsTable error:', e); }
   try { renderModelsGrid(); } catch(e) { console.error('renderModelsGrid error:', e); }
   try { renderAdminReels('all'); } catch(e) { console.error('renderAdminReels error:', e); }
+  try { renderAdminHeroSlides(); } catch(e) { console.error('renderAdminHeroSlides error:', e); }
   try { initReelsAdmin(); } catch(e) { console.error('initReelsAdmin error:', e); }
+  try { initHeroSlidesAdmin(); } catch(e) { console.error('initHeroSlidesAdmin error:', e); }
   try { initSupabaseAdmin(); } catch(e) { console.error('initSupabaseAdmin error:', e); }
 }
 
@@ -1526,3 +1528,210 @@ window.deleteModel = async function(id) {
     renderModelsGrid();
   }
 };
+
+/* ==========================================================================
+   Hero Section Slides & Images Management
+   ========================================================================== */
+let selectedHeroSlideIds = new Set();
+
+function getHeroSlides() {
+  try {
+    const raw = localStorage.getItem('bongbangla_hero_slides');
+    if (raw !== null) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch(e) {}
+  return [];
+}
+
+function saveHeroSlides(slides) {
+  localStorage.setItem('bongbangla_hero_slides', JSON.stringify(slides));
+}
+
+function updateHeroSlidesBulkUI() {
+  const bulkBar = document.getElementById('hero-slides-bulk-bar');
+  const countEl = document.getElementById('hero-slides-selected-count');
+  const toggleBtn = document.getElementById('hero-slides-toggle-all-btn');
+
+  const count = selectedHeroSlideIds.size;
+  if (countEl) countEl.textContent = count.toLocaleString('bn-BD');
+
+  if (bulkBar) {
+    if (count > 0) bulkBar.classList.remove('hidden');
+    else bulkBar.classList.add('hidden');
+  }
+
+  const allCheckboxes = document.querySelectorAll('.hero-slide-checkbox');
+  if (toggleBtn && allCheckboxes.length > 0) {
+    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+    if (allChecked) {
+      toggleBtn.innerHTML = '<i class="fa-solid fa-square-check text-[#db2777]"></i> সিলেকশন সরান';
+    } else {
+      toggleBtn.innerHTML = '<i class="fa-regular fa-square-check text-[#db2777]"></i> সব সিলেক্ট';
+    }
+  }
+}
+
+window.toggleHeroSlideSelection = function(id, checked) {
+  if (checked) selectedHeroSlideIds.add(id);
+  else selectedHeroSlideIds.delete(id);
+  updateHeroSlidesBulkUI();
+};
+
+window.toggleSelectAllHeroSlides = function() {
+  const checkboxes = document.querySelectorAll('.hero-slide-checkbox');
+  if (checkboxes.length === 0) return;
+
+  const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+  checkboxes.forEach(cb => {
+    cb.checked = !allChecked;
+    const id = cb.getAttribute('data-id');
+    if (id) {
+      if (!allChecked) selectedHeroSlideIds.add(id);
+      else selectedHeroSlideIds.delete(id);
+    }
+  });
+  updateHeroSlidesBulkUI();
+};
+
+window.deselectAllHeroSlides = function() {
+  selectedHeroSlideIds.clear();
+  document.querySelectorAll('.hero-slide-checkbox').forEach(cb => cb.checked = false);
+  updateHeroSlidesBulkUI();
+};
+
+window.applyBulkHeroSlidesDelete = async function() {
+  if (selectedHeroSlideIds.size === 0) return;
+  if (!confirm(`আপনি কি নিশ্চিতভাবে নির্বাচিত ${selectedHeroSlideIds.size} টি হিরো ইমেজ মুছে ফেলতে চান?`)) return;
+
+  const toDelete = Array.from(selectedHeroSlideIds);
+  let slides = getHeroSlides();
+  slides = slides.filter(s => !selectedHeroSlideIds.has(s.id));
+  saveHeroSlides(slides);
+
+  alert(`${toDelete.length} টি হিরো ইমেজ সফলভাবে মুছে ফেলা হয়েছে!`);
+  selectedHeroSlideIds.clear();
+  renderAdminHeroSlides();
+};
+
+window.deleteAdminHeroSlide = function(id) {
+  if (confirm('আপনি কি এই হিরো ইমেজটি মুছে ফেলতে চান?')) {
+    let slides = getHeroSlides().filter(s => s.id !== id);
+    saveHeroSlides(slides);
+    selectedHeroSlideIds.delete(id);
+    renderAdminHeroSlides();
+  }
+};
+
+window.clearAllHeroSlides = function() {
+  if (confirm('আপনি কি নিশ্চিতভাবে সব হিরো ইমেজ খালি করতে চান?')) {
+    saveHeroSlides([]);
+    selectedHeroSlideIds.clear();
+    renderAdminHeroSlides();
+    alert('সব হিরো ইমেজ সফলভাবে মুছে ফেলা হয়েছে!');
+  }
+};
+
+function renderAdminHeroSlides() {
+  const grid = document.getElementById('admin-hero-slides-grid');
+  const emptyState = document.getElementById('hero-slides-empty-state');
+  if (!grid) return;
+
+  const slides = getHeroSlides();
+
+  if (slides.length === 0) {
+    grid.innerHTML = '';
+    if (emptyState) emptyState.classList.remove('hidden');
+    selectedHeroSlideIds.clear();
+    updateHeroSlidesBulkUI();
+    return;
+  }
+
+  if (emptyState) emptyState.classList.add('hidden');
+
+  grid.innerHTML = slides.map(s => `
+    <div class="glass-panel rounded-2xl overflow-hidden border border-[#ED96D7]/35 group hover:border-[#db2777] shadow-sm hover:shadow-md transition-all bg-white flex flex-col justify-between relative">
+      <div class="aspect-[9/16] relative overflow-hidden bg-black">
+        <img src="${s.image}" alt="${s.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
+        
+        <!-- Top Checkbox & Delete -->
+        <div class="absolute top-2 inset-x-2 flex items-center justify-between z-10">
+          <input type="checkbox" class="hero-slide-checkbox w-4 h-4 rounded border-[#ED96D7] text-[#db2777] focus:ring-[#db2777] cursor-pointer bg-white/90 shadow-sm"
+                 data-id="${s.id}"
+                 ${selectedHeroSlideIds.has(s.id) ? 'checked' : ''}
+                 onchange="toggleHeroSlideSelection('${s.id}', this.checked)">
+          <button onclick="deleteAdminHeroSlide('${s.id}')" class="w-7 h-7 rounded-full bg-rose-600/90 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-colors" title="মুছে ফেলুন">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+
+        <!-- Top Badge -->
+        <div class="absolute top-8 left-2 pointer-events-none">
+          <span class="px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-[#db2777] shadow-sm">
+            ${s.tag || 'HERO'}
+          </span>
+        </div>
+
+        <!-- Bottom Title -->
+        <div class="absolute bottom-2 inset-x-2 text-center pointer-events-none">
+          <span class="inline-block px-2 py-0.5 rounded bg-black/70 text-white text-[10px] font-bold font-bangla line-clamp-1">
+            ${s.title || 'হিরো কার্ড'}
+          </span>
+        </div>
+      </div>
+      <div class="p-2.5 text-center font-bangla text-xs bg-white">
+        <div class="font-bold text-[#2b0e23] line-clamp-1 text-[11px]">${s.title || 'হিরো কার্ড'}</div>
+      </div>
+    </div>
+  `).join('');
+
+  updateHeroSlidesBulkUI();
+}
+
+function initHeroSlidesAdmin() {
+  const openBtn = document.getElementById('open-add-hero-slide-btn');
+  const closeBtn = document.getElementById('close-add-hero-slide-btn');
+  const modal = document.getElementById('add-hero-slide-modal');
+  const form = document.getElementById('add-hero-slide-form');
+
+  if (openBtn && modal && !openBtn.dataset.initialized) {
+    openBtn.dataset.initialized = 'true';
+    openBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+    if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+
+    if (form && !form.dataset.initialized) {
+      form.dataset.initialized = 'true';
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const image = (formData.get('image') || '').toString().trim();
+        const title = (formData.get('title') || '').toString().trim();
+        const tag = (formData.get('tag') || '4K REC').toString().trim();
+
+        if (!image || !title) {
+          alert('অনুগ্রহ করে ছবির লিংক এবং শিরোনাম লিখুন!');
+          return;
+        }
+
+        const newSlide = {
+          id: 'hero-' + Date.now(),
+          image: image,
+          title: title,
+          tag: tag
+        };
+
+        const slides = getHeroSlides();
+        slides.unshift(newSlide);
+        saveHeroSlides(slides);
+
+        form.reset();
+        modal.classList.add('hidden');
+        renderAdminHeroSlides();
+        alert('নতুন হিরো ইমেজ সফলভাবে যুক্ত করা হয়েছে!');
+      });
+    }
+  }
+}
+
