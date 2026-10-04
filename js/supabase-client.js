@@ -5,10 +5,8 @@
  */
 
 (function() {
-  // Default configuration (can be updated dynamically via Admin panel)
   const CONFIG_KEY = 'bongbangla_supabase_config';
   
-  // Read saved config or placeholders
   function getConfig() {
     try {
       const saved = localStorage.getItem(CONFIG_KEY);
@@ -36,6 +34,8 @@
       try {
         supabaseClient = window.supabase.createClient(config.url, config.anonKey);
         console.log('⚡ BongBangla Supabase Client Connected:', config.url);
+        // Trigger background sync of any locally created items
+        setTimeout(syncLocalDataToSupabase, 1000);
       } catch (err) {
         console.warn('Supabase initialization error:', err);
         supabaseClient = null;
@@ -54,17 +54,15 @@
      1. Leads & Inquiries Sync
      ========================================================================== */
   async function submitLead(lead) {
-    // 1. Always save to LocalStorage as instant local backup
     try {
       const leads = JSON.parse(localStorage.getItem('bongbangla_leads') || '[]');
       leads.unshift(lead);
       localStorage.setItem('bongbangla_leads', JSON.stringify(leads));
     } catch (e) {}
 
-    // 2. If Supabase is connected, insert to Supabase 'leads' table
     if (supabaseClient) {
       try {
-        const { data, error } = await supabaseClient
+        const { error } = await supabaseClient
           .from('leads')
           .insert([{
             id: lead.id,
@@ -99,8 +97,7 @@
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!error && data && data.length > 0) {
-          // Sync local storage with latest cloud data
+        if (!error && Array.isArray(data)) {
           const mapped = data.map(d => ({
             id: d.id,
             name: d.name,
@@ -120,7 +117,6 @@
       }
     }
 
-    // Fallback
     try {
       return JSON.parse(localStorage.getItem('bongbangla_leads') || '[]');
     } catch (e) {
@@ -166,7 +162,7 @@
         }
 
         const { data, error } = await query;
-        if (!error && data !== null) {
+        if (!error && Array.isArray(data)) {
           const mapped = data.map(r => ({
             id: r.id,
             category: r.category,
@@ -196,7 +192,7 @@
       try {
         await supabaseClient
           .from('reels')
-          .insert([{
+          .upsert([{
             id: reel.id,
             category: reel.category,
             title: reel.title,
@@ -229,7 +225,7 @@
   }
 
   /* ==========================================================================
-     3. Models Roster Sync
+     3. Models Roster Sync (Full Profile & Gallery Support)
      ========================================================================== */
   async function fetchModels() {
     if (supabaseClient) {
@@ -239,14 +235,17 @@
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!error && Array.isArray(data) && data.length > 0) {
+        if (!error && Array.isArray(data)) {
           let localModels = [];
           try {
-            localModels = JSON.parse(localStorage.getItem('bongbangla_models') || '[]');
+            const raw = localStorage.getItem('bongbangla_models');
+            if (raw) localModels = JSON.parse(raw);
+            if (!Array.isArray(localModels)) localModels = [];
+            localModels = localModels.filter(m => !isMockModelId(m.id));
           } catch(e) {}
 
           const mapped = data.map(d => {
-            const local = (Array.isArray(localModels) ? localModels.find(lm => lm.id === d.id) : null) || {};
+            const local = localModels.find(lm => lm.id === d.id) || {};
             return {
               id: d.id,
               name: d.name,
@@ -269,13 +268,14 @@
             };
           });
 
-          // Merge with any custom local models that were added on this device
-          if (Array.isArray(localModels) && localModels.length > 0) {
-            localModels.forEach(lm => {
-              if (!mapped.some(m => m.id === lm.id) && !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(lm.id)) {
-                mapped.push(lm);
-              }
-            });
+          // Check if local device has models that are missing in Supabase cloud
+          const missingInCloud = localModels.filter(lm => !mapped.some(m => m.id === lm.id));
+          if (missingInCloud.length > 0) {
+            console.log('🔄 Auto-uploading local models to Supabase:', missingInCloud.length);
+            for (const m of missingInCloud) {
+              await addModel(m);
+              mapped.push(m);
+            }
           }
 
           localStorage.setItem('bongbangla_models', JSON.stringify(mapped));
@@ -289,10 +289,15 @@
     try {
       const local = JSON.parse(localStorage.getItem('bongbangla_models') || '[]');
       if (Array.isArray(local) && local.length > 0) {
-        return local.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
+        return local.filter(m => !isMockModelId(m.id));
       }
     } catch (e) {}
     return [];
+  }
+
+  function isMockModelId(id) {
+    if (!id) return true;
+    return ['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(id);
   }
 
   async function addModel(model) {
@@ -306,6 +311,17 @@
           shoots: model.shoots || "২০+",
           image_url: model.image || '',
           available: model.available !== false,
+          age: model.age || '',
+          measurements: model.measurements || '',
+          skin_tone: model.skinTone || '',
+          eye_color: model.eyeColor || '',
+          hair_color: model.hairColor || '',
+          location: model.location || 'ঢাকা, বাংলাদেশ',
+          experience: model.experience || '',
+          instagram: model.instagram || '',
+          specialties: model.specialties || '',
+          bio: model.bio || '',
+          gallery: Array.isArray(model.gallery) ? model.gallery : [],
           created_at: new Date().toISOString()
         };
         const { error } = await supabaseClient
@@ -331,7 +347,18 @@
           height: model.height,
           shoots: model.shoots,
           image_url: model.image,
-          available: model.available !== false
+          available: model.available !== false,
+          age: model.age || '',
+          measurements: model.measurements || '',
+          skin_tone: model.skinTone || '',
+          eye_color: model.eyeColor || '',
+          hair_color: model.hairColor || '',
+          location: model.location || 'ঢাকা, বাংলাদেশ',
+          experience: model.experience || '',
+          instagram: model.instagram || '',
+          specialties: model.specialties || '',
+          bio: model.bio || '',
+          gallery: Array.isArray(model.gallery) ? model.gallery : []
         };
         const { error } = await supabaseClient
           .from('models')
@@ -359,6 +386,55 @@
       } catch (err) {
         console.error('Error deleting model from Supabase:', err);
       }
+    }
+  }
+
+  /* ==========================================================================
+     4. Automatic Local-to-Cloud Sync Migration Engine
+     ========================================================================== */
+  async function syncLocalDataToSupabase() {
+    if (!supabaseClient) return;
+
+    try {
+      // 1. Sync Models
+      const rawModels = localStorage.getItem('bongbangla_models');
+      if (rawModels) {
+        const localModels = JSON.parse(rawModels);
+        if (Array.isArray(localModels)) {
+          const validModels = localModels.filter(m => !isMockModelId(m.id));
+          if (validModels.length > 0) {
+            const { data: cloudModels } = await supabaseClient.from('models').select('id');
+            const cloudIds = new Set((cloudModels || []).map(m => m.id));
+            for (const lm of validModels) {
+              if (!cloudIds.has(lm.id)) {
+                console.log('⚡ Migrating local model to Supabase:', lm.name, lm.id);
+                await addModel(lm);
+              }
+            }
+          }
+        }
+      }
+
+      // 2. Sync Reels
+      const rawReels = localStorage.getItem('bongbangla_reels');
+      if (rawReels) {
+        const localReels = JSON.parse(rawReels);
+        if (Array.isArray(localReels)) {
+          const validReels = localReels.filter(r => !r.id || !r.id.match(/^reel-[csvfj]\d+$/));
+          if (validReels.length > 0) {
+            const { data: cloudReels } = await supabaseClient.from('reels').select('id');
+            const cloudIds = new Set((cloudReels || []).map(r => r.id));
+            for (const lr of validReels) {
+              if (!cloudIds.has(lr.id)) {
+                console.log('⚡ Migrating local reel to Supabase:', lr.title, lr.id);
+                await addReel(lr);
+              }
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Background sync error:', err);
     }
   }
 
@@ -455,6 +531,7 @@
     addModel,
     updateModel,
     deleteModel,
+    syncLocalDataToSupabase,
     uploadStorageFile,
     subscribeToLeads,
     subscribeToReels,
