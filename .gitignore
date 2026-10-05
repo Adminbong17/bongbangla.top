@@ -17,3 +17,8 @@ Thumbs.db
 .env.*.local
 
 innbox/
+scripts/*.jpg
+scripts/*.png
+scripts/*.html
+scripts/*.txt
+scripts/*.json

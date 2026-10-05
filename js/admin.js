@@ -3413,6 +3413,16 @@ function extractInstagramMediaFromHtml(html, textFallback = '') {
   const seenUrls = new Set();
   let caption = '';
 
+  function cleanCaption(c) {
+    if (!c || typeof c !== 'string') return '';
+    const cleaned = c.replace(/^Instagram:|\s*on Instagram:.*$/i, '').trim();
+    const lower = cleaned.toLowerCase();
+    if (lower === 'instagram' || lower.includes('login') || lower.includes('error') || lower.includes('cloudflare') || lower.includes('520:') || lower.includes('500:')) {
+      return '';
+    }
+    return cleaned;
+  }
+
   function addMedia(type, url, thumbnail, title) {
     if (!url || typeof url !== 'string') return;
     const cleanUrl = url.replace(/\\u0026/g, '&').replace(/\\\//g, '/').replace(/&amp;/g, '&');
@@ -3432,135 +3442,145 @@ function extractInstagramMediaFromHtml(html, textFallback = '') {
     });
   }
 
-  // 1. Primary: Extract from Embed HTML (s.handle with contextJSON / gql_data)
-  // This bypasses Instagram login walls and contains all 20 carousel items
-  const handleMatches = [...html.matchAll(/s\.handle\((\{[\s\S]*?\})\);/g)];
-  for (const hm of handleMatches) {
-    try {
-      const data = JSON.parse(hm[1]);
-      function findContextJson(obj) {
-        if (!obj) return;
-        if (typeof obj === 'string') {
-          if (obj.includes('gql_data') || obj.includes('edge_sidecar_to_children') || obj.includes('shortcode_media')) {
-            try {
-              const inner = JSON.parse(obj);
-              processGql(inner);
-            } catch(e) {}
-          }
-          return;
-        }
-        if (typeof obj === 'object') {
-          if (obj.gql_data) {
-            processGql(obj);
-          }
-          for (const k of Object.keys(obj)) {
-            findContextJson(obj[k]);
-          }
-        }
-      }
+  // Check if response is an error or block page
+  const isBlockedOrError = !html ||
+    html.includes('AbuseAlleviationError') ||
+    html.includes('520: Web server') ||
+    html.includes('500 Internal Server') ||
+    html.includes('accounts/login') ||
+    html.includes('login_required');
 
-      function processGql(root) {
-        const sc = (root && root.gql_data && root.gql_data.shortcode_media) || (root && root.shortcode_media);
-        if (!sc) return;
-
-        // Extract Caption
-        if (!caption && sc.edge_media_to_caption && sc.edge_media_to_caption.edges && sc.edge_media_to_caption.edges[0]) {
-          caption = sc.edge_media_to_caption.edges[0].node.text || '';
-        }
-        if (!caption && sc.accessibility_caption) {
-          caption = sc.accessibility_caption;
-        }
-
-        // Extract Carousel Children
-        if (sc.edge_sidecar_to_children && sc.edge_sidecar_to_children.edges && Array.isArray(sc.edge_sidecar_to_children.edges)) {
-          sc.edge_sidecar_to_children.edges.forEach(edge => {
-            const n = edge.node;
-            if (!n) return;
-            if (n.is_video && n.video_url) {
-              addMedia('video', n.video_url, n.display_url, n.accessibility_caption || 'Instagram Reel');
-            } else if (n.display_url) {
-              addMedia('photo', n.display_url, n.display_url, n.accessibility_caption || 'Instagram Photo');
-            }
-          });
-        } else {
-          // Single photo or reel
-          if (sc.is_video && sc.video_url) {
-            addMedia('video', sc.video_url, sc.display_url, sc.accessibility_caption || 'Instagram Reel');
-          } else if (sc.display_url) {
-            addMedia('photo', sc.display_url, sc.display_url, sc.accessibility_caption || 'Instagram Photo');
-          }
-        }
-      }
-
-      findContextJson(data);
-    } catch(err) {}
-  }
-
-  // 2. Secondary: Extract from standard Instagram page scripts (ScheduledServerJS, carousel_media, image_versions2)
-  if (extracted.length === 0) {
-    const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
-    let match;
-
-    while ((match = scriptRegex.exec(html)) !== null) {
-      const content = match[1].trim();
-      if (!content.includes('carousel_media') && !content.includes('video_versions') && !content.includes('image_versions2')) {
-        continue;
-      }
-
+  if (!isBlockedOrError) {
+    // 1. Primary: Extract from Embed HTML (s.handle with contextJSON / gql_data)
+    // This contains all 20 carousel items (photos & reels) in full HD
+    const handleMatches = [...html.matchAll(/s\.handle\((\{[\s\S]*?\})\);/g)];
+    for (const hm of handleMatches) {
       try {
-        const data = JSON.parse(content);
-        function searchObj(obj) {
-          if (!obj || typeof obj !== 'object') return;
-
-          if (!caption && obj.caption && typeof obj.caption.text === 'string') {
-            caption = obj.caption.text;
-          }
-
-          // Check for Video
-          if (obj.video_versions && Array.isArray(obj.video_versions) && obj.video_versions.length > 0) {
-            const bestVideo = obj.video_versions[0];
-            if (bestVideo && bestVideo.url) {
-              let thumb = '';
-              if (obj.image_versions2 && obj.image_versions2.candidates && obj.image_versions2.candidates[0]) {
-                thumb = obj.image_versions2.candidates[0].url;
-              }
-              addMedia('video', bestVideo.url, thumb, obj.accessibility_caption || 'Instagram Reel');
+        const data = JSON.parse(hm[1]);
+        function findContextJson(obj) {
+          if (!obj) return;
+          if (typeof obj === 'string') {
+            if (obj.includes('gql_data') || obj.includes('edge_sidecar_to_children') || obj.includes('shortcode_media')) {
+              try {
+                const inner = JSON.parse(obj);
+                processGql(inner);
+              } catch(e) {}
             }
+            return;
           }
-
-          // Check for Photo
-          if (obj.image_versions2 && obj.image_versions2.candidates && Array.isArray(obj.image_versions2.candidates) && obj.image_versions2.candidates.length > 0) {
-            if (!obj.video_versions || obj.video_versions.length === 0) {
-              const bestImg = obj.image_versions2.candidates[0];
-              if (bestImg && bestImg.url) {
-                addMedia('photo', bestImg.url, bestImg.url, obj.accessibility_caption || 'Instagram Photo');
-              }
+          if (typeof obj === 'object') {
+            if (obj.gql_data) {
+              processGql(obj);
             }
-          }
-
-          for (const k of Object.keys(obj)) {
-            if (typeof obj[k] === 'object') searchObj(obj[k]);
+            for (const k of Object.keys(obj)) {
+              findContextJson(obj[k]);
+            }
           }
         }
 
-        searchObj(data);
-      } catch(jsonErr) {}
-    }
-  }
+        function processGql(root) {
+          const sc = (root && root.gql_data && root.gql_data.shortcode_media) || (root && root.shortcode_media);
+          if (!sc) return;
 
-  // 3. Regex Fallback: Scan for all high-res CDN photo URLs in embed/page HTML
-  if (extracted.length === 0) {
-    const combined = html + '\n' + textFallback;
-    const cdnRegex = /https:[\\\/]+[a-z0-9.-]*scontent[a-z0-9.-]*\.cdninstagram\.com[\\\/]v[\\\/]t51\.[0-9-]+[\\\/][^"'\s\)]+/gi;
-    const cdnMatches = combined.match(cdnRegex) || [];
-    for (const m of cdnMatches) {
-      addMedia('photo', m, m, 'Instagram Photo');
+          // Extract Caption
+          if (!caption && sc.edge_media_to_caption && sc.edge_media_to_caption.edges && sc.edge_media_to_caption.edges[0]) {
+            caption = cleanCaption(sc.edge_media_to_caption.edges[0].node.text || '');
+          }
+          if (!caption && sc.accessibility_caption) {
+            caption = cleanCaption(sc.accessibility_caption);
+          }
+
+          // Extract Carousel Children
+          if (sc.edge_sidecar_to_children && sc.edge_sidecar_to_children.edges && Array.isArray(sc.edge_sidecar_to_children.edges)) {
+            sc.edge_sidecar_to_children.edges.forEach(edge => {
+              const n = edge.node;
+              if (!n) return;
+              if (n.is_video && n.video_url) {
+                addMedia('video', n.video_url, n.display_url, n.accessibility_caption || 'Instagram Reel');
+              } else if (n.display_url) {
+                addMedia('photo', n.display_url, n.display_url, n.accessibility_caption || 'Instagram Photo');
+              }
+            });
+          } else {
+            // Single photo or reel
+            if (sc.is_video && sc.video_url) {
+              addMedia('video', sc.video_url, sc.display_url, sc.accessibility_caption || 'Instagram Reel');
+            } else if (sc.display_url) {
+              addMedia('photo', sc.display_url, sc.display_url, sc.accessibility_caption || 'Instagram Photo');
+            }
+          }
+        }
+
+        findContextJson(data);
+      } catch(err) {}
     }
 
-    const videoRegex = /(https?:\/\/[^\s\)\"\']+\.mp4[^\s\)\"\']*)/gi;
-    let vMatch;
-    while ((vMatch = videoRegex.exec(combined)) !== null) {
-      addMedia('video', vMatch[1], '', 'Instagram Video / Reel');
+    // 2. Secondary: Extract from standard Instagram page scripts (ScheduledServerJS, carousel_media, image_versions2)
+    if (extracted.length === 0) {
+      const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
+      let match;
+
+      while ((match = scriptRegex.exec(html)) !== null) {
+        const content = match[1].trim();
+        if (!content.includes('carousel_media') && !content.includes('video_versions') && !content.includes('image_versions2')) {
+          continue;
+        }
+
+        try {
+          const data = JSON.parse(content);
+          function searchObj(obj) {
+            if (!obj || typeof obj !== 'object') return;
+
+            if (!caption && obj.caption && typeof obj.caption.text === 'string') {
+              caption = cleanCaption(obj.caption.text);
+            }
+
+            // Check for Video
+            if (obj.video_versions && Array.isArray(obj.video_versions) && obj.video_versions.length > 0) {
+              const bestVideo = obj.video_versions[0];
+              if (bestVideo && bestVideo.url) {
+                let thumb = '';
+                if (obj.image_versions2 && obj.image_versions2.candidates && obj.image_versions2.candidates[0]) {
+                  thumb = obj.image_versions2.candidates[0].url;
+                }
+                addMedia('video', bestVideo.url, thumb, obj.accessibility_caption || 'Instagram Reel');
+              }
+            }
+
+            // Check for Photo
+            if (obj.image_versions2 && obj.image_versions2.candidates && Array.isArray(obj.image_versions2.candidates) && obj.image_versions2.candidates.length > 0) {
+              if (!obj.video_versions || obj.video_versions.length === 0) {
+                const bestImg = obj.image_versions2.candidates[0];
+                if (bestImg && bestImg.url) {
+                  addMedia('photo', bestImg.url, bestImg.url, obj.accessibility_caption || 'Instagram Photo');
+                }
+              }
+            }
+
+            for (const k of Object.keys(obj)) {
+              if (typeof obj[k] === 'object') searchObj(obj[k]);
+            }
+          }
+
+          searchObj(data);
+        } catch(jsonErr) {}
+      }
+    }
+
+    // 3. Fallback: High-res CDN media URLs from HTML (only if not an error/login page)
+    if (extracted.length === 0) {
+      const combined = html + '\n' + textFallback;
+      const cdnRegex = /https:[\\\/]+[a-z0-9.-]*scontent[a-z0-9.-]*\.cdninstagram\.com[\\\/]v[\\\/]t51\.[0-9-]+[\\\/][^"'\s\)]+/gi;
+      const cdnMatches = combined.match(cdnRegex) || [];
+      for (const m of cdnMatches) {
+        addMedia('photo', m, m, 'Instagram Photo');
+      }
+
+      const videoRegex = /(https?:\/\/[^\s\)\"\']+\.mp4[^\s\)\"\']*)/gi;
+      let vMatch;
+      while ((vMatch = videoRegex.exec(combined)) !== null) {
+        addMedia('video', vMatch[1], '', 'Instagram Video / Reel');
+      }
     }
   }
 
@@ -3568,7 +3588,7 @@ function extractInstagramMediaFromHtml(html, textFallback = '') {
   if (!caption) {
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
     if (titleMatch && titleMatch[1]) {
-      caption = titleMatch[1].replace(/^Instagram:|\s*on Instagram:.*$/i, '').trim();
+      caption = cleanCaption(titleMatch[1]);
     }
   }
 
@@ -3616,81 +3636,84 @@ window.executeInstagramGrab = async function() {
     execBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>মিডিয়া খোঁজা হচ্ছে...</span>';
   }
 
+  const setGrabStatus = (msg) => {
+    if (execBtn) {
+      execBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>${msg}</span>`;
+    }
+  };
+
   try {
     let extracted = [];
     let caption = '';
 
-    // Strategy 1: Public Embed Endpoint via Jina AI (NEVER login-walled, contains all 20 carousel items & videos)
-    try {
-      const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
-      const jinaEmbedRes = await fetch(`https://r.jina.ai/${embedUrl}`, {
-        headers: {
-          'Accept': 'text/html',
-          'X-Return-Format': 'html'
-        },
-        signal: AbortSignal.timeout(18000)
-      });
-      if (jinaEmbedRes.ok) {
-        const html = await jinaEmbedRes.text();
-        const res = extractInstagramMediaFromHtml(html);
-        if (res.mediaList && res.mediaList.length > 0) {
-          extracted = res.mediaList;
-          caption = res.caption;
-        }
-      }
-    } catch(errEmbed) {
-      console.warn('Jina Embed HTML grab error:', errEmbed);
-    }
+    const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
+    const postUrl = `https://www.instagram.com/p/${shortcode}/`;
 
-    // Strategy 2: Direct Post HTML Parser fallback
-    if (extracted.length === 0) {
-      try {
-        const postUrl = `https://www.instagram.com/p/${shortcode}/`;
-        const jinaRes = await fetch(`https://r.jina.ai/${postUrl}`, {
-          headers: {
-            'Accept': 'text/html',
-            'X-Return-Format': 'html'
-          },
-          signal: AbortSignal.timeout(18000)
-        });
-        if (jinaRes.ok) {
-          const html = await jinaRes.text();
-          const res = extractInstagramMediaFromHtml(html);
-          if (res.mediaList && res.mediaList.length > 0) {
-            extracted = res.mediaList;
-            caption = res.caption;
-          }
-        }
-      } catch(err1) {
-        console.warn('Jina Post HTML grab error:', err1);
-      }
-    }
-
-    // Strategy 3: Plain text / Markdown Fallback
-    if (extracted.length === 0) {
-      try {
-        const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
-        const jinaTextRes = await fetch(`https://r.jina.ai/${embedUrl}`, {
-          headers: { 'Accept': 'text/plain' },
+    // Multi-Mirror Cascading Engine
+    const mirrors = [
+      {
+        name: 'AllOrigins Embed Raw',
+        statusText: 'হাই-স্পিড মিরর ১ থেকে খোঁজা হচ্ছে...',
+        fetch: () => fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(embedUrl)}`, {
           signal: AbortSignal.timeout(12000)
-        });
-        if (jinaTextRes.ok) {
-          const txt = await jinaTextRes.text();
-          const res = extractInstagramMediaFromHtml('', txt);
-          if (res.mediaList && res.mediaList.length > 0) {
-            extracted = res.mediaList;
-            caption = res.caption;
-          }
+        })
+      },
+      {
+        name: 'CORS.eu.org Embed',
+        statusText: 'হাই-স্পিড মিরর ২ থেকে খোঁজা হচ্ছে...',
+        fetch: () => fetch(`https://cors.eu.org/${embedUrl}`, {
+          signal: AbortSignal.timeout(12000)
+        })
+      },
+      {
+        name: 'Jina AI Embed',
+        statusText: 'হাই-স্পিড মিরর ৩ থেকে খোঁজা হচ্ছে...',
+        fetch: () => fetch(`https://r.jina.ai/${embedUrl}`, {
+          headers: { 'Accept': 'text/html', 'X-Return-Format': 'html' },
+          signal: AbortSignal.timeout(12000)
+        })
+      },
+      {
+        name: 'AllOrigins Post Raw',
+        statusText: 'মিরর ৪ থেকে ফুল ডাটা আনা হচ্ছে...',
+        fetch: () => fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(postUrl)}`, {
+          signal: AbortSignal.timeout(12000)
+        })
+      },
+      {
+        name: 'Jina AI Post HTML',
+        statusText: 'মিরর ৫ থেকে ফুল ডাটা আনা হচ্ছে...',
+        fetch: () => fetch(`https://r.jina.ai/${postUrl}`, {
+          headers: { 'Accept': 'text/html', 'X-Return-Format': 'html' },
+          signal: AbortSignal.timeout(12000)
+        })
+      }
+    ];
+
+    for (const m of mirrors) {
+      setGrabStatus(m.statusText);
+      try {
+        const res = await m.fetch();
+        if (!res.ok) continue;
+        const html = await res.text();
+        if (!html || html.length < 500) continue;
+
+        const parsed = extractInstagramMediaFromHtml(html);
+        if (parsed.mediaList && parsed.mediaList.length > 0) {
+          extracted = parsed.mediaList;
+          caption = parsed.caption;
+          console.log(`⚡ Instagram Grabber successfully extracted via [${m.name}]: ${extracted.length} items`);
+          break;
         }
-      } catch(err2) {
-        console.warn('Jina plain text grab error:', err2);
+      } catch(mirrorErr) {
+        console.warn(`Mirror [${m.name}] attempt failed:`, mirrorErr.message);
       }
     }
 
-    // Strategy 4: Microlink API fallback for single photo/reel
+    // Secondary Microlink API fallback for single photo/reel if carousels weren't found
     if (extracted.length === 0) {
+      setGrabStatus('ব্যাকআপ এপিআই থেকে খোঁজা হচ্ছে...');
       try {
-        const postUrl = `https://www.instagram.com/p/${shortcode}/`;
         const microRes = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(postUrl)}&video=true`, {
           signal: AbortSignal.timeout(10000)
         });
@@ -3721,7 +3744,7 @@ window.executeInstagramGrab = async function() {
     }
 
     if (extracted.length === 0) {
-      alert('ইনস্টাগ্রাম থেকে মিডিয়া এক্সট্র্যাক্ট করা সম্ভব হয়নি। পোস্টটি প্রাইভেট হতে পারে অথবা অতিরিক্ত সিকিউরিটি সক্রিয় রয়েছে।\n\nআপনি নিচে থাকা "FastDL-এ পোস্টটি খুলুন" বাটনে ক্লিক করে সহজে ডাউনলোড করে নিচের ড্রপজোনে ড্র্যাগ করতে পারেন।');
+      alert('ইনস্টাগ্রাম থেকে মিডিয়া এক্সট্র্যাক্ট করা সম্ভব হয়নি। পোস্টটি প্রাইভেট হতে পারে অথবা ইনস্টাগ্রামের সার্ভার সাময়িক ব্যস্ত রয়েছে।\n\nআপনি নিচে থাকা "FastDL-এ পোস্টটি খুলুন" বাটনে ক্লিক করে সহজে ডাউনলোড করে নিচের ড্রপজোনে ড্র্যাগ করতে পারেন।');
       return;
     }
 
