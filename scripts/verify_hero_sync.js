@@ -191,7 +191,12 @@ async function verifyHeroSlidesSync() {
   console.log('====================================================\n');
 }
 
-verifyHeroSlidesSync().catch(err => {
-  console.error('\n❌ Verification Failed:', err);
-  process.exit(1);
-});
+verifyHeroSlidesSync()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch(err => {
+    console.error('\n❌ Verification Failed:', err);
+    process.exit(1);
+  });
+
