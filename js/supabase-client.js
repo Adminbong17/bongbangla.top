@@ -566,20 +566,22 @@
      4a. Hero Slides Sync
      ========================================================================== */
   async function fetchHeroSlides() {
-    if (supabaseClient) {
+    const client = await ensureClient();
+    if (client) {
       try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await client
           .from('hero_slides')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!error && Array.isArray(data) && data.length > 0) {
+        if (!error && Array.isArray(data)) {
           const mapped = data.map(d => ({
             id: d.id,
-            title: d.title || '',
+            title: d.title || 'হিরো স্লাইড',
             tag: d.tag || '4K REC',
-            image: d.image_url || d.image || ''
+            image: d.image || d.image_url || ''
           }));
+          window._cachedCloudHeroSlides = mapped;
           try {
             localStorage.setItem('bongbangla_hero_slides', JSON.stringify(mapped));
           } catch(e) {}
@@ -589,12 +591,107 @@
         console.warn('Error fetching hero slides from Supabase:', err);
       }
     }
+
+    if (window._cachedCloudHeroSlides && Array.isArray(window._cachedCloudHeroSlides)) {
+      return window._cachedCloudHeroSlides;
+    }
+
     // Fallback to localStorage
     try {
       const local = JSON.parse(localStorage.getItem('bongbangla_hero_slides') || '[]');
       if (Array.isArray(local)) return local;
     } catch(e) {}
     return [];
+  }
+
+  async function addHeroSlide(slide) {
+    if (!slide) return null;
+    if (!slide.id) slide.id = 'hero-' + Date.now();
+
+    // Cache in memory immediately
+    if (!window._cachedCloudHeroSlides) window._cachedCloudHeroSlides = [];
+    const existingIdx = window._cachedCloudHeroSlides.findIndex(s => s.id === slide.id);
+    if (existingIdx >= 0) window._cachedCloudHeroSlides[existingIdx] = slide;
+    else window._cachedCloudHeroSlides.unshift(slide);
+
+    // Cache to localStorage
+    try {
+      let local = [];
+      const raw = localStorage.getItem('bongbangla_hero_slides');
+      if (raw) local = JSON.parse(raw) || [];
+      const idx = local.findIndex(s => s.id === slide.id);
+      if (idx >= 0) local[idx] = slide;
+      else local.unshift(slide);
+      localStorage.setItem('bongbangla_hero_slides', JSON.stringify(local));
+    } catch(e) {}
+
+    const client = await ensureClient();
+    if (client) {
+      try {
+        const payload = {
+          id: slide.id,
+          title: slide.title || 'হিরো স্লাইড',
+          tag: slide.tag || '4K REC',
+          image: slide.image || slide.image_url || '',
+          created_at: new Date().toISOString()
+        };
+        const { error } = await client
+          .from('hero_slides')
+          .upsert([payload]);
+        if (error) {
+          console.error('Supabase addHeroSlide error:', error);
+        } else {
+          console.log('✅ Hero slide synced to Supabase:', slide.id);
+        }
+      } catch(err) {
+        console.error('Error adding hero slide to Supabase:', err);
+      }
+    }
+    return slide;
+  }
+
+  async function deleteHeroSlide(id) {
+    if (window._cachedCloudHeroSlides) {
+      window._cachedCloudHeroSlides = window._cachedCloudHeroSlides.filter(s => s.id !== id);
+    }
+    try {
+      const raw = localStorage.getItem('bongbangla_hero_slides');
+      if (raw) {
+        const local = JSON.parse(raw);
+        if (Array.isArray(local)) {
+          const filtered = local.filter(s => s.id !== id);
+          localStorage.setItem('bongbangla_hero_slides', JSON.stringify(filtered));
+        }
+      }
+    } catch(e) {}
+
+    const client = await ensureClient();
+    if (client) {
+      try {
+        await client
+          .from('hero_slides')
+          .delete()
+          .eq('id', id);
+        console.log('🗑️ Hero slide deleted from Supabase:', id);
+      } catch(err) {
+        console.error('Error deleting hero slide from Supabase:', err);
+      }
+    }
+  }
+
+  function subscribeToHeroSlides(callback) {
+    const client = getClient();
+    if (client) {
+      try {
+        return client
+          .channel('public:hero_slides:realtime')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'hero_slides' }, payload => {
+            if (callback) callback(payload);
+          })
+          .subscribe();
+      } catch (e) {}
+    }
+    return null;
   }
 
   /* ==========================================================================
@@ -706,6 +803,9 @@
     updateModel,
     deleteModel,
     fetchHeroSlides,
+    addHeroSlide,
+    deleteHeroSlide,
+    subscribeToHeroSlides,
     syncLocalDataToSupabase,
     uploadStorageFile,
     subscribeToLeads,

@@ -1741,7 +1741,7 @@ async function renderDashboard() {
     console.error('renderAdminReels error:', e);
     renderAdminReels('all');
   }
-  try { renderAdminHeroSlides(); } catch(e) { console.error('renderAdminHeroSlides error:', e); }
+  try { renderAdminHeroSlides(window._cachedCloudHeroSlides); } catch(e) { console.error('renderAdminHeroSlides error:', e); }
   try { initReelsAdmin(); } catch(e) { console.error('initReelsAdmin error:', e); }
   try { initHeroSlidesAdmin(); } catch(e) { console.error('initHeroSlidesAdmin error:', e); }
   try { initSupabaseAdmin(); } catch(e) { console.error('initSupabaseAdmin error:', e); }
@@ -1810,6 +1810,12 @@ function initSupabaseAdmin() {
         updateStats();
       }).catch(() => {});
 
+      if (typeof window.BongBanglaSupabase.fetchHeroSlides === 'function') {
+        window.BongBanglaSupabase.fetchHeroSlides().then((slides) => {
+          renderAdminHeroSlides(slides);
+        }).catch(() => {});
+      }
+
       // Realtime multi-tab / multi-device listeners
       window.BongBanglaSupabase.subscribeToLeads(() => {
         window.BongBanglaSupabase.fetchLeads().then(() => {
@@ -1837,6 +1843,14 @@ function initSupabaseAdmin() {
           updateStats();
         });
       });
+
+      if (typeof window.BongBanglaSupabase.subscribeToHeroSlides === 'function') {
+        window.BongBanglaSupabase.subscribeToHeroSlides(() => {
+          window.BongBanglaSupabase.fetchHeroSlides().then((slides) => {
+            renderAdminHeroSlides(slides);
+          });
+        });
+      }
     }
   }
 
@@ -2998,6 +3012,9 @@ window.deleteModel = async function(id) {
 let selectedHeroSlideIds = new Set();
 
 function getHeroSlides() {
+  if (window._cachedCloudHeroSlides && Array.isArray(window._cachedCloudHeroSlides) && window._cachedCloudHeroSlides.length > 0) {
+    return window._cachedCloudHeroSlides;
+  }
   try {
     const raw = localStorage.getItem('bongbangla_hero_slides');
     if (raw !== null) {
@@ -3009,6 +3026,7 @@ function getHeroSlides() {
 }
 
 function saveHeroSlides(slides) {
+  window._cachedCloudHeroSlides = slides;
   localStorage.setItem('bongbangla_hero_slides', JSON.stringify(slides));
 }
 
@@ -3069,8 +3087,10 @@ window.applyBulkHeroSlidesDelete = async function() {
   if (!confirm(`আপনি কি নিশ্চিতভাবে নির্বাচিত ${selectedHeroSlideIds.size} টি হিরো ইমেজ মুছে ফেলতে চান?`)) return;
 
   const toDelete = Array.from(selectedHeroSlideIds);
-  let slides = getHeroSlides();
-  slides = slides.filter(s => !selectedHeroSlideIds.has(s.id));
+  if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.deleteHeroSlide === 'function') {
+    toDelete.forEach(id => window.BongBanglaSupabase.deleteHeroSlide(id));
+  }
+  let slides = getHeroSlides().filter(s => !selectedHeroSlideIds.has(s.id));
   saveHeroSlides(slides);
 
   alert(`${toDelete.length} টি হিরো ইমেজ সফলভাবে মুছে ফেলা হয়েছে!`);
@@ -3080,6 +3100,9 @@ window.applyBulkHeroSlidesDelete = async function() {
 
 window.deleteAdminHeroSlide = function(id) {
   if (confirm('আপনি কি এই হিরো ইমেজটি মুছে ফেলতে চান?')) {
+    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.deleteHeroSlide === 'function') {
+      window.BongBanglaSupabase.deleteHeroSlide(id);
+    }
     let slides = getHeroSlides().filter(s => s.id !== id);
     saveHeroSlides(slides);
     selectedHeroSlideIds.delete(id);
@@ -3089,6 +3112,10 @@ window.deleteAdminHeroSlide = function(id) {
 
 window.clearAllHeroSlides = function() {
   if (confirm('আপনি কি নিশ্চিতভাবে সব হিরো ইমেজ খালি করতে চান?')) {
+    const slides = getHeroSlides();
+    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.deleteHeroSlide === 'function') {
+      slides.forEach(s => window.BongBanglaSupabase.deleteHeroSlide(s.id));
+    }
     saveHeroSlides([]);
     selectedHeroSlideIds.clear();
     renderAdminHeroSlides();
@@ -3096,12 +3123,12 @@ window.clearAllHeroSlides = function() {
   }
 };
 
-function renderAdminHeroSlides() {
+function renderAdminHeroSlides(directData) {
   const grid = document.getElementById('admin-hero-slides-grid');
   const emptyState = document.getElementById('hero-slides-empty-state');
   if (!grid) return;
 
-  const slides = getHeroSlides();
+  const slides = (Array.isArray(directData) && directData.length > 0) ? directData : getHeroSlides();
 
   if (slides.length === 0) {
     grid.innerHTML = '';
@@ -3323,9 +3350,13 @@ function initHeroSlidesAdmin() {
             tag: tag
           };
 
-          const slides = getHeroSlides();
-          slides.unshift(newSlide);
-          saveHeroSlides(slides);
+          if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.addHeroSlide === 'function') {
+            await window.BongBanglaSupabase.addHeroSlide(newSlide);
+          } else {
+            const slides = getHeroSlides();
+            slides.unshift(newSlide);
+            saveHeroSlides(slides);
+          }
 
           form.reset();
           clearHeroSlideFileSelection();

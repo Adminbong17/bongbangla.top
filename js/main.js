@@ -64,6 +64,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderFrontendPortfolio(activeFilter ? activeFilter.getAttribute('data-filter') : 'all', cloudReels);
       });
     }
+    if (typeof window.BongBanglaSupabase.subscribeToHeroSlides === 'function') {
+      window.BongBanglaSupabase.subscribeToHeroSlides(async () => {
+        const cloudSlides = await window.BongBanglaSupabase.fetchHeroSlides();
+        renderFrontendHeroSlides(cloudSlides);
+      });
+    }
     if (typeof window.BongBanglaSupabase.subscribeToModels === 'function') {
       window.BongBanglaSupabase.subscribeToModels(() => {
         window.BongBanglaSupabase.fetchModels().then(models => {
@@ -178,17 +184,32 @@ function renderFrontendHeroSlides(directData) {
   if (!track || !container) return;
 
   let slides = [];
-  // If direct cloud data passed, use it; otherwise fall back to localStorage
+  // If direct cloud data passed, use it; otherwise fall back to memory cache or localStorage
   if (Array.isArray(directData) && directData.length > 0) {
     slides = directData;
+  } else if (window._cachedCloudHeroSlides && Array.isArray(window._cachedCloudHeroSlides) && window._cachedCloudHeroSlides.length > 0) {
+    slides = window._cachedCloudHeroSlides;
   } else {
     try {
       const raw = localStorage.getItem('bongbangla_hero_slides');
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) slides = parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) slides = parsed;
       }
     } catch(e) {}
+  }
+
+  // Fallback: If slides are still empty, derive from active models so the hero background is ALWAYS gorgeous and active
+  if (slides.length === 0) {
+    const models = (window._cachedCloudModels && window._cachedCloudModels.length > 0) ? window._cachedCloudModels : [];
+    if (models.length > 0) {
+      slides = models.map(m => ({
+        id: 'hero-model-' + m.id,
+        title: m.name,
+        tag: m.category || '4K CINEMA',
+        image: m.image
+      }));
+    }
   }
 
   if (slides.length === 0) {
