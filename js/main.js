@@ -22,8 +22,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderFrontendModels();
 
   // Always fetch fresh data from Supabase cloud (works on any device)
-  if (window.BongBanglaSupabase && window.BongBanglaSupabase.isConfigured()) {
+  if (window.BongBanglaSupabase) {
     try {
+      if (typeof window.BongBanglaSupabase.ensureClient === 'function') {
+        await window.BongBanglaSupabase.ensureClient();
+      }
+
       // Fetch models from Supabase and re-render with fresh cloud data
       const cloudModels = await window.BongBanglaSupabase.fetchModels();
       if (Array.isArray(cloudModels) && cloudModels.length > 0) {
@@ -37,7 +41,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           renderFrontendHeroSlides(cloudSlides);
         }
       } else {
-        // Re-render hero slides from localStorage (was cached by models fetch)
         renderFrontendHeroSlides();
       }
 
@@ -327,9 +330,11 @@ function renderFrontendModels(directData) {
   if (!container) return;
 
   let models = [];
-  // If direct cloud data passed, use it; otherwise fall back to localStorage cache
+  // If direct cloud data passed, use it; otherwise fall back to memory cache or localStorage
   if (Array.isArray(directData) && directData.length > 0) {
     models = directData.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
+  } else if (window._cachedCloudModels && Array.isArray(window._cachedCloudModels) && window._cachedCloudModels.length > 0) {
+    models = window._cachedCloudModels.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
   } else {
     try {
       const raw = localStorage.getItem('bongbangla_models');

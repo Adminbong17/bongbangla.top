@@ -7,22 +7,26 @@
 // Default Seed Reels Data - Empty
 const DEFAULT_REELS = [];
 
-// Helper to get reels from localStorage
+// Helper to get reels from localStorage or cloud cache
 function getReels(category = 'all') {
   let reels = [];
-  try {
-    const raw = localStorage.getItem('bongbangla_reels');
-    if (raw !== null) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        reels = parsed.filter(r => !r.id || !r.id.match(/^reel-[csvfj]\d+$/));
-        if (reels.length !== parsed.length) {
-          localStorage.setItem('bongbangla_reels', JSON.stringify(reels));
+  if (window._cachedCloudReels && Array.isArray(window._cachedCloudReels) && window._cachedCloudReels.length > 0) {
+    reels = window._cachedCloudReels.filter(r => !r.id || !r.id.match(/^reel-[csvfj]\d+$/));
+  } else {
+    try {
+      const raw = localStorage.getItem('bongbangla_reels');
+      if (raw !== null) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          reels = parsed.filter(r => !r.id || !r.id.match(/^reel-[csvfj]\d+$/));
+          if (reels.length !== parsed.length) {
+            localStorage.setItem('bongbangla_reels', JSON.stringify(reels));
+          }
         }
       }
+    } catch (e) {
+      console.error('Error reading reels:', e);
     }
-  } catch (e) {
-    console.error('Error reading reels:', e);
   }
 
   if (!Array.isArray(reels)) {

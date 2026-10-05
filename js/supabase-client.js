@@ -30,24 +30,47 @@
 
   function initClient() {
     const config = getConfig();
-    if (config.url && config.anonKey && window.supabase && typeof window.supabase.createClient === 'function') {
+    const sb = (typeof window !== 'undefined' && window.supabase) ? window.supabase : (typeof supabase !== 'undefined' ? supabase : null);
+    if (config.url && config.anonKey && sb && typeof sb.createClient === 'function') {
       try {
-        supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+        supabaseClient = sb.createClient(config.url, config.anonKey);
         console.log('⚡ BongBangla Supabase Client Connected:', config.url);
-        // Trigger background sync of any locally created items
-        setTimeout(syncLocalDataToSupabase, 1000);
       } catch (err) {
         console.warn('Supabase initialization error:', err);
         supabaseClient = null;
       }
-    } else {
-      supabaseClient = null;
     }
+    return supabaseClient;
+  }
+
+  async function ensureClient(maxWaitMs = 2500) {
+    if (supabaseClient) return supabaseClient;
+    initClient();
+    if (supabaseClient) return supabaseClient;
+
+    const start = Date.now();
+    while (Date.now() - start < maxWaitMs) {
+      const sb = (typeof window !== 'undefined' && window.supabase) ? window.supabase : (typeof supabase !== 'undefined' ? supabase : null);
+      if (sb && typeof sb.createClient === 'function') {
+        initClient();
+        if (supabaseClient) return supabaseClient;
+      }
+      await new Promise(r => setTimeout(r, 100));
+    }
+    return supabaseClient;
+  }
+
+  function getClient() {
+    if (!supabaseClient) {
+      initClient();
+    }
+    return supabaseClient;
   }
 
   function isConfigured() {
     const config = getConfig();
-    return Boolean(config.url && config.anonKey && supabaseClient);
+    const client = getClient();
+    return Boolean(config.url && config.anonKey && client);
   }
 
   /* ==========================================================================
@@ -61,6 +84,7 @@
     if (!lead.date) {
       lead.date = new Date().toISOString().split('T')[0];
     }
+    const client = await ensureClient();
 
     try {
       const leads = JSON.parse(localStorage.getItem('bongbangla_leads') || '[]');
@@ -70,15 +94,15 @@
       }
     } catch (e) {}
 
-    if (supabaseClient) {
+    if (client) {
       try {
-        const { error } = await supabaseClient
+        const { error } = await client
           .from('leads')
           .insert([{
             id: lead.id,
-            name: lead.name,
-            brand: lead.brand,
-            phone: lead.phone,
+            name: lead.name || 'Anonymous Client',
+            brand: lead.brand || lead.name || 'Direct Inquiry',
+            phone: lead.phone || '',
             service: lead.service || 'General Inquiry',
             budget: lead.budget || '৳ ২৫,০০০',
             status: lead.status || 'New',
@@ -100,9 +124,10 @@
   }
 
   async function fetchLeads() {
-    if (supabaseClient) {
+    const client = await ensureClient();
+    if (client) {
       try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await client
           .from('leads')
           .select('*')
           .order('created_at', { ascending: false });
@@ -119,12 +144,17 @@
             notes: d.notes,
             date: d.created_at ? d.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
           }));
+          window._cachedCloudLeads = mapped;
           localStorage.setItem('bongbangla_leads', JSON.stringify(mapped));
           return mapped;
         }
       } catch (err) {
         console.warn('Error fetching leads from Supabase, fallback to localStorage:', err);
       }
+    }
+
+    if (window._cachedCloudLeads && Array.isArray(window._cachedCloudLeads)) {
+      return window._cachedCloudLeads;
     }
 
     try {
@@ -164,14 +194,7 @@
      2. Reels & Video Portfolio Sync
      ========================================================================== */
   async function fetchReels(category = 'all') {
-    let client = supabaseClient;
-    if (!client && window.supabase && typeof window.supabase.createClient === 'function') {
-      const cfg = getConfig();
-      try {
-        client = window.supabase.createClient(cfg.url, cfg.anonKey);
-        supabaseClient = client;
-      } catch(e) {}
-    }
+    const client = await ensureClient();
 
     if (client) {
       try {
@@ -196,8 +219,9 @@
               date: r.created_at ? r.created_at.split('T')[0] : '2026-10-01'
             }));
 
-          // Always cache the latest cloud reels to localStorage so other parts of the site can read them synchronously
+          // Always cache the latest cloud reels so other parts of the site can read them synchronously
           if (category === 'all') {
+            window._cachedCloudReels = mapped;
             try {
               localStorage.setItem('bongbangla_reels', JSON.stringify(mapped));
             } catch(e) {}
@@ -208,6 +232,12 @@
       } catch (err) {
         console.warn('Error fetching reels from Supabase, using local:', err);
       }
+    }
+
+    if (category === 'all' && window._cachedCloudReels && Array.isArray(window._cachedCloudReels)) {
+      return window._cachedCloudReels;
+    } else if (window._cachedCloudReels && Array.isArray(window._cachedCloudReels)) {
+      return window._cachedCloudReels.filter(r => r.category === category);
     }
 
     if (window.BongBanglaReels) {
@@ -224,7 +254,13 @@
     }
     if (!reel.id) reel.id = 'reel-' + Date.now();
 
-    // Cache to localStorage first
+    // Cache to in-memory cloud list first
+    if (!window._cachedCloudReels) window._cachedCloudReels = [];
+    const existingIdx = window._cachedCloudReels.findIndex(r => r.id === reel.id);
+    if (existingIdx >= 0) window._cachedCloudReels[existingIdx] = reel;
+    else window._cachedCloudReels.unshift(reel);
+
+    // Cache to localStorage
     try {
       let local = [];
       const raw = localStorage.getItem('bongbangla_reels');
@@ -236,16 +272,7 @@
       localStorage.setItem('bongbangla_reels', JSON.stringify(local));
     } catch(e) {}
 
-    // Ensure client
-    let client = supabaseClient;
-    if (!client && window.supabase && typeof window.supabase.createClient === 'function') {
-      const cfg = getConfig();
-      try {
-        client = window.supabase.createClient(cfg.url, cfg.anonKey);
-        supabaseClient = client;
-      } catch(e) {}
-    }
-
+    const client = await ensureClient();
     if (client) {
       try {
         const payload = {
@@ -280,6 +307,9 @@
   }
 
   async function deleteReel(id) {
+    if (window._cachedCloudReels) {
+      window._cachedCloudReels = window._cachedCloudReels.filter(r => r.id !== id);
+    }
     try {
       const raw = localStorage.getItem('bongbangla_reels');
       if (raw) {
@@ -297,9 +327,10 @@
       }
     } catch(e) {}
 
-    if (supabaseClient) {
+    const client = await ensureClient();
+    if (client) {
       try {
-        await supabaseClient
+        await client
           .from('reels')
           .delete()
           .eq('id', id);
@@ -314,9 +345,10 @@
      3. Models Roster Sync (Full Profile & Gallery Support)
      ========================================================================== */
   async function fetchModels() {
-    if (supabaseClient) {
+    const client = await ensureClient();
+    if (client) {
       try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await client
           .from('models')
           .select('*')
           .order('created_at', { ascending: false });
@@ -338,7 +370,7 @@
               category: d.category,
               height: d.height || local.height || "৫'৭\"",
               shoots: d.shoots || local.shoots || "২০+",
-              image: d.image_url || d.image || local.image,
+              image: d.image_url || d.image || local.image || '',
               available: d.available !== false,
               age: d.age || local.age || '',
               measurements: d.measurements || local.measurements || '',
@@ -350,14 +382,13 @@
               instagram: d.instagram || local.instagram || '',
               specialties: d.specialties || local.specialties || '',
               bio: d.bio || local.bio || '',
-              gallery: d.gallery || local.gallery || []
+              gallery: Array.isArray(d.gallery) && d.gallery.length > 0 ? d.gallery : (Array.isArray(local.gallery) ? local.gallery : [])
             };
           });
 
           // Note: Cloud database is the single source of truth.
-          // Never auto-upload missing items from local cache, as missing items were intentionally deleted.
-
           const validMapped = mapped.filter(m => !isMockModelId(m.id));
+          window._cachedCloudModels = validMapped;
 
           try {
             const sanitized = validMapped.map(m => {
@@ -386,6 +417,10 @@
       }
     }
 
+    if (window._cachedCloudModels && Array.isArray(window._cachedCloudModels) && window._cachedCloudModels.length > 0) {
+      return window._cachedCloudModels;
+    }
+
     try {
       const local = JSON.parse(localStorage.getItem('bongbangla_models') || '[]');
       if (Array.isArray(local) && local.length > 0) {
@@ -405,7 +440,14 @@
       console.log('Blocked addModel for banned or mock ID:', model ? model.id : null);
       return;
     }
-    if (supabaseClient) {
+    // Update in-memory cloud cache immediately
+    if (!window._cachedCloudModels) window._cachedCloudModels = [];
+    const idx = window._cachedCloudModels.findIndex(m => m.id === model.id);
+    if (idx >= 0) window._cachedCloudModels[idx] = { ...model };
+    else window._cachedCloudModels.unshift({ ...model });
+
+    const client = await ensureClient();
+    if (client) {
       try {
         const payload = {
           id: model.id,
@@ -428,7 +470,7 @@
           gallery: Array.isArray(model.gallery) ? model.gallery : [],
           created_at: new Date().toISOString()
         };
-        const { error } = await supabaseClient
+        const { error } = await client
           .from('models')
           .upsert([payload]);
         if (error) {
@@ -443,7 +485,13 @@
   }
 
   async function updateModel(model) {
-    if (supabaseClient) {
+    if (window._cachedCloudModels) {
+      const idx = window._cachedCloudModels.findIndex(m => m.id === model.id);
+      if (idx >= 0) window._cachedCloudModels[idx] = { ...window._cachedCloudModels[idx], ...model };
+    }
+
+    const client = await ensureClient();
+    if (client) {
       try {
         const payload = {
           name: model.name,
@@ -464,7 +512,7 @@
           bio: model.bio || '',
           gallery: Array.isArray(model.gallery) ? model.gallery : []
         };
-        const { error } = await supabaseClient
+        const { error } = await client
           .from('models')
           .update(payload)
           .eq('id', model.id);
@@ -480,6 +528,9 @@
   }
 
   async function deleteModel(id) {
+    if (window._cachedCloudModels) {
+      window._cachedCloudModels = window._cachedCloudModels.filter(m => m.id !== id);
+    }
     try {
       const raw = localStorage.getItem('bongbangla_models');
       if (raw) {
@@ -497,9 +548,10 @@
       }
     } catch(e) {}
 
-    if (supabaseClient) {
+    const client = await ensureClient();
+    if (client) {
       try {
-        await supabaseClient
+        await client
           .from('models')
           .delete()
           .eq('id', id);
@@ -640,6 +692,7 @@
     saveConfig,
     isConfigured,
     initClient,
+    ensureClient,
     submitLead,
     saveLead: submitLead,
     fetchLeads,
@@ -658,6 +711,6 @@
     subscribeToLeads,
     subscribeToReels,
     subscribeToModels,
-    getClient: () => supabaseClient
+    getClient
   };
 })();

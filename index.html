@@ -1354,13 +1354,14 @@
     </div>
   </div>
 
-  <!-- Vault Media CDN, Supabase & Main JavaScript Files -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/vault-config.js?v=20261005_v1"></script>
-  <script src="js/supabase-config.js?v=20261005_v1"></script>
-  <script src="js/supabase-client.js?v=20261005_v1"></script>
-  <script src="js/reels.js?v=20261005_v1"></script>
-  <script src="js/main.js?v=20261005_v1"></script>
+  <!-- Vault Media CDN, Supabase Local Bundle & CDN Fallback, and Main JavaScript Files -->
+  <script src="js/supabase.min.js?v=20261005_v2"></script>
+  <script>if (!window.supabase) document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>');</script>
+  <script src="js/vault-config.js?v=20261005_v2"></script>
+  <script src="js/supabase-config.js?v=20261005_v2"></script>
+  <script src="js/supabase-client.js?v=20261005_v2"></script>
+  <script src="js/reels.js?v=20261005_v2"></script>
+  <script src="js/main.js?v=20261005_v2"></script>
 </body>
 </html>
 

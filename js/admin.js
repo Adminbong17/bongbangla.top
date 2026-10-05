@@ -38,7 +38,7 @@ function initLogoSwitcher() {
   setAdminLogoLang(saved);
 }
 
-window.setAdminLogoLang = function(lang) {
+function setAdminLogoLang(lang) {
   const loginLogo = document.getElementById('admin-login-logo');
   const navLogo = document.getElementById('admin-nav-logo');
   const logoSrc = lang === 'en' ? 'assets/logo-en.png' : 'assets/logo-bn.png';
@@ -72,7 +72,8 @@ window.setAdminLogoLang = function(lang) {
   }
 
   localStorage.setItem('bongbangla_logo_lang', lang);
-};
+}
+window.setAdminLogoLang = setAdminLogoLang;
 
 /* ==========================================================================
    Sidebar Navigation & Section Switcher
@@ -1665,6 +1666,9 @@ window.deleteAdminLead = function(id) {
 };
 
 function getModels() {
+  if (window._cachedCloudModels && Array.isArray(window._cachedCloudModels) && window._cachedCloudModels.length > 0) {
+    return window._cachedCloudModels.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104', 'M-1791099527539'].includes(m.id));
+  }
   try {
     const saved = localStorage.getItem('bongbangla_models');
     if (saved) {
@@ -1713,14 +1717,25 @@ function saveModels(models) {
 }
 
 async function renderDashboard() {
+  // First, if BongBanglaSupabase is present, eagerly fetch all cloud tables before rendering
+  if (window.BongBanglaSupabase) {
+    try {
+      await Promise.allSettled([
+        window.BongBanglaSupabase.fetchLeads(),
+        window.BongBanglaSupabase.fetchModels(),
+        window.BongBanglaSupabase.fetchReels('all'),
+        typeof window.BongBanglaSupabase.fetchHeroSlides === 'function' ? window.BongBanglaSupabase.fetchHeroSlides() : Promise.resolve()
+      ]);
+    } catch(e) {
+      console.warn('Dashboard eager cloud sync notice:', e);
+    }
+  }
+
   try { updateStats(); } catch(e) { console.error('updateStats error:', e); }
   try { renderLeadsTable('all'); } catch(e) { console.error('renderLeadsTable error:', e); }
   try { renderModelsGrid(); } catch(e) { console.error('renderModelsGrid error:', e); }
   try {
-    let cloudReels = null;
-    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.fetchReels === 'function') {
-      cloudReels = await window.BongBanglaSupabase.fetchReels('all').catch(() => null);
-    }
+    let cloudReels = window._cachedCloudReels || null;
     renderAdminReels('all', cloudReels);
   } catch(e) {
     console.error('renderAdminReels error:', e);
@@ -1785,11 +1800,14 @@ function initSupabaseAdmin() {
 
       window.BongBanglaSupabase.fetchModels().then((models) => {
         renderModelsGrid();
+        populateInstaModelSelect();
+        updateStats();
       }).catch(() => {});
 
       window.BongBanglaSupabase.fetchReels('all').then((reels) => {
         const filter = document.getElementById('admin-reel-filter');
         renderAdminReels(filter ? filter.value : 'all', reels);
+        updateStats();
       }).catch(() => {});
 
       // Realtime multi-tab / multi-device listeners
@@ -1805,6 +1823,7 @@ function initSupabaseAdmin() {
         window.BongBanglaSupabase.fetchReels('all').then((reels) => {
           const filter = document.getElementById('admin-reel-filter');
           renderAdminReels(filter ? filter.value : 'all', reels);
+          updateStats();
         }).catch(() => {
           const filter = document.getElementById('admin-reel-filter');
           renderAdminReels(filter ? filter.value : 'all');
@@ -1814,6 +1833,8 @@ function initSupabaseAdmin() {
       window.BongBanglaSupabase.subscribeToModels(() => {
         window.BongBanglaSupabase.fetchModels().then(() => {
           renderModelsGrid();
+          populateInstaModelSelect();
+          updateStats();
         });
       });
     }
@@ -2389,7 +2410,7 @@ function initReelsAdmin() {
 
 let currentReelViewMode = localStorage.getItem('bongbangla_reel_view_mode') || 'list';
 
-window.setReelViewMode = function(mode) {
+function setReelViewMode(mode) {
   currentReelViewMode = mode;
   localStorage.setItem('bongbangla_reel_view_mode', mode);
 
@@ -2417,7 +2438,8 @@ window.setReelViewMode = function(mode) {
     if (gridView) gridView.classList.add('hidden');
     if (listView) listView.classList.remove('hidden');
   }
-};
+}
+window.setReelViewMode = setReelViewMode;
 
 let selectedReelIds = new Set();
 let selectedModelIds = new Set();
@@ -3334,7 +3356,7 @@ function initInstaGrabber() {
   setupInstaDropzone();
 }
 
-window.populateInstaModelSelect = function() {
+function populateInstaModelSelect() {
   const select = document.getElementById('insta-grab-model-select');
   if (!select) return;
 
@@ -3355,9 +3377,10 @@ window.populateInstaModelSelect = function() {
   }
 
   updateInstaSelectedModelPill();
-};
+}
+window.populateInstaModelSelect = populateInstaModelSelect;
 
-window.updateInstaSelectedModelPill = function() {
+function updateInstaSelectedModelPill() {
   const select = document.getElementById('insta-grab-model-select');
   const pill = document.getElementById('insta-selected-model-pill');
   if (!pill) return;
@@ -3370,7 +3393,8 @@ window.updateInstaSelectedModelPill = function() {
   const models = getModels();
   const found = models.find(m => m.id === select.value);
   pill.textContent = found ? found.name : 'সিলেক্টেড মডেল';
-};
+}
+window.updateInstaSelectedModelPill = updateInstaSelectedModelPill;
 
 window.pasteInstaUrl = async function() {
   const input = document.getElementById('insta-grab-url-input');
