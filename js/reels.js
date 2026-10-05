@@ -306,58 +306,65 @@ function openReelVideoModal(videoUrl, title, client, categoryOrList) {
   const foundIdx = allReels.findIndex(r => {
     const raw = r.videoUrl || '';
     const f = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(raw, 'reels') : raw;
-    return raw === videoUrl || f === videoUrl || r.title === title;
+    return raw === videoUrl || f === videoUrl || (title && r.title === title);
   });
-  currentModalReelIndex = foundIdx !== -1 ? foundIdx : 0;
+
+  if (foundIdx !== -1) {
+    currentModalReelIndex = foundIdx;
+  } else {
+    allReels.unshift({ videoUrl, title, client });
+    currentModalReelIndex = 0;
+  }
+  currentModalReelsList = allReels;
 
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'reel-video-modal';
-    modal.className = 'fixed inset-0 z-50 bg-[#2b0e23]/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 select-none';
+    modal.className = 'fixed inset-0 z-[60] bg-[#2b0e23]/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 select-none overflow-y-auto';
     modal.innerHTML = `
-      <div class="relative w-full max-w-[440px] flex items-center justify-center">
-        <!-- Floating Left Arrow -->
-        <button id="reel-modal-prev-btn" class="absolute -left-3 sm:-left-14 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-[#db2777] text-white flex items-center justify-center text-base sm:text-lg transition-all border border-white/20 shadow-xl backdrop-blur-md hover:scale-110 active:scale-95 group cursor-pointer" title="পূর্ববর্তী ভিডিও">
+      <div class="relative w-full max-w-[420px] max-h-[92vh] sm:max-h-[90vh] flex items-center justify-center my-auto">
+        <!-- Floating Left Arrow (Vertically Centered on PC) -->
+        <button id="reel-modal-prev-btn" class="absolute -left-3 sm:-left-14 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/70 hover:bg-[#db2777] text-white flex items-center justify-center text-base sm:text-lg transition-all border border-white/20 shadow-xl backdrop-blur-md hover:scale-110 active:scale-95 group cursor-pointer" title="পূর্ববর্তী ভিডিও">
           <i class="fa-solid fa-chevron-left group-hover:-translate-x-0.5 transition-transform"></i>
         </button>
 
-        <div class="relative w-full bg-black rounded-3xl overflow-hidden shadow-2xl border border-[#ED96D7]/50 flex flex-col" id="reel-modal-card">
+        <div class="relative w-full h-[88vh] max-h-[820px] bg-black rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-[#ED96D7]/50 flex flex-col" id="reel-modal-card">
           <!-- Top bar with close button -->
-          <div class="absolute top-3 inset-x-3 z-20 flex items-center justify-between pointer-events-auto">
-            <div class="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold font-bangla border border-white/20 flex items-center gap-1.5">
+          <div class="absolute top-3 inset-x-3 z-30 flex items-center justify-between pointer-events-auto">
+            <div class="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold font-bangla border border-white/20 flex items-center gap-1.5 shadow-md">
               <span id="modal-reel-client">ক্লায়েন্ট</span>
               <span class="text-pink-300/80 text-[10px]" id="modal-reel-counter"></span>
             </div>
-            <button id="close-reel-modal-btn" class="w-9 h-9 rounded-full bg-black/60 hover:bg-[#db2777] text-white flex items-center justify-center transition-all border border-white/20 shadow-md">
+            <button id="close-reel-modal-btn" class="w-9 h-9 rounded-full bg-black/60 hover:bg-[#db2777] text-white flex items-center justify-center transition-all border border-white/20 shadow-md cursor-pointer hover:scale-105 active:scale-95">
               <i class="fa-solid fa-xmark text-base"></i>
             </button>
           </div>
 
-          <!-- 9:16 Video Player Container -->
-          <div class="relative w-full aspect-[9/16] bg-black flex items-center justify-center overflow-hidden" id="reel-touch-surface">
-            <video id="modal-reel-video" class="w-full h-full object-cover" playsinline controls autoplay loop>
+          <!-- Video Player Container (Flexes to available space) -->
+          <div class="relative flex-1 min-h-0 w-full bg-black flex items-center justify-center overflow-hidden" id="reel-touch-surface">
+            <video id="modal-reel-video" class="w-full h-full object-contain sm:object-cover bg-black" playsinline controls autoplay loop>
               <source id="modal-reel-source" src="" type="video/mp4">
               আপনার ব্রাউজার ভিডিও প্লে করতে সমর্থন করে না।
             </video>
           </div>
 
-          <!-- Bottom Action Bar -->
-          <div class="p-4 bg-[#fff8fa] border-t border-[#ED96D7]/30 text-left space-y-2.5">
-            <h4 id="modal-reel-title" class="font-bangla font-bold text-sm text-[#2b0e23] line-clamp-1"></h4>
+          <!-- Bottom Action Bar (Fixed height, flex-shrink-0, ALWAYS visible on PC & Mobile) -->
+          <div class="flex-shrink-0 p-3.5 sm:p-4 bg-[#fff8fa] border-t border-[#ED96D7]/30 text-left space-y-2 relative z-20">
+            <h4 id="modal-reel-title" class="font-bangla font-bold text-xs sm:text-sm text-[#2b0e23] line-clamp-1"></h4>
             <div class="flex items-center gap-2">
-              <button class="open-booking-modal flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white font-bangla font-bold text-xs shadow-md hover:opacity-95 flex items-center justify-center gap-2">
+              <button id="modal-reel-book-btn" type="button" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white font-bangla font-bold text-xs shadow-md hover:opacity-95 flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer">
                 <i class="fa-solid fa-calendar-check"></i>
                 <span>এইরকম শুটিং বুক করুন</span>
               </button>
-              <a id="modal-reel-whatsapp-btn" href="#" target="_blank" class="px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center transition-all shadow-md" title="WhatsApp-এ মেসেজ দিন">
+              <a id="modal-reel-whatsapp-btn" href="#" target="_blank" class="px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center transition-all shadow-md active:scale-[0.98]" title="WhatsApp-এ মেসেজ দিন">
                 <i class="fa-brands fa-whatsapp text-sm"></i>
               </a>
             </div>
           </div>
         </div>
 
-        <!-- Floating Right Arrow -->
-        <button id="reel-modal-next-btn" class="absolute -right-3 sm:-right-14 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 hover:bg-[#db2777] text-white flex items-center justify-center text-base sm:text-lg transition-all border border-white/20 shadow-xl backdrop-blur-md hover:scale-110 active:scale-95 group cursor-pointer" title="পরবর্তী ভিডিও">
+        <!-- Floating Right Arrow (Vertically Centered on PC) -->
+        <button id="reel-modal-next-btn" class="absolute -right-3 sm:-right-14 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/70 hover:bg-[#db2777] text-white flex items-center justify-center text-base sm:text-lg transition-all border border-white/20 shadow-xl backdrop-blur-md hover:scale-110 active:scale-95 group cursor-pointer" title="পরবর্তী ভিডিও">
           <i class="fa-solid fa-chevron-right group-hover:translate-x-0.5 transition-transform"></i>
         </button>
       </div>
@@ -367,12 +374,45 @@ function openReelVideoModal(videoUrl, title, client, categoryOrList) {
     const closeBtn = modal.querySelector('#close-reel-modal-btn');
     const prevBtn = modal.querySelector('#reel-modal-prev-btn');
     const nextBtn = modal.querySelector('#reel-modal-next-btn');
+    const bookBtn = modal.querySelector('#modal-reel-book-btn');
 
     closeBtn.addEventListener('click', () => {
       const vid = modal.querySelector('#modal-reel-video');
       if (vid) vid.pause();
       modal.classList.add('hidden');
     });
+
+    if (bookBtn) {
+      bookBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // 1. Pause video & hide reel modal
+        const vid = modal.querySelector('#modal-reel-video');
+        if (vid) vid.pause();
+        modal.classList.add('hidden');
+
+        // 2. Open booking form with active reel reference
+        const activeReel = (currentModalReelsList && currentModalReelsList[currentModalReelIndex]) || {};
+        if (typeof window.openBookingForReel === 'function') {
+          window.openBookingForReel(activeReel.title || '', activeReel.client || '');
+        } else {
+          const bookingModal = document.getElementById('booking-modal');
+          if (bookingModal) {
+            bookingModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            const selectEl = document.getElementById('modal-service-select');
+            if (selectEl) selectEl.value = 'ভাইরাল প্রোডাক্ট রিলস প্যাক';
+            const notesEl = bookingModal.querySelector('textarea[name="notes"]');
+            if (notesEl && activeReel.title) {
+              notesEl.value = `বুকিং রেফারেন্স: ${activeReel.title} (${activeReel.client || 'ক্লায়েন্ট'})`;
+            }
+          } else {
+            window.location.href = 'index.html#booking';
+          }
+        }
+      });
+    }
 
     prevBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -389,7 +429,7 @@ function openReelVideoModal(videoUrl, title, client, categoryOrList) {
     });
 
     modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
+      if (e.target === modal || (e.target.classList && e.target.classList.contains('select-none') && !e.target.closest('#reel-modal-card'))) {
         const vid = modal.querySelector('#modal-reel-video');
         if (vid) vid.pause();
         modal.classList.add('hidden');
@@ -463,6 +503,7 @@ function updateReelModalContent(reel, index, total) {
   }
   if (sourceElem) sourceElem.src = resolvedVideoUrl;
   if (videoElem) {
+    videoElem.src = resolvedVideoUrl;
     videoElem.load();
     videoElem.play().catch(() => {});
   }

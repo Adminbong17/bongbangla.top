@@ -344,6 +344,23 @@ body {
   word-break: break-word;
 }
 
+/* Modal Stacking Hierarchy & Viewport Safety */
+#booking-modal {
+  z-index: 100 !important;
+}
+
+#reel-video-modal {
+  z-index: 60 !important;
+}
+
+#lightbox-modal {
+  z-index: 55 !important;
+}
+
+#reel-modal-card {
+  max-height: min(840px, calc(100vh - 40px)) !important;
+}
+
 /* Floating Animation */
 @keyframes floatSlow {
   0%, 100% { transform: translateY(0px); }

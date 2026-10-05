@@ -150,7 +150,11 @@ async function verifyAdminCleanBrowser() {
   console.log('\n✅ PASS: Admin Panel and Instagram Grabber successfully show all cloud models on clean browser!');
 }
 
-verifyAdminCleanBrowser().catch(err => {
-  console.error('\n❌ Admin Clean Browser Test Failed:', err);
-  process.exit(1);
-});
+verifyAdminCleanBrowser()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch(err => {
+    console.error('\n❌ Admin Clean Browser Test Failed:', err);
+    process.exit(1);
+  });

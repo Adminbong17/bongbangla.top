@@ -703,7 +703,7 @@ function initEstimator() {
 }
 
 /* ==========================================================================
-   5. Booking Modal Controller
+   5. Booking Modal Controller & Direct Action Bridges
    ========================================================================== */
 function initModals() {
   const bookingModal = document.getElementById('booking-modal');
@@ -714,6 +714,26 @@ function initModals() {
     const btn = e.target.closest('.open-booking-modal');
     if (!btn) return;
     e.preventDefault();
+
+    // 1. If a reel video modal is active, pause video and hide it
+    const reelModal = document.getElementById('reel-video-modal');
+    if (reelModal && !reelModal.classList.contains('hidden')) {
+      const vid = reelModal.querySelector('#modal-reel-video');
+      if (vid) vid.pause();
+      reelModal.classList.add('hidden');
+    }
+
+    // 2. If lightbox modal is active, pause video and hide it
+    const lightboxModal = document.getElementById('lightbox-modal');
+    if (lightboxModal && !lightboxModal.classList.contains('hidden')) {
+      const lVid = lightboxModal.querySelector('#lightbox-video');
+      if (lVid) {
+        lVid.pause();
+        lVid.src = '';
+      }
+      lightboxModal.classList.add('hidden');
+    }
+
     const servicePreset = btn.getAttribute('data-service-preset');
     const selectEl = document.getElementById('modal-service-select');
     if (selectEl && servicePreset) {
@@ -722,6 +742,8 @@ function initModals() {
     if (bookingModal) {
       bookingModal.classList.remove('hidden');
       document.body.classList.add('overflow-hidden');
+      const nameInput = bookingModal.querySelector('input[name="name"]');
+      if (nameInput) setTimeout(() => nameInput.focus(), 150);
     }
   });
 
@@ -745,6 +767,65 @@ function closeBookingModal() {
     document.body.classList.remove('overflow-hidden');
   }
 }
+
+// Global programmatic bridge to open booking for a specific model
+window.openBookingForModel = function(modelName) {
+  const decodedName = typeof modelName === 'string' ? decodeURIComponent(modelName) : '';
+  const bookingModal = document.getElementById('booking-modal');
+  if (bookingModal) {
+    bookingModal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    const serviceSelect = document.getElementById('modal-service-select');
+    if (serviceSelect) {
+      serviceSelect.value = 'মডেল পোর্টফোলিও ও কাস্টিং';
+    }
+    const notesEl = bookingModal.querySelector('textarea[name="notes"]');
+    if (notesEl && decodedName) {
+      notesEl.value = `মডেল কাস্টিং বুকিং: ${decodedName}`;
+    }
+    const nameInput = bookingModal.querySelector('input[name="name"]');
+    if (nameInput) setTimeout(() => nameInput.focus(), 150);
+  } else {
+    window.location.href = 'index.html#booking';
+  }
+};
+
+// Global programmatic bridge to open booking directly from a video reel
+window.openBookingForReel = function(reelTitle, clientName) {
+  const decodedTitle = typeof reelTitle === 'string' ? decodeURIComponent(reelTitle) : '';
+  const decodedClient = typeof clientName === 'string' ? decodeURIComponent(clientName) : '';
+
+  // 1. Pause video & close reel modal
+  const reelModal = document.getElementById('reel-video-modal');
+  if (reelModal) {
+    const vid = reelModal.querySelector('#modal-reel-video');
+    if (vid) vid.pause();
+    reelModal.classList.add('hidden');
+  }
+
+  // 2. Open booking form
+  const bookingModal = document.getElementById('booking-modal');
+  if (bookingModal) {
+    bookingModal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+
+    const serviceSelect = document.getElementById('modal-service-select');
+    if (serviceSelect) {
+      serviceSelect.value = 'ভাইরাল প্রোডাক্ট রিলস প্যাক';
+    }
+
+    const notesEl = bookingModal.querySelector('textarea[name="notes"]');
+    if (notesEl && decodedTitle) {
+      notesEl.value = `বুকিং রেফারেন্স রিল: "${decodedTitle}"${decodedClient ? ` (${decodedClient})` : ''}`;
+    }
+
+    const nameInput = bookingModal.querySelector('input[name="name"]');
+    if (nameInput) setTimeout(() => nameInput.focus(), 150);
+  } else {
+    window.location.href = 'index.html#booking';
+  }
+};
+
 
 /* ==========================================================================
    6. Contact & Booking Form Submissions (Syncs directly to Supabase & Admin Panel!)
