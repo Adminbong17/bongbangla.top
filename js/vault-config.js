@@ -4,7 +4,6 @@
  * 
  * Base Vault API Host: https://api.bongbangla.top/vault-api
  * Web UI: https://vault.bongbangla.top
- * Vault Account: model@bongbangla.top
  * 
  * Routes media & 4K video assets to the private Media Vault CDN to save costs & limits,
  * providing ultra-fast 4K streaming and high-res image delivery with HTTP byte-range support.
@@ -14,8 +13,8 @@
   const VAULT_STORAGE_KEY = 'bongbangla_vault_config';
   const VAULT_TOKEN_KEY = 'bongbangla_vault_jwt';
   const DEFAULT_VAULT_API = 'https://api.bongbangla.top/vault-api';
-  const DEFAULT_VAULT_USER = 'model@bongbangla.top';
-  const DEFAULT_VAULT_PASS = 'Aktmtbar@1';
+  const DEFAULT_VAULT_USER = '';
+  const DEFAULT_VAULT_PASS = '';
 
   function getConfig() {
     try {

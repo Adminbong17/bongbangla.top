@@ -195,27 +195,17 @@ function getSupabaseAuthClient() {
 }
 
 function getAdminUsers() {
-  const defaultUsers = [
-    { email: 'admin@bongbangla.top', password: 'bongbangla2026', role: 'admin' },
-    { email: 'model@bongbangla.top', password: 'pass-Aktmtbar@1', role: 'model' }
-  ];
   try {
     const saved = localStorage.getItem('bongbangla_admin_users');
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) {
-        // Ensure default master accounts exist
-        defaultUsers.forEach(def => {
-          if (!parsed.some(u => u.email.toLowerCase() === def.email.toLowerCase())) {
-            parsed.push(def);
-          }
-        });
         return parsed;
       }
     }
   } catch (e) {}
 
-  return defaultUsers;
+  return [];
 }
 
 function saveAdminUsers(users) {
@@ -265,15 +255,11 @@ window.setAuthMode = function(mode) {
     if (tabSignIn) tabSignIn.className = 'py-2 rounded-xl text-[#572449] hover:text-[#db2777] transition-all';
     if (submitBtnText) submitBtnText.textContent = 'নতুন অ্যাকাউন্ট তৈরি করুন';
     if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-user-plus';
-    if (emailInput && emailInput.value === 'admin@bongbangla.top') emailInput.value = '';
-    if (passwordInput && passwordInput.value === 'bongbangla2026') passwordInput.value = '';
   } else {
     if (tabSignIn) tabSignIn.className = 'py-2 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white shadow-sm transition-all';
     if (tabSignUp) tabSignUp.className = 'py-2 rounded-xl text-[#572449] hover:text-[#db2777] transition-all';
     if (submitBtnText) submitBtnText.textContent = 'ড্যাশবোর্ডে প্রবেশ করুন';
     if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-arrow-right';
-    if (emailInput && !emailInput.value) emailInput.value = 'admin@bongbangla.top';
-    if (passwordInput && !passwordInput.value) passwordInput.value = 'bongbangla2026';
   }
 };
 
@@ -415,24 +401,14 @@ window.handleAdminLoginSubmit = async function(e) {
     } else {
       // --- Sign In Flow ---
       const lowerEmail = email.toLowerCase();
-      const isMasterAdmin = (lowerEmail === 'admin@bongbangla.top' || lowerEmail === 'admin') && 
-                            (password === 'bongbangla2026' || password === 'bong2026');
-
-      const isModelAdmin = (lowerEmail === 'model@bongbangla.top' || lowerEmail === 'model') && 
-                           (password === 'pass-Aktmtbar@1' || password === 'Aktmtbar@1');
-
-      const isMaster = isMasterAdmin || isModelAdmin;
-      const masterEmail = isModelAdmin ? 'model@bongbangla.top' : 'admin@bongbangla.top';
-
       const adminUsers = getAdminUsers();
       const localMatch = adminUsers.find(u => u.email.toLowerCase() === lowerEmail && u.password === password);
 
-      // If master or local match, instant success
-      if (isMaster || localMatch) {
+      // 1. Check local registered admin accounts
+      if (localMatch) {
         window.showAlert('success', 'লগইন সফল হয়েছে! ড্যাশবোর্ডে স্বাগতম...');
-        const authEmail = isMaster ? masterEmail : localMatch.email;
         setTimeout(() => {
-          window.showAuthenticatedState({ email: authEmail });
+          window.showAuthenticatedState({ email: localMatch.email });
         }, 300);
 
         if (client) {
@@ -444,7 +420,7 @@ window.handleAdminLoginSubmit = async function(e) {
         return false;
       }
 
-      // Try Supabase Auth
+      // 2. Try Supabase Cloud Auth
       if (client) {
         const { data, error } = await client.auth.signInWithPassword({
           email: email.includes('@') ? email : `${email}@bongbangla.top`,
@@ -468,16 +444,12 @@ window.handleAdminLoginSubmit = async function(e) {
             return false;
           }
 
-          let msg = error.message;
-          if (msg.includes('Invalid login credentials')) {
-            msg = 'ভুল ইমেইল বা পাসওয়ার্ড! সঠিক তথ্য দিন। (ডিফল্ট: admin@bongbangla.top / bongbangla2026)';
-          }
-          window.showAlert('error', msg);
+          window.showAlert('error', 'ভুল ইমেইল বা পাসওয়ার্ড! অনুগ্রহ করে সঠিক তথ্য দিন।');
           return false;
         }
       }
 
-      window.showAlert('error', 'ভুল ইমেইল বা পাসওয়ার্ড! সঠিক তথ্য দিন। (ডিফল্ট: admin@bongbangla.top / bongbangla2026)');
+      window.showAlert('error', 'ভুল ইমেইল বা পাসওয়ার্ড! অনুগ্রহ করে সঠিক তথ্য দিন।');
       return false;
     }
   } catch (err) {
@@ -1777,8 +1749,8 @@ function initSupabaseAdmin() {
     if (window.BongBanglaVault) {
       const vcfg = window.BongBanglaVault.getConfig();
       if (vaultInput) vaultInput.value = vcfg.url || 'https://api.bongbangla.top/vault-api';
-      if (vaultUserInput) vaultUserInput.value = vcfg.user || 'model@bongbangla.top';
-      if (vaultPassInput) vaultPassInput.value = vcfg.pass || 'Aktmtbar@1';
+      if (vaultUserInput) vaultUserInput.value = vcfg.user || '';
+      if (vaultPassInput) vaultPassInput.value = vcfg.pass || '';
     }
   };
 
@@ -1871,8 +1843,8 @@ function initSupabaseAdmin() {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const vaultUrl = vaultInput ? vaultInput.value.trim() : 'https://api.bongbangla.top/vault-api';
-      const vaultUser = vaultUserInput ? vaultUserInput.value.trim() : 'model@bongbangla.top';
-      const vaultPass = vaultPassInput ? vaultPassInput.value.trim() : 'Aktmtbar@1';
+      const vaultUser = vaultUserInput ? vaultUserInput.value.trim() : '';
+      const vaultPass = vaultPassInput ? vaultPassInput.value.trim() : '';
       const url = urlInput.value.trim();
       const key = keyInput.value.trim();
 

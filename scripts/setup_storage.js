@@ -5,8 +5,8 @@ async function setupStorage() {
     host: 'aws-0-ap-southeast-2.pooler.supabase.com',
     port: 6543,
     database: 'postgres',
-    user: 'postgres.sfnyuzemaqplpdeedsgg',
-    password: 'Aktmtbar@1mzs',
+    user: process.env.DB_USER || 'postgres.sfnyuzemaqplpdeedsgg',
+    password: process.env.DB_PASSWORD || '',
     ssl: { rejectUnauthorized: false }
   });
 

@@ -98,7 +98,7 @@
           <label class="block text-xs font-bold text-[#572449] mb-1 font-bangla">
             <i class="fa-regular fa-envelope text-[#db2777] mr-1"></i> অ্যাডমিন ইমেইল (Email)
           </label>
-          <input type="text" id="admin-email" required placeholder="admin@bongbangla.top" value="admin@bongbangla.top" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-4 py-3 text-sm text-[#2b0e23] focus:outline-none focus:border-[#db2777] focus:ring-2 focus:ring-[#ED96D7]/20 transition-all font-mono">
+          <input type="text" id="admin-email" required placeholder="admin@bongbangla.top" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-4 py-3 text-sm text-[#2b0e23] focus:outline-none focus:border-[#db2777] focus:ring-2 focus:ring-[#ED96D7]/20 transition-all font-mono">
         </div>
 
         <div>
@@ -106,13 +106,7 @@
             <span><i class="fa-solid fa-key text-[#db2777] mr-1"></i> সিক্রেট পাসওয়ার্ড (Password)</span>
             <span class="text-[10px] text-[#8c4f75] font-normal">কমপক্ষে ৬ অক্ষর</span>
           </label>
-          <input type="password" id="admin-password" required minlength="6" placeholder="••••••••" value="bongbangla2026" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-4 py-3 text-sm text-[#2b0e23] focus:outline-none focus:border-[#db2777] focus:ring-2 focus:ring-[#ED96D7]/20 transition-all">
-          <div class="mt-2 p-2 rounded-lg bg-pink-50/70 border border-[#ED96D7]/30 text-[11px] text-[#8c4f75] font-bangla space-y-1">
-            <div class="flex items-center justify-between">
-              <span>অ্যাডমিন এক্সেস:</span>
-              <span class="font-mono text-[#be185d] font-bold">model@bongbangla.top / admin</span>
-            </div>
-          </div>
+          <input type="password" id="admin-password" required minlength="6" placeholder="••••••••" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-4 py-3 text-sm text-[#2b0e23] focus:outline-none focus:border-[#db2777] focus:ring-2 focus:ring-[#ED96D7]/20 transition-all">
         </div>
 
         <button type="button" id="auth-submit-btn" onclick="handleAdminLoginSubmit(event)" class="w-full py-3.5 rounded-xl btn-pink-primary font-bangla font-bold text-sm shadow-lg shadow-[#ED96D7]/40 transition-all flex items-center justify-center gap-2">
@@ -2090,11 +2084,11 @@
           <div class="grid grid-cols-2 gap-2.5">
             <div>
               <label class="block text-[#572449] font-bold mb-1">Vault Account *</label>
-              <input type="text" id="vault-input-user" required placeholder="model@bongbangla.top" value="model@bongbangla.top" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] font-mono text-xs">
+              <input type="text" id="vault-input-user" required placeholder="user@example.com" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] font-mono text-xs">
             </div>
             <div>
               <label class="block text-[#572449] font-bold mb-1">Vault Key / Pass *</label>
-              <input type="password" id="vault-input-pass" required placeholder="pass-Aktmtbar@1" value="pass-Aktmtbar@1" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] font-mono text-xs">
+              <input type="password" id="vault-input-pass" required placeholder="••••••••" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] font-mono text-xs">
             </div>
           </div>
         </div>

@@ -27,8 +27,8 @@ function testEndpoint(url, method = 'GET', body = null) {
 async function run() {
   console.log('Testing https://api.bongbangla.top/vault-api/login.php');
   const resLogin = await testEndpoint('https://api.bongbangla.top/vault-api/login.php', 'POST', {
-    email: 'model@bongbangla.top',
-    password: 'Aktmtbar@1mzs'
+    email: process.env.VAULT_EMAIL || 'model@bongbangla.top',
+    password: process.env.VAULT_PASSWORD || ''
   });
   console.log('Login result:', resLogin);
 

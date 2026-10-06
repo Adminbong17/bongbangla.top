@@ -8,7 +8,7 @@ async function testUpload() {
   const loginRes = await fetch(loginUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'model@bongbangla.top', password: 'Aktmtbar@1' })
+    body: JSON.stringify({ email: process.env.VAULT_EMAIL || 'model@bongbangla.top', password: process.env.VAULT_PASSWORD || '' })
   });
 
   const loginData = await loginRes.json();

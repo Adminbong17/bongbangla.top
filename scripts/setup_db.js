@@ -23,8 +23,8 @@ const regions = [
 ];
 
 async function tryConnect() {
-  const projectRef = 'sfnyuzemaqplpdeedsgg';
-  const password = 'Aktmtbar@1mzs';
+  const projectRef = process.env.PROJECT_REF || 'sfnyuzemaqplpdeedsgg';
+  const password = process.env.DB_PASSWORD || '';
 
   for (const reg of regions) {
     const host = `aws-0-${reg}.pooler.supabase.com`;

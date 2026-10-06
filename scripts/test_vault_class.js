@@ -101,8 +101,8 @@ class VaultClient {
 async function run() {
   const client = new VaultClient(
     'https://api.bongbangla.top/vault-api',
-    'model@bongbangla.top',
-    'Aktmtbar@1'
+    process.env.VAULT_EMAIL || 'model@bongbangla.top',
+    process.env.VAULT_PASSWORD || ''
   );
 
   console.log('Logging in to vault...');
