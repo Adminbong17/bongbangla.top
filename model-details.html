@@ -915,10 +915,10 @@
         return;
       }
 
-      renderModelDetail(model, models);
+      await renderModelDetail(model, models);
     });
 
-    function renderModelDetail(model, allModels) {
+    async function renderModelDetail(model, allModels) {
       const contentEl = document.getElementById('model-profile-content');
       if (contentEl) contentEl.classList.remove('hidden');
 
@@ -1543,9 +1543,11 @@
       if (sliderTrack) {
         sliderTrack.innerHTML = items.map((item, idx) => {
           const isVideo = item.type === 'video';
-          const rawUrl = item.url || '';
+          const rawUrl = (item.url || item.image || item.src || '').trim();
           const formattedUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawUrl, isVideo ? 'reels' : 'models') : rawUrl;
-          const rawThumb = item.thumbnail || (isVideo ? 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80' : rawUrl);
+          const rawThumb = isVideo 
+            ? (item.thumbnail || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80')
+            : (rawUrl || item.thumbnail || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80');
           const formattedThumb = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawThumb, isVideo ? 'thumbnails' : 'models') : rawThumb;
           const title = item.title || (isVideo ? '৪K সিনেমাটিক রিলস' : 'এক্সক্লুসিভ পোর্ট্রেট');
           const clientName = item.client || 'BongBangla Shoot';
@@ -1594,12 +1596,22 @@
             `;
           } else {
             return `
-              <div class="group relative rounded-3xl overflow-hidden bg-pink-50 aspect-[3/4] w-[230px] sm:w-[270px] shrink-0 shadow-lg border border-[#ED96D7]/40 hover:border-[#db2777] transition-all duration-300 cursor-pointer flex flex-col justify-between"
+              <div class="group relative rounded-3xl overflow-hidden bg-[#fff0f6] aspect-[3/4] w-[230px] sm:w-[270px] shrink-0 shadow-lg border border-[#ED96D7]/40 hover:border-[#db2777] transition-all duration-300 cursor-pointer flex flex-col justify-between"
                    onclick="openGallerySliderModal(${idx})">
-                <img src="${formattedUrl}" alt="${title}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                
+                <!-- Loading Skeleton Spinner Placeholder -->
+                <div class="img-skeleton absolute inset-0 flex flex-col items-center justify-center bg-pink-50/90 z-0">
+                  <div class="w-7 h-7 border-3 border-[#ED96D7]/30 border-t-[#db2777] rounded-full animate-spin mb-1.5"></div>
+                  <span class="text-[10px] text-[#8c4f75] font-bangla font-semibold">ফটো লোড হচ্ছে...</span>
+                </div>
+
+                <img src="${formattedUrl}" alt="${title}" decoding="async"
+                     onload="this.classList.remove('opacity-0'); const s=this.parentElement.querySelector('.img-skeleton'); if(s) s.remove();"
+                     onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'; this.classList.remove('opacity-0'); const s=this.parentElement.querySelector('.img-skeleton'); if(s) s.remove();"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-all duration-500 opacity-0 relative z-1">
                 
                 <!-- Atmospheric Gradient Overlay -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25 pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25 pointer-events-none z-2"></div>
 
                 <!-- Top Floating Badge -->
                 <div class="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none z-10">
@@ -1634,15 +1646,19 @@
       if (grid) {
         grid.innerHTML = items.map((item, idx) => {
           const isVideo = item.type === 'video';
-          const rawUrl = item.url || '';
+          const rawUrl = (item.url || item.image || item.src || '').trim();
           const formattedUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawUrl, isVideo ? 'reels' : 'models') : rawUrl;
+          const rawThumb = isVideo 
+            ? (item.thumbnail || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80')
+            : (rawUrl || item.thumbnail || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80');
+          const formattedThumb = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawThumb, isVideo ? 'thumbnails' : 'models') : rawThumb;
           const title = item.title || (isVideo ? '৪K সিনেমাটিক রিলস' : 'পোর্ট্রেট শ্যুট');
 
           if (isVideo) {
             return `
               <div class="group relative rounded-3xl overflow-hidden bg-black aspect-[9/16] shadow-md border border-[#ED96D7]/30 hover:border-[#db2777] transition-all cursor-pointer flex flex-col justify-between"
                    onclick="openGallerySliderModal(${idx})">
-                <video src="${formattedUrl}" preload="metadata" muted playsinline webkit-playsinline class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"></video>
+                <video src="${formattedUrl}" poster="${formattedThumb}" preload="metadata" muted playsinline webkit-playsinline class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"></video>
                 <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 flex flex-col justify-between p-4 pointer-events-none">
                   <div class="flex items-center justify-between">
                     <span class="px-2.5 py-1 rounded-full bg-red-600/90 text-white text-[10px] font-bold tracking-wider uppercase backdrop-blur-md flex items-center gap-1 shadow-sm font-mono">
@@ -1660,10 +1676,21 @@
             `;
           } else {
             return `
-              <div class="group relative rounded-3xl overflow-hidden bg-pink-50 aspect-[3/4] shadow-md border border-[#ED96D7]/30 hover:border-[#db2777] transition-all cursor-pointer"
+              <div class="group relative rounded-3xl overflow-hidden bg-[#fff0f6] aspect-[3/4] shadow-md border border-[#ED96D7]/30 hover:border-[#db2777] transition-all cursor-pointer flex flex-col justify-between"
                    onclick="openGallerySliderModal(${idx})">
-                <img src="${formattedUrl}" alt="Model Portfolio Photo" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4 pointer-events-none">
+                
+                <!-- Loading Skeleton Spinner Placeholder -->
+                <div class="img-skeleton absolute inset-0 flex flex-col items-center justify-center bg-pink-50/90 z-0">
+                  <div class="w-7 h-7 border-3 border-[#ED96D7]/30 border-t-[#db2777] rounded-full animate-spin mb-1.5"></div>
+                  <span class="text-[10px] text-[#8c4f75] font-bangla font-semibold">ফটো লোড হচ্ছে...</span>
+                </div>
+
+                <img src="${formattedUrl}" alt="${title}" decoding="async"
+                     onload="this.classList.remove('opacity-0'); const s=this.parentElement.querySelector('.img-skeleton'); if(s) s.remove();"
+                     onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'; this.classList.remove('opacity-0'); const s=this.parentElement.querySelector('.img-skeleton'); if(s) s.remove();"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-all duration-500 opacity-0 relative z-1">
+                
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4 pointer-events-none z-2">
                   <span class="text-white text-xs font-bold font-bangla flex items-center gap-1.5">
                     <i class="fa-solid fa-expand text-xs"></i>
                     <span>বড় করে স্লাইড দেখুন</span>
@@ -1955,6 +1982,8 @@
           imgEl.classList.remove('hidden');
           imgEl.src = formattedUrl;
         }
+      }
+
       // Audio & WhatsApp Header Actions
       const audioBtn = document.getElementById('slider-audio-btn');
       const audioIcon = document.getElementById('slider-audio-icon');
