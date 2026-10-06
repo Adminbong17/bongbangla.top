@@ -23,38 +23,53 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Always fetch fresh data from Supabase cloud (works on any device)
   if (window.BongBanglaSupabase) {
-    try {
-      if (typeof window.BongBanglaSupabase.ensureClient === 'function') {
-        await window.BongBanglaSupabase.ensureClient();
-      }
-
-      // Fetch models from Supabase and re-render with fresh cloud data
-      const cloudModels = await window.BongBanglaSupabase.fetchModels();
-      if (Array.isArray(cloudModels) && cloudModels.length > 0) {
-        renderFrontendModels(cloudModels);
-      }
-
-      // Fetch hero slides from Supabase
-      if (typeof window.BongBanglaSupabase.fetchHeroSlides === 'function') {
-        const cloudSlides = await window.BongBanglaSupabase.fetchHeroSlides();
-        if (Array.isArray(cloudSlides) && cloudSlides.length > 0) {
-          renderFrontendHeroSlides(cloudSlides);
+    (async () => {
+      try {
+        if (typeof window.BongBanglaSupabase.ensureClient === 'function') {
+          await window.BongBanglaSupabase.ensureClient();
         }
-      } else {
-        renderFrontendHeroSlides();
-      }
+      } catch(e) {}
 
-      // Fetch reels from Supabase
-      if (typeof window.BongBanglaSupabase.fetchReels === 'function') {
-        const cloudReels = await window.BongBanglaSupabase.fetchReels('all');
-        const activeFilter = document.querySelector('.filter-btn.bg-gradient-to-r');
-        renderFrontendPortfolio(activeFilter ? activeFilter.getAttribute('data-filter') : 'all', cloudReels);
-      } else {
-        renderFrontendPortfolio('all');
-      }
-    } catch(e) {
-      console.warn('Supabase fetch error on homepage:', e);
-    }
+      // 1. Fetch reels immediately and render portfolio marquee
+      (async () => {
+        try {
+          const cloudReels = await window.BongBanglaSupabase.fetchReels('all');
+          if (Array.isArray(cloudReels) && cloudReels.length > 0) {
+            window._cachedCloudReels = cloudReels;
+            const activeFilter = document.querySelector('.filter-btn.bg-gradient-to-r');
+            renderFrontendPortfolio(activeFilter ? activeFilter.getAttribute('data-filter') : 'all', cloudReels);
+          }
+        } catch(e) {
+          console.warn('Supabase reels fetch error:', e);
+        }
+      })();
+
+      // 2. Fetch models immediately and render models marquee
+      (async () => {
+        try {
+          const cloudModels = await window.BongBanglaSupabase.fetchModels();
+          if (Array.isArray(cloudModels) && cloudModels.length > 0) {
+            renderFrontendModels(cloudModels);
+          }
+        } catch(e) {
+          console.warn('Supabase models fetch error:', e);
+        }
+      })();
+
+      // 3. Fetch hero slides immediately and render hero
+      (async () => {
+        try {
+          if (typeof window.BongBanglaSupabase.fetchHeroSlides === 'function') {
+            const cloudSlides = await window.BongBanglaSupabase.fetchHeroSlides();
+            if (Array.isArray(cloudSlides) && cloudSlides.length > 0) {
+              renderFrontendHeroSlides(cloudSlides);
+            }
+          }
+        } catch(e) {
+          console.warn('Supabase hero slides fetch error:', e);
+        }
+      })();
+    })();
 
     // Real-time subscriptions for live updates
     if (typeof window.BongBanglaSupabase.subscribeToReels === 'function') {
@@ -285,6 +300,11 @@ function renderFrontendPortfolio(filter = 'all', preloadedReels = null) {
   }
 
   if (!filtered || filtered.length === 0) {
+    // If this is initial call before cloud fetch completes, keep loading spinner
+    if (!preloadedReels && (!window._cachedCloudReels || window._cachedCloudReels.length === 0)) {
+      return;
+    }
+
     container.className = 'w-full';
     container.style.animation = 'none';
     container.innerHTML = `
@@ -304,19 +324,18 @@ function renderFrontendPortfolio(filter = 'all', preloadedReels = null) {
 
   // Restore motion track class
   container.className = 'portfolio-motion-track';
-  container.style.animation = '';
 
   // Duplicate set to create seamless continuous infinite loop like Hero and Models section
   let displayReels = [...filtered];
   if (filtered.length < 4) {
     displayReels = [...filtered, ...filtered, ...filtered, ...filtered];
-  } else if (filtered.length < 8) {
+  } else {
     displayReels = [...filtered, ...filtered];
   }
 
-  // Adjust animation speed based on card count
-  const animDuration = Math.max(25, displayReels.length * 4.5);
-  container.style.animationDuration = `${animDuration}s`;
+  // Set animation speed and explicitly apply continuous right-to-left marquee animation
+  const animDuration = Math.max(25, displayReels.length * 4);
+  container.style.animation = `portfolioContinuousMarquee ${animDuration}s linear infinite`;
 
   // Reset scroll to left when filtered
   if (viewport) {
@@ -640,7 +659,17 @@ function initPortfolioFilter() {
   const filterButtons = document.querySelectorAll('.filter-btn');
 
   filterButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      const filterValue = btn.getAttribute('data-filter') || 'all';
+      const href = btn.getAttribute('href');
+
+      // If this button links to an external or service page, let the browser navigate directly!
+      if (filterValue !== 'all' && href && href !== '#' && href !== '#portfolio') {
+        return; // Natural link navigation to dedicated category page
+      }
+
+      e.preventDefault();
+
       filterButtons.forEach(b => {
         b.classList.remove('bg-gradient-to-r', 'from-[#ED96D7]', 'to-[#db2777]', 'text-white', 'border-[#db2777]', 'shadow-[0_0_15px_rgba(237,150,215,0.5)]');
         b.classList.add('bg-white', 'text-[#572449]', 'border-[#ED96D7]/40');
@@ -649,7 +678,6 @@ function initPortfolioFilter() {
       btn.classList.add('bg-gradient-to-r', 'from-[#ED96D7]', 'to-[#db2777]', 'text-white', 'border-[#db2777]', 'shadow-[0_0_15px_rgba(237,150,215,0.5)]');
       btn.classList.remove('bg-white', 'text-[#572449]', 'border-[#ED96D7]/40');
 
-      const filterValue = btn.getAttribute('data-filter') || 'all';
       updateCategoryBanner(filterValue);
       renderFrontendPortfolio(filterValue);
     });

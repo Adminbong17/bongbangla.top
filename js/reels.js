@@ -119,6 +119,76 @@ const BongBanglaCategorySystem = window.BongBanglaCategorySystem || (function() 
 // Default Seed Reels Data - Empty
 const DEFAULT_REELS = [];
 
+// Curated Showcase Reels for categories that do not yet have cloud uploads in Supabase
+const DEFAULT_SHOWCASE_REELS = [
+  {
+    id: 'showcase-cinema-1',
+    category: 'cinema-ads',
+    title: '৪K লাক্সারি সিনেমা অ্যাড ও ব্র্যান্ড ফিল্ম',
+    client: 'BongBangla Originals',
+    tag: '4K CINEMA',
+    views: '১.৮M ভিউজ',
+    videoUrl: 'https://api.bongbangla.top/vault-api/share.php?t=1c97fb02b8d21a61014d434e292c96dc',
+    thumbnail: 'https://api.bongbangla.top/vault-api/share.php?t=2b89b7a48f5b77d885e717f3c7a44b63',
+    date: '2026-10-06'
+  },
+  {
+    id: 'showcase-cinema-2',
+    category: 'cinema-ads',
+    title: 'প্রিমিয়াম মডেল কাস্টিং ও সিনেমা শুট',
+    client: 'bongbangla.top',
+    tag: '4K RED',
+    views: '২.১M ভিউজ',
+    videoUrl: 'https://api.bongbangla.top/vault-api/share.php?t=df29dce310e81cadd4a4cafaf3c8b515',
+    thumbnail: 'https://api.bongbangla.top/vault-api/share.php?t=bb729cec0c3eb42473d1f259bbce4844',
+    date: '2026-10-06'
+  },
+  {
+    id: 'showcase-fb-1',
+    category: 'facebook-ads',
+    title: 'হাই ROAS পারফিউম ভিডিও অ্যাড ক্রিয়েটিভ',
+    client: 'Vintage Fragrance',
+    tag: 'HIGH ROAS',
+    views: '২.২M ভিউজ',
+    videoUrl: 'https://api.bongbangla.top/vault-api/share.php?t=0ff50e1ea45ae95fa9781934bb8c6646',
+    thumbnail: 'https://api.bongbangla.top/vault-api/share.php?t=81beeb45343f3bb9cfe408019329456c',
+    date: '2026-10-06'
+  },
+  {
+    id: 'showcase-fb-2',
+    category: 'facebook-ads',
+    title: 'ই-কমার্স ব্র্যান্ডিং ও কনভার্সন অ্যাড',
+    client: 'Vintage Fragrance',
+    tag: 'META ADS',
+    views: '১.৯M ভিউজ',
+    videoUrl: 'https://api.bongbangla.top/vault-api/share.php?t=ae89d75a2460279b0172a32db22d03f4',
+    thumbnail: 'https://api.bongbangla.top/vault-api/share.php?t=a3ffa994cd67b54f66019135740a42c0',
+    date: '2026-10-06'
+  },
+  {
+    id: 'showcase-jewel-1',
+    category: 'jewellery',
+    title: 'রয়্যাল ব্রাইডাল জুয়েলারি ও ডায়মন্ড শুট',
+    client: 'BongBangla Luxury',
+    tag: 'LUXURY 4K',
+    views: '২.৫M ভিউজ',
+    videoUrl: 'https://api.bongbangla.top/vault-api/share.php?t=1c97fb02b8d21a61014d434e292c96dc',
+    thumbnail: 'https://api.bongbangla.top/vault-api/share.php?t=2b89b7a48f5b77d885e717f3c7a44b63',
+    date: '2026-10-06'
+  },
+  {
+    id: 'showcase-jewel-2',
+    category: 'jewellery',
+    title: 'গোল্ড জুয়েলারি ও হ্যান্ড মডেল সিনেমাটিক শট',
+    client: 'BongBangla Luxury',
+    tag: 'MACRO 4K',
+    views: '১.৭M ভিউজ',
+    videoUrl: 'https://api.bongbangla.top/vault-api/share.php?t=df29dce310e81cadd4a4cafaf3c8b515',
+    thumbnail: 'https://api.bongbangla.top/vault-api/share.php?t=bb729cec0c3eb42473d1f259bbce4844',
+    date: '2026-10-06'
+  }
+];
+
 // Helper to get reels from localStorage or cloud cache
 function getReels(category = 'all') {
   let reels = [];
@@ -141,13 +211,21 @@ function getReels(category = 'all') {
     }
   }
 
-  if (!Array.isArray(reels)) {
-    reels = [];
+  if (!Array.isArray(reels) || reels.length === 0) {
+    if (Array.isArray(DEFAULT_SHOWCASE_REELS) && DEFAULT_SHOWCASE_REELS.length > 0) {
+      reels = DEFAULT_SHOWCASE_REELS;
+    } else {
+      reels = [];
+    }
   }
 
   if (category === 'all') return reels;
   const catHelper = window.BongBanglaCategorySystem || BongBanglaCategorySystem;
-  return reels.filter(r => catHelper ? catHelper.matchesCategory(r.category, category) : r.category === category);
+  const filtered = reels.filter(r => catHelper ? catHelper.matchesCategory(r.category, category) : r.category === category);
+  if (filtered.length === 0 && Array.isArray(DEFAULT_SHOWCASE_REELS) && DEFAULT_SHOWCASE_REELS.length > 0) {
+    return DEFAULT_SHOWCASE_REELS.filter(r => catHelper ? catHelper.matchesCategory(r.category, category) : r.category === category);
+  }
+  return filtered;
 }
 
 function saveReels(reels) {
@@ -201,6 +279,14 @@ async function initReelsPage(options = {}) {
       allCategoryReels = await window.BongBanglaSupabase.fetchReels(category);
     } else {
       allCategoryReels = getReels(category);
+    }
+
+    if (allCategoryReels.length === 0 && Array.isArray(DEFAULT_SHOWCASE_REELS) && DEFAULT_SHOWCASE_REELS.length > 0) {
+      const catHelper = window.BongBanglaCategorySystem || BongBanglaCategorySystem;
+      const showcaseMatches = DEFAULT_SHOWCASE_REELS.filter(r => catHelper ? catHelper.matchesCategory(r.category, category) : r.category === category);
+      if (showcaseMatches.length > 0) {
+        allCategoryReels = showcaseMatches;
+      }
     }
 
     const totalItems = allCategoryReels.length;
@@ -317,7 +403,7 @@ async function initReelsPage(options = {}) {
       const client = decodeURIComponent(card.getAttribute('data-client') || '');
 
       const openHandler = () => {
-        openReelVideoModal(videoUrl, title, client);
+        openReelVideoModal(videoUrl, title, client, allCategoryReels);
       };
 
       if (trigger) trigger.addEventListener('click', openHandler);

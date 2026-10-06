@@ -69,7 +69,84 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   <!-- Custom Styles (White Pinkish Luxury Aesthetic) -->
-  <link rel="stylesheet" href="css/style.css?v=20261004_v13">
+  <link rel="stylesheet" href="css/style.css?v=20261006_v2">
+
+  <!-- Guaranteed Inline Styles for Continuous Right-to-Left Auto-Marquee Slider -->
+  <style>
+    .portfolio-motion-wrapper,
+    .models-motion-wrapper {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      padding: 0.75rem 0 1.5rem;
+    }
+
+    .portfolio-motion-viewport,
+    .models-motion-viewport {
+      position: relative;
+      width: 100%;
+      overflow: hidden !important;
+      mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+    }
+
+    .portfolio-motion-track,
+    .models-motion-track {
+      display: flex !important;
+      gap: 1.5rem !important;
+      width: max-content !important;
+      animation: portfolioContinuousMarquee 38s linear infinite !important;
+      will-change: transform;
+    }
+
+    .portfolio-motion-track:hover,
+    .portfolio-motion-track.is-paused,
+    .models-motion-track:hover,
+    .models-motion-track.is-paused {
+      animation-play-state: paused !important;
+    }
+
+    @keyframes portfolioContinuousMarquee {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
+    .portfolio-motion-card {
+      width: 290px !important;
+      min-width: 290px !important;
+      max-width: 290px !important;
+      flex-shrink: 0 !important;
+      border-radius: 1.75rem;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1.5px solid rgba(237, 150, 215, 0.45);
+      box-shadow: 0 10px 30px -8px rgba(237, 150, 215, 0.35);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .portfolio-motion-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: #db2777 !important;
+      box-shadow: 0 25px 45px -10px rgba(237, 150, 215, 0.55), 0 0 20px rgba(219, 39, 119, 0.2) !important;
+    }
+
+    @media (max-width: 640px) {
+      .portfolio-motion-card {
+        width: 260px !important;
+        min-width: 260px !important;
+        max-width: 260px !important;
+      }
+    }
+  </style>
 </head>
 <body class="bg-[#fff8fa] text-[#572449] antialiased relative font-bangla">
 
@@ -451,13 +528,32 @@
 
         <!-- Controls: Filter Buttons & Slider Navigation Controls -->
         <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 flex-wrap self-start lg:self-end">
-          <!-- Filter Buttons -->
+          <!-- Filter & Direct Category Service Page Buttons -->
           <div class="flex items-center gap-2 flex-wrap text-xs font-bold" id="portfolio-filter-buttons">
-            <button class="filter-btn bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white border-[#db2777] shadow-[0_0_15px_rgba(237,150,215,0.5)] px-4 py-2 rounded-xl border transition-all cursor-pointer" data-filter="all">সব কাজ</button>
-            <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="commercial-ad">অ্যাড ফিল্ম</button>
-            <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="model-shoot">শাড়ি ও মডেল শুট</button>
-            <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="product-reels">প্রোডাক্ট রিলস</button>
-            <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="branding-web">ওয়েবসাইট ও ব্র্যান্ড</button>
+            <a href="#portfolio" class="filter-btn bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white border-[#db2777] shadow-[0_0_15px_rgba(237,150,215,0.5)] px-4 py-2 rounded-xl border transition-all cursor-pointer inline-flex items-center gap-1.5" data-filter="all" title="সব কাজের স্লাইডার">
+              <span class="w-1.5 h-1.5 rounded-full bg-white pulse-indicator"></span>
+              <span>সব কাজ</span>
+            </a>
+            <a href="service-cinema-ads.html" class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-3.5 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] hover:border-[#db2777] transition-all shadow-sm cursor-pointer inline-flex items-center gap-1.5" data-filter="commercial-ad" title="৪K সিনেমা অ্যাড পেজে যান">
+              <span>অ্যাড ফিল্ম</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-[#db2777]/60"></i>
+            </a>
+            <a href="service-saree-model-shoot.html" class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-3.5 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] hover:border-[#db2777] transition-all shadow-sm cursor-pointer inline-flex items-center gap-1.5" data-filter="model-shoot" title="শাড়ি ও মডেল শুট পেজে যান">
+              <span>শাড়ি ও মডেল শুট</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-[#db2777]/60"></i>
+            </a>
+            <a href="service-viral-reels.html" class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-3.5 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] hover:border-[#db2777] transition-all shadow-sm cursor-pointer inline-flex items-center gap-1.5" data-filter="product-reels" title="প্রোডাক্ট রিলস পেজে যান">
+              <span>প্রোডাক্ট রিলস</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-[#db2777]/60"></i>
+            </a>
+            <a href="service-facebook-ads.html" class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-3.5 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] hover:border-[#db2777] transition-all shadow-sm cursor-pointer inline-flex items-center gap-1.5" data-filter="branding-web" title="ফেসবুক মার্কেটিং ও ওয়েবসাইট পেজে যান">
+              <span>ওয়েবসাইট ও ব্র্যান্ড</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-[#db2777]/60"></i>
+            </a>
+            <a href="service-jewellery-luxury.html" class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-3.5 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] hover:border-[#db2777] transition-all shadow-sm cursor-pointer inline-flex items-center gap-1.5" data-filter="jewellery" title="জুয়েলারি ও লাক্সারি পেজে যান">
+              <span>জুয়েলারি ও লাক্সারি</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-[#db2777]/60"></i>
+            </a>
           </div>
 
           <!-- Slider Navigation Controls & Status Indicator (Matches Models Section Exactly) -->
@@ -1399,13 +1495,13 @@
   </div>
 
   <!-- Vault Media CDN, Supabase Local Bundle & CDN Fallback, and Main JavaScript Files -->
-  <script src="js/supabase.min.js?v=20261005_v2"></script>
+  <script src="js/supabase.min.js?v=20261006_v2"></script>
   <script>if (!window.supabase) document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>');</script>
-  <script src="js/vault-config.js?v=20261005_v2"></script>
-  <script src="js/supabase-config.js?v=20261005_v2"></script>
-  <script src="js/supabase-client.js?v=20261005_v2"></script>
-  <script src="js/reels.js?v=20261005_v2"></script>
-  <script src="js/main.js?v=20261005_v2"></script>
+  <script src="js/vault-config.js?v=20261006_v2"></script>
+  <script src="js/supabase-config.js?v=20261006_v2"></script>
+  <script src="js/supabase-client.js?v=20261006_v2"></script>
+  <script src="js/reels.js?v=20261006_v2"></script>
+  <script src="js/main.js?v=20261006_v2"></script>
 </body>
 </html>
 
