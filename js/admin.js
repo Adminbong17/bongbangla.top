@@ -92,6 +92,11 @@ window.switchSection = function(sectionId, btnElement) {
     target.style.display = 'block';
   }
 
+  if (sectionId === 'section-packages') {
+    try { if (typeof renderAdminPackages === 'function') renderAdminPackages(); } catch(e) {}
+    try { if (typeof renderAdminCustomizerRates === 'function') renderAdminCustomizerRates(); } catch(e) {}
+  }
+
   // Update active state in sidebar
   document.querySelectorAll('.admin-nav-item').forEach(btn => {
     btn.classList.remove('bg-gradient-to-r', 'from-[#db2777]', 'to-[#be185d]', 'text-white', 'font-bold', 'shadow-md');
@@ -1717,6 +1722,7 @@ async function renderDashboard() {
   try { initReelsAdmin(); } catch(e) { console.error('initReelsAdmin error:', e); }
   try { initHeroSlidesAdmin(); } catch(e) { console.error('initHeroSlidesAdmin error:', e); }
   try { renderAdminPackages(); } catch(e) { console.error('renderAdminPackages error:', e); }
+  try { renderAdminCustomizerRates(); } catch(e) { console.error('renderAdminCustomizerRates error:', e); }
   try { initSupabaseAdmin(); } catch(e) { console.error('initSupabaseAdmin error:', e); }
   try { populateInstaModelSelect(); } catch(e) { console.error('populateInstaModelSelect error:', e); }
 }
@@ -4479,6 +4485,189 @@ window.resetAdminPackagesToDefault = function() {
   }
   showAdminToast('ডিফল্ট প্যাকেজসমূহ রিস্টোর করা হয়েছে!', 'success');
 };
+
+/* ==========================================================================
+   CUSTOM PACKAGE BUILDER RATES & PRICING RULES (ADMIN CONTROL)
+   ========================================================================== */
+function getAdminCustomizerRates() {
+  if (window.BongBanglaPackages && typeof window.BongBanglaPackages.getStoredCustomizerRates === 'function') {
+    return window.BongBanglaPackages.getStoredCustomizerRates();
+  }
+  try {
+    const raw = localStorage.getItem('bongbangla_customizer_rates');
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return {
+    reelRate: 2000,
+    bulkDiscountPercent: 10,
+    bulkDiscountMinReels: 10,
+    services: {
+      'cinema-ads': { name: '৪K সিনেমা অ্যাড ফিল্ম', base: 15000, icon: 'fa-solid fa-clapperboard' },
+      'saree-shoot': { name: 'শাড়ি ও মডেল শুট', base: 12000, icon: 'fa-solid fa-camera-retro' },
+      'viral-reels': { name: 'ভাইরাল প্রোডাক্ট রিলস', base: 10000, icon: 'fa-solid fa-bolt' },
+      'facebook-ads': { name: 'ফেসবুক অ্যাড স্কেলিং', base: 8000, icon: 'fa-brands fa-facebook-f' },
+      'jewellery': { name: 'জুয়েলারি ও লাক্সারি', base: 14000, icon: 'fa-solid fa-gem' }
+    },
+    models: {
+      0: { name: 'কোনো মডেল ছাড়া (অনলি প্রোডাক্ট)', price: 0 },
+      1: { name: '১ জন প্রফেশনাল মডেল', price: 5000 },
+      2: { name: '২ জন মডেল (কাপল / ডুয়েল)', price: 9000 },
+      3: { name: '৩+ জন বা ফুল গ্রুপ কাস্ট', price: 13000 }
+    },
+    addons: {
+      'photos': { name: '১০টি আল্ট্রা-HD স্টিল ফটো প্যাক', price: 4000, icon: 'fa-solid fa-camera' },
+      'makeup': { name: 'অন-সেট মেকআপ ও হেয়ার স্টাইলিস্ট', price: 3500, icon: 'fa-solid fa-wand-magic-sparkles' },
+      'studio': { name: 'প্রিমিয়াম ইনডোর স্টুডিও / লোকেশন', price: 6000, icon: 'fa-solid fa-building-columns' },
+      'voiceover': { name: 'সিনেমাটিক ভয়েসওভার ও সাউন্ডট্র্যাক', price: 2500, icon: 'fa-solid fa-microphone' },
+      'meta-ads': { name: 'মেটা অ্যাড সেটআপ ও ১ মাস ম্যানেজমেন্ট', price: 8000, icon: 'fa-solid fa-chart-line' },
+      'express': { name: 'জরুরি ৩-দিনের এক্সপ্রেস ডেলিভারি', price: 3000, icon: 'fa-solid fa-truck-fast' }
+    }
+  };
+}
+
+function renderAdminCustomizerRates() {
+  const rates = getAdminCustomizerRates();
+  if (!rates) return;
+
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val !== undefined && val !== null) el.value = val;
+  };
+
+  setVal('rate-reel-base', rates.reelRate ?? 2000);
+  setVal('rate-bulk-discount', rates.bulkDiscountPercent ?? 10);
+  setVal('rate-bulk-min-reels', rates.bulkDiscountMinReels ?? 10);
+
+  if (rates.services) {
+    setVal('rate-service-cinema-ads', rates.services['cinema-ads']?.base ?? 15000);
+    setVal('rate-service-saree-shoot', rates.services['saree-shoot']?.base ?? 12000);
+    setVal('rate-service-viral-reels', rates.services['viral-reels']?.base ?? 10000);
+    setVal('rate-service-facebook-ads', rates.services['facebook-ads']?.base ?? 8000);
+    setVal('rate-service-jewellery', rates.services['jewellery']?.base ?? 14000);
+  }
+
+  if (rates.models) {
+    setVal('rate-model-1', rates.models[1]?.price ?? 5000);
+    setVal('rate-model-2', rates.models[2]?.price ?? 9000);
+    setVal('rate-model-3', rates.models[3]?.price ?? 13000);
+  }
+
+  if (rates.addons) {
+    setVal('rate-addon-photos', rates.addons['photos']?.price ?? 4000);
+    setVal('rate-addon-makeup', rates.addons['makeup']?.price ?? 3500);
+    setVal('rate-addon-studio', rates.addons['studio']?.price ?? 6000);
+    setVal('rate-addon-voiceover', rates.addons['voiceover']?.price ?? 2500);
+    setVal('rate-addon-meta-ads', rates.addons['meta-ads']?.price ?? 8000);
+    setVal('rate-addon-express', rates.addons['express']?.price ?? 3000);
+  }
+}
+
+function saveAdminCustomizerRates(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  const currentRates = getAdminCustomizerRates();
+  
+  const reelBase = parseInt(document.getElementById('rate-reel-base')?.value, 10);
+  const bulkDisc = parseInt(document.getElementById('rate-bulk-discount')?.value, 10);
+  const bulkMin = parseInt(document.getElementById('rate-bulk-min-reels')?.value, 10);
+
+  const cinemaBase = parseInt(document.getElementById('rate-service-cinema-ads')?.value, 10);
+  const sareeBase = parseInt(document.getElementById('rate-service-saree-shoot')?.value, 10);
+  const viralBase = parseInt(document.getElementById('rate-service-viral-reels')?.value, 10);
+  const fbBase = parseInt(document.getElementById('rate-service-facebook-ads')?.value, 10);
+  const jewelBase = parseInt(document.getElementById('rate-service-jewellery')?.value, 10);
+
+  const model1 = parseInt(document.getElementById('rate-model-1')?.value, 10);
+  const model2 = parseInt(document.getElementById('rate-model-2')?.value, 10);
+  const model3 = parseInt(document.getElementById('rate-model-3')?.value, 10);
+
+  const addPhotos = parseInt(document.getElementById('rate-addon-photos')?.value, 10);
+  const addMakeup = parseInt(document.getElementById('rate-addon-makeup')?.value, 10);
+  const addStudio = parseInt(document.getElementById('rate-addon-studio')?.value, 10);
+  const addVoice = parseInt(document.getElementById('rate-addon-voiceover')?.value, 10);
+  const addMeta = parseInt(document.getElementById('rate-addon-meta-ads')?.value, 10);
+  const addExpress = parseInt(document.getElementById('rate-addon-express')?.value, 10);
+
+  const updatedRates = {
+    ...currentRates,
+    reelRate: isNaN(reelBase) ? 2000 : reelBase,
+    bulkDiscountPercent: isNaN(bulkDisc) ? 10 : bulkDisc,
+    bulkDiscountMinReels: isNaN(bulkMin) ? 10 : bulkMin,
+    services: {
+      ...currentRates.services,
+      'cinema-ads': { ...currentRates.services['cinema-ads'], base: isNaN(cinemaBase) ? 15000 : cinemaBase },
+      'saree-shoot': { ...currentRates.services['saree-shoot'], base: isNaN(sareeBase) ? 12000 : sareeBase },
+      'viral-reels': { ...currentRates.services['viral-reels'], base: isNaN(viralBase) ? 10000 : viralBase },
+      'facebook-ads': { ...currentRates.services['facebook-ads'], base: isNaN(fbBase) ? 8000 : fbBase },
+      'jewellery': { ...currentRates.services['jewellery'], base: isNaN(jewelBase) ? 14000 : jewelBase }
+    },
+    models: {
+      ...currentRates.models,
+      0: { name: 'কোনো মডেল ছাড়া (অনলি প্রোডাক্ট)', price: 0 },
+      1: { ...currentRates.models[1], price: isNaN(model1) ? 5000 : model1 },
+      2: { ...currentRates.models[2], price: isNaN(model2) ? 9000 : model2 },
+      3: { ...currentRates.models[3], price: isNaN(model3) ? 13000 : model3 }
+    },
+    addons: {
+      ...currentRates.addons,
+      'photos': { ...currentRates.addons['photos'], price: isNaN(addPhotos) ? 4000 : addPhotos },
+      'makeup': { ...currentRates.addons['makeup'], price: isNaN(addMakeup) ? 3500 : addMakeup },
+      'studio': { ...currentRates.addons['studio'], price: isNaN(addStudio) ? 6000 : addStudio },
+      'voiceover': { ...currentRates.addons['voiceover'], price: isNaN(addVoice) ? 2500 : addVoice },
+      'meta-ads': { ...currentRates.addons['meta-ads'], price: isNaN(addMeta) ? 8000 : addMeta },
+      'express': { ...currentRates.addons['express'], price: isNaN(addExpress) ? 3000 : addExpress }
+    }
+  };
+
+  if (window.BongBanglaPackages && typeof window.BongBanglaPackages.saveStoredCustomizerRates === 'function') {
+    window.BongBanglaPackages.saveStoredCustomizerRates(updatedRates);
+  } else {
+    try {
+      localStorage.setItem('bongbangla_customizer_rates', JSON.stringify(updatedRates));
+    } catch (e) {}
+  }
+
+  renderAdminCustomizerRates();
+  if (typeof showAdminToast === 'function') {
+    showAdminToast('কাস্টম প্যাকেজ বিল্ডারের সকল প্রাইসিং রেট সফলভাবে সংরক্ষিত হয়েছে!', 'success');
+  } else {
+    alert('কাস্টম প্যাকেজ বিল্ডারের সকল প্রাইসিং রেট সফলভাবে সংরক্ষিত হয়েছে!');
+  }
+  return false;
+}
+
+function resetAdminCustomizerRatesToDefault() {
+  if (!confirm('আপনি কি কাস্টম প্যাকেজ বিল্ডারের সমস্ত রেট ও চার্জ ফ্যাক্টরি ডিফল্টে রিসেট করতে চান?')) return;
+  const def = (window.BongBanglaPackages && window.BongBanglaPackages.DEFAULT_CUSTOMIZER_RATES)
+    ? window.BongBanglaPackages.DEFAULT_CUSTOMIZER_RATES
+    : null;
+  
+  if (def) {
+    if (window.BongBanglaPackages.saveStoredCustomizerRates) {
+      window.BongBanglaPackages.saveStoredCustomizerRates(def);
+    } else {
+      localStorage.setItem('bongbangla_customizer_rates', JSON.stringify(def));
+    }
+  } else {
+    localStorage.removeItem('bongbangla_customizer_rates');
+  }
+
+  renderAdminCustomizerRates();
+  if (typeof showAdminToast === 'function') {
+    showAdminToast('কাস্টম বিল্ডারের রেট ডিফল্ট মানে রিস্টোর করা হয়েছে!', 'info');
+  } else {
+    alert('কাস্টম বিল্ডারের রেট ডিফল্ট মানে রিস্টোর করা হয়েছে!');
+  }
+}
+
+window.getAdminCustomizerRates = getAdminCustomizerRates;
+window.renderAdminCustomizerRates = renderAdminCustomizerRates;
+window.saveAdminCustomizerRates = saveAdminCustomizerRates;
+window.resetAdminCustomizerRatesToDefault = resetAdminCustomizerRatesToDefault;
+
 
 
 

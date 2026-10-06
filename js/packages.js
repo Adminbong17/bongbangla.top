@@ -78,7 +78,10 @@ const DEFAULT_PACKAGES = [
   }
 ];
 
-const CUSTOMIZER_RATES = {
+const DEFAULT_CUSTOMIZER_RATES = {
+  reelRate: 2000,
+  bulkDiscountPercent: 10,
+  bulkDiscountMinReels: 10,
   services: {
     'cinema-ads': { name: '৪K সিনেমা অ্যাড ফিল্ম', base: 15000, icon: 'fa-solid fa-clapperboard' },
     'saree-shoot': { name: 'শাড়ি ও মডেল শুট', base: 12000, icon: 'fa-solid fa-camera-retro' },
@@ -86,7 +89,6 @@ const CUSTOMIZER_RATES = {
     'facebook-ads': { name: 'ফেসবুক অ্যাড স্কেলিং', base: 8000, icon: 'fa-brands fa-facebook-f' },
     'jewellery': { name: 'জুয়েলারি ও লাক্সারি', base: 14000, icon: 'fa-solid fa-gem' }
   },
-  reelRate: 2000,
   models: {
     0: { name: 'কোনো মডেল ছাড়া (অনলি প্রোডাক্ট)', price: 0 },
     1: { name: '১ জন প্রফেশনাল মডেল', price: 5000 },
@@ -102,6 +104,48 @@ const CUSTOMIZER_RATES = {
     'express': { name: 'জরুরি ৩-দিনের এক্সপ্রেস ডেলিভারি', price: 3000, icon: 'fa-solid fa-truck-fast' }
   }
 };
+
+function getStoredCustomizerRates() {
+  try {
+    const raw = localStorage.getItem('bongbangla_customizer_rates');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        return {
+          reelRate: typeof parsed.reelRate === 'number' ? parsed.reelRate : DEFAULT_CUSTOMIZER_RATES.reelRate,
+          bulkDiscountPercent: typeof parsed.bulkDiscountPercent === 'number' ? parsed.bulkDiscountPercent : DEFAULT_CUSTOMIZER_RATES.bulkDiscountPercent,
+          bulkDiscountMinReels: typeof parsed.bulkDiscountMinReels === 'number' ? parsed.bulkDiscountMinReels : DEFAULT_CUSTOMIZER_RATES.bulkDiscountMinReels,
+          services: {
+            ...DEFAULT_CUSTOMIZER_RATES.services,
+            ...(parsed.services || {})
+          },
+          models: {
+            ...DEFAULT_CUSTOMIZER_RATES.models,
+            ...(parsed.models || {})
+          },
+          addons: {
+            ...DEFAULT_CUSTOMIZER_RATES.addons,
+            ...(parsed.addons || {})
+          }
+        };
+      }
+    }
+  } catch (e) {
+    console.warn('Error reading customizer rates:', e);
+  }
+  return DEFAULT_CUSTOMIZER_RATES;
+}
+
+function saveStoredCustomizerRates(rates) {
+  try {
+    localStorage.setItem('bongbangla_customizer_rates', JSON.stringify(rates));
+  } catch (e) {
+    console.error('Error saving customizer rates:', e);
+  }
+}
+
+// Fallback reference for legacy code
+let CUSTOMIZER_RATES = getStoredCustomizerRates();
 
 const bnDigits = { '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯' };
 function toBnNum(num) {
@@ -282,27 +326,35 @@ function selectPackageForBooking(titleEncoded, priceEncoded) {
  * Real-time Price Calculation & Dynamic Breakdown
  */
 function calculateCustomizerPrice() {
-  const sCfg = CUSTOMIZER_RATES.services[customizerState.service] || CUSTOMIZER_RATES.services['viral-reels'];
-  const basePrice = sCfg.base;
+  const rates = getStoredCustomizerRates();
+  CUSTOMIZER_RATES = rates;
+
+  const sCfg = (rates.services && rates.services[customizerState.service]) || (DEFAULT_CUSTOMIZER_RATES.services[customizerState.service]) || { name: 'ভাইরাল প্রোডাক্ট রিলস', base: 10000 };
+  const basePrice = Number(sCfg.base) || 0;
   
-  // Reels price (with 10% volume discount for 10+ reels)
-  let reelsPrice = customizerState.reels * CUSTOMIZER_RATES.reelRate;
-  if (customizerState.reels >= 10) {
-    reelsPrice = Math.round(reelsPrice * 0.9);
+  // Reels price (with bulk discount if applicable)
+  const reelRate = Number(rates.reelRate) || 2000;
+  const discountPercent = Number(rates.bulkDiscountPercent) !== undefined ? Number(rates.bulkDiscountPercent) : 10;
+  const discountMin = Number(rates.bulkDiscountMinReels) || 10;
+  let reelsPrice = customizerState.reels * reelRate;
+  if (customizerState.reels >= discountMin && discountPercent > 0) {
+    const discountMultiplier = Math.max(0, 1 - (discountPercent / 100));
+    reelsPrice = Math.round(reelsPrice * discountMultiplier);
   }
 
   // Model price
-  const mCfg = CUSTOMIZER_RATES.models[customizerState.models] || CUSTOMIZER_RATES.models[1];
-  const modelPrice = mCfg.price;
+  const mCfg = (rates.models && rates.models[customizerState.models]) || (DEFAULT_CUSTOMIZER_RATES.models[customizerState.models]) || { name: '১ জন প্রফেশনাল মডেল', price: 5000 };
+  const modelPrice = Number(mCfg.price) || 0;
 
   // Addons price
   let addonsPrice = 0;
   const selectedAddonDetails = [];
   (customizerState.addons || []).forEach(addId => {
-    const addCfg = CUSTOMIZER_RATES.addons[addId];
+    const addCfg = (rates.addons && rates.addons[addId]) || (DEFAULT_CUSTOMIZER_RATES.addons && DEFAULT_CUSTOMIZER_RATES.addons[addId]);
     if (addCfg) {
-      addonsPrice += addCfg.price;
-      selectedAddonDetails.push(addCfg);
+      const price = Number(addCfg.price) || 0;
+      addonsPrice += price;
+      selectedAddonDetails.push({ ...addCfg, price });
     }
   });
 
@@ -325,11 +377,21 @@ function calculateCustomizerPrice() {
  * Update Interactive Customizer UI values, active states & dynamic calculation card
  */
 function updateCustomizerUI() {
+  const rates = getStoredCustomizerRates();
+  CUSTOMIZER_RATES = rates;
   const calc = calculateCustomizerPrice();
 
-  // 1. Update Service Radio Cards
+  // 1. Update Service Radio Cards & Dynamic Base Price
   document.querySelectorAll('.customizer-service-chip').forEach(chip => {
     const sId = chip.getAttribute('data-service');
+    const sCfg = rates.services && rates.services[sId];
+    if (sCfg) {
+      const baseSpan = chip.querySelector('span.text-\\[10px\\]');
+      if (baseSpan) {
+        baseSpan.textContent = `বেস: ৳ ${toBnNum(sCfg.base)}`;
+      }
+    }
+
     if (sId === customizerState.service) {
       chip.className = 'customizer-service-chip p-3.5 rounded-2xl border-2 border-[#db2777] bg-[#fff0f6] text-[#db2777] shadow-sm flex items-center gap-2.5 cursor-pointer transition-all';
       const iconWrap = chip.querySelector('.chip-icon');
@@ -357,9 +419,23 @@ function updateCustomizerUI() {
     }
   });
 
-  // 3. Update Model Selection Pills
+  // 3. Update Model Selection Pills & Dynamic Model Price Badge
   document.querySelectorAll('.customizer-model-chip').forEach(chip => {
     const mVal = parseInt(chip.getAttribute('data-models'), 10);
+    const mCfg = rates.models && rates.models[mVal];
+    if (mCfg) {
+      const priceSpan = chip.querySelector(':scope > span') || chip.querySelector('span.text-xs');
+      if (priceSpan) {
+        if (mCfg.price === 0) {
+          priceSpan.textContent = '৳ ০';
+          priceSpan.className = 'text-xs font-bold text-emerald-600 font-bangla';
+        } else {
+          priceSpan.textContent = `+৳ ${toBnNum(mCfg.price)}`;
+          priceSpan.className = 'text-xs font-bold text-[#db2777] font-bangla';
+        }
+      }
+    }
+
     if (mVal === customizerState.models) {
       chip.className = 'customizer-model-chip p-3 rounded-2xl border-2 border-[#db2777] bg-[#fff0f6] text-[#db2777] shadow-sm flex items-center justify-between cursor-pointer transition-all';
       const check = chip.querySelector('.check-indicator');
@@ -371,9 +447,17 @@ function updateCustomizerUI() {
     }
   });
 
-  // 4. Update Add-ons Checkboxes
+  // 4. Update Add-ons Checkboxes & Dynamic Add-on Price Badge
   document.querySelectorAll('.customizer-addon-chip').forEach(chip => {
     const aId = chip.getAttribute('data-addon');
+    const aCfg = rates.addons && rates.addons[aId];
+    if (aCfg) {
+      const priceSpan = chip.querySelector(':scope > span') || chip.querySelector('span.text-xs');
+      if (priceSpan) {
+        priceSpan.textContent = `+৳ ${toBnNum(aCfg.price)}`;
+      }
+    }
+
     const isChecked = customizerState.addons.includes(aId);
     if (isChecked) {
       chip.className = 'customizer-addon-chip p-3 rounded-2xl border-2 border-[#db2777] bg-[#fff0f6] shadow-sm flex items-center justify-between cursor-pointer transition-all';
@@ -408,18 +492,18 @@ function updateCustomizerUI() {
   // 6. Update WhatsApp link
   const waBtn = document.getElementById('customizer-whatsapp-btn');
   if (waBtn) {
-    const addonsListStr = calc.selectedAddonDetails.map(a => `• ${a.name}`).join('\n') || 'কোনোটি না';
+    const addonsListStr = calc.selectedAddonDetails.map(a => `• ${a.name} (+৳ ${toBnNum(a.price)})`).join('\n') || 'কোনোটি না';
     const waMessage = 
 `নমস্কার BongBangla Media!
 আমি ওয়েবসাইট থেকে একটি কাস্টম প্যাকেজ কনফিগার করেছি:
 
-📌 সার্ভিস: ${calc.serviceName}
-🎬 রিলস সংখ্যা: ${calc.reelsCount} টি
-👥 মডেল: ${calc.modelName}
+📌 সার্ভিস: ${calc.serviceName} (বেস: ৳ ${toBnNum(calc.serviceBase)})
+🎬 রিলস সংখ্যা: ${calc.reelsCount} টি (৳ ${toBnNum(calc.reelsPrice)})
+👥 মডেল: ${calc.modelName} ${calc.modelPrice > 0 ? `(৳ ${toBnNum(calc.modelPrice)})` : ''}
 ✨ অ্যাড-অনস:
 ${addonsListStr}
 
-💰 মোট আনুমানিক বাজেট: ৳ ${calc.totalPrice.toLocaleString('bn-BD')} BDT
+💰 মোট আনুমানিক বাজেট: ৳ ${toBnNum(calc.totalPrice)} BDT
 
 এই কাস্টম প্যাকেজের জন্য বিস্তারিত আলোচনা ও শুটিং স্লট বুক করতে চাই।`;
 
@@ -523,6 +607,9 @@ function initCustomPackageBuilder() {
 window.BongBanglaPackages = {
   getStoredPackages,
   saveStoredPackages,
+  getStoredCustomizerRates,
+  saveStoredCustomizerRates,
+  DEFAULT_CUSTOMIZER_RATES,
   renderReadyPackages,
   setPricingMode,
   customizePackagePreset,

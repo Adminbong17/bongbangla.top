@@ -433,7 +433,7 @@
         <!-- ================================================================
              SECTION 2: LEADS & INQUIRIES MANAGEMENT
              ================================================================ -->
-        <section id="section-leads" class="admin-section-view space-y-6">
+        <section id="section-leads" class="admin-section-view hidden space-y-6">
           <div class="glass-panel rounded-3xl border border-[#ED96D7]/35 p-6 space-y-6 bg-white">
             
             <!-- Section Header with Search & Actions -->
@@ -868,6 +868,261 @@
             </div>
           </div>
 
+          <!-- ================================================================
+               CUSTOM PACKAGE BUILDER RATES & PRICING RULES (ADMIN CONTROL)
+               ================================================================ -->
+          <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-[#ED96D7]/40 shadow-sm space-y-6 bg-white">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#ED96D7]/20 gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#db2777] to-[#ED96D7] text-white flex items-center justify-center text-lg shadow-sm">
+                  <i class="fa-solid fa-calculator"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-lg text-[#2b0e23]">কাস্টম প্যাকেজ বিল্ডার রেট ও ক্যালকুলেটর সেটিংস</h4>
+                  <p class="text-xs text-[#8c4f75]">ওয়েবসাইটের লাইভ কাস্টম প্যাকেজ বিল্ডারে রিলস প্রতি রেট, সার্ভিস বেস ও অ্যাড-অনসের মূল্য নির্ধারণ করুন</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="resetAdminCustomizerRatesToDefault()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#572449] text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer" title="ডিফল্ট রেটে ফিরিয়ে নিন">
+                  <i class="fa-solid fa-rotate-left text-xs"></i>
+                  <span>ডিফল্ট রেট রিস্টোর</span>
+                </button>
+              </div>
+            </div>
+
+            <form id="admin-customizer-rates-form" onsubmit="return saveAdminCustomizerRates(event)" class="space-y-6">
+              
+              <!-- 1. General & Reel Pricing -->
+              <div class="space-y-3">
+                <h5 class="text-xs font-bold text-[#db2777] uppercase tracking-wider flex items-center gap-2">
+                  <i class="fa-solid fa-film text-xs"></i>
+                  <span>১. রিলস ভিডিও ও ডিসকাউন্ট রেট</span>
+                </h5>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-[#fff8fa] border border-[#ED96D7]/30">
+                  <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-[#572449]">প্রতি রিলস রেট (৳ BDT) *</label>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-reel-base" required min="500" step="100" class="w-full pl-8 pr-3 py-2.5 rounded-xl border border-[#ED96D7]/60 focus:border-[#db2777] focus:ring-1 focus:ring-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                    <span class="text-[10px] text-[#8c4f75]">ডিফল্ট: ৳২,০০০ / রিলস</span>
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-[#572449]">বাল্ক ডিসকাউন্ট (%)</label>
+                    <div class="relative">
+                      <input type="number" id="rate-bulk-discount" required min="0" max="50" step="1" class="w-full pl-3 pr-8 py-2.5 rounded-xl border border-[#ED96D7]/60 focus:border-[#db2777] focus:ring-1 focus:ring-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                      <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">%</span>
+                    </div>
+                    <span class="text-[10px] text-[#8c4f75]">১০+ রিলসে ডিসকাউন্ট (ডিফল্ট ১০%)</span>
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-[#572449]">ডিসকাউন্টের জন্য নূন্যতম রিলস</label>
+                    <input type="number" id="rate-bulk-min-reels" required min="2" max="20" step="1" class="w-full px-3 py-2.5 rounded-xl border border-[#ED96D7]/60 focus:border-[#db2777] focus:ring-1 focus:ring-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    <span class="text-[10px] text-[#8c4f75]">ডিফল্ট: ১০টি রিলস</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Services Base Fees -->
+              <div class="space-y-3">
+                <h5 class="text-xs font-bold text-[#db2777] uppercase tracking-wider flex items-center gap-2">
+                  <i class="fa-solid fa-clapperboard text-xs"></i>
+                  <span>২. সার্ভিস বেস চার্জ (প্রোডাকশন ফি ৳ BDT)</span>
+                </h5>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-solid fa-clapperboard text-[#db2777]"></i>
+                      <span>৪K সিনেমা অ্যাড ফিল্ম</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-service-cinema-ads" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-solid fa-camera-retro text-[#db2777]"></i>
+                      <span>শাড়ি ও মডেল শুট</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-service-saree-shoot" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-solid fa-bolt text-[#db2777]"></i>
+                      <span>ভাইরাল প্রোডাক্ট রিলস</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-service-viral-reels" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-brands fa-facebook-f text-[#db2777]"></i>
+                      <span>ফেসবুক অ্যাড স্কেলিং</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-service-facebook-ads" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-solid fa-gem text-[#db2777]"></i>
+                      <span>জুয়েলারি ও লাক্সারি</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-service-jewellery" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- 3. Model Cast Fees -->
+              <div class="space-y-3">
+                <h5 class="text-xs font-bold text-[#db2777] uppercase tracking-wider flex items-center gap-2">
+                  <i class="fa-solid fa-users text-xs"></i>
+                  <span>৩. মডেল কাস্টিং ফি (৳ BDT)</span>
+                </h5>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-solid fa-user text-[#db2777]"></i>
+                      <span>১ জন প্রফেশনাল মডেল</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-model-1" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-solid fa-user-group text-[#db2777]"></i>
+                      <span>২ জন মডেল (কাপল / ডুয়েল)</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-model-2" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-solid fa-users text-[#db2777]"></i>
+                      <span>৩+ জন বা ফুল গ্রুপ কাস্ট</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-model-3" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- 4. Optional Add-on Rates -->
+              <div class="space-y-3">
+                <h5 class="text-xs font-bold text-[#db2777] uppercase tracking-wider flex items-center gap-2">
+                  <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                  <span>৪. অ্যাড-অনস রেট (৳ BDT)</span>
+                </h5>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-solid fa-camera text-[#db2777]"></i>
+                      <span>১০টি আল্ট্রা-HD স্টিল ফটো প্যাক</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-addon-photos" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-solid fa-wand-magic-sparkles text-[#db2777]"></i>
+                      <span>অন-সেট মেকআপ ও হেয়ার স্টাইলিস্ট</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-addon-makeup" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-solid fa-building-columns text-[#db2777]"></i>
+                      <span>প্রিমিয়াম ইনডোর স্টুডিও / লোকেশন</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-addon-studio" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-solid fa-microphone text-[#db2777]"></i>
+                      <span>সিনেমাটিক ভয়েসওভার ও সাউন্ডট্র্যাক</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-addon-voiceover" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-solid fa-chart-line text-[#db2777]"></i>
+                      <span>মেটা অ্যাড সেটআপ ও ১ মাস স্কেলিং</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-addon-meta-ads" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                  <div class="p-4 rounded-2xl border border-[#ED96D7]/30 bg-slate-50/50 space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#2b0e23]">
+                      <i class="fa-solid fa-truck-fast text-[#db2777]"></i>
+                      <span>জরুরি ৩-দিনের এক্সপ্রেস ডেলিভারি</span>
+                    </div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8c4f75] font-bold">৳</span>
+                      <input type="number" id="rate-addon-express" required min="0" step="500" class="w-full pl-8 pr-3 py-2 rounded-xl border border-[#ED96D7]/50 focus:border-[#db2777] text-sm font-bold text-[#2b0e23] bg-white">
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Save Action Button -->
+              <div class="pt-4 border-t border-[#ED96D7]/20 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <span class="text-xs text-[#8c4f75]">সংরক্ষণ করার সাথে সাথে ক্লায়েন্ট ক্যালকুলেটরে নতুন প্রাইসিং কার্যকর হবে।</span>
+                <button type="submit" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] hover:from-[#db2777] hover:to-[#be185d] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer">
+                  <i class="fa-solid fa-floppy-disk"></i>
+                  <span>কাস্টম বিল্ডার রেট সংরক্ষণ করুন</span>
+                </button>
+              </div>
+
+            </form>
+          </div>
         </section>
 
         <!-- ================================================================
