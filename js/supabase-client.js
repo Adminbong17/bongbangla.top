@@ -5,6 +5,118 @@
  */
 
 (function() {
+  // Unified BongBangla Category Mapping & Aliasing System
+  const BongBanglaCategorySystem = window.BongBanglaCategorySystem || (function() {
+    const CATEGORY_MAP = {
+      'cinema-ads': {
+        canonical: 'cinema-ads',
+        label: 'অ্যাড ফিল্ম',
+        english: 'Cinema Ads',
+        pageUrl: 'service-cinema-ads.html',
+        aliases: ['cinema-ads', 'commercial-ad', 'commercial-ads', 'ad-film', 'ad-films', 'অ্যাড ফিল্ম', '৪k সিনেমা অ্যাড', 'cinema-ad']
+      },
+      'saree-shoot': {
+        canonical: 'saree-shoot',
+        label: 'শাড়ি ও মডেল শুট',
+        english: 'Saree & Model Shoot',
+        pageUrl: 'service-saree-model-shoot.html',
+        aliases: ['saree-shoot', 'model-shoot', 'saree-model', 'model-shoots', 'শাড়ি ও মডেল শুট', 'শাড়ি ও মডেল শ্যুট', 'শাড়ি ও বোল্ড শ্যুট', 'শাড়ি ও বোল্ড শুট', 'saree-shoots']
+      },
+      'viral-reels': {
+        canonical: 'viral-reels',
+        label: 'প্রোডাক্ট রিলস',
+        english: 'Product Reels',
+        pageUrl: 'service-viral-reels.html',
+        aliases: ['viral-reels', 'product-reels', 'product-reel', 'reels', 'viral-reel', 'প্রোডাক্ট রিলস', 'ভাইরাল প্রোডাক্ট রিলস', 'ভাইরাল রিলস']
+      },
+      'facebook-ads': {
+        canonical: 'facebook-ads',
+        label: 'ওয়েবসাইট ও ব্র্যান্ড',
+        english: 'Website & Branding',
+        pageUrl: 'service-facebook-ads.html',
+        aliases: ['facebook-ads', 'branding-web', 'website-brand', 'brand-web', 'facebook-ad', 'ওয়েবসাইট ও ব্র্যান্ড', 'ফেসবুক অ্যাডস', 'ফেসবুক অ্যাড']
+      },
+      'jewellery': {
+        canonical: 'jewellery',
+        label: 'জুয়েলারি ও লাক্সারি',
+        english: 'Jewellery & Luxury',
+        pageUrl: 'service-jewellery-luxury.html',
+        aliases: ['jewellery', 'jewellery-luxury', 'jewelry', 'jewelry-luxury', 'জুয়েলারি ও লাক্সারি', 'জুয়েলারি']
+      }
+    };
+
+    function normalize(cat) {
+      if (!cat) return '';
+      return String(cat).toLowerCase().trim();
+    }
+
+    function getCategoryConfig(cat) {
+      if (!cat) return null;
+      const norm = normalize(cat);
+      for (const key in CATEGORY_MAP) {
+        const cfg = CATEGORY_MAP[key];
+        if (key === norm || cfg.aliases.some(a => normalize(a) === norm)) {
+          return cfg;
+        }
+      }
+      return null;
+    }
+
+    function getCanonicalCategory(cat) {
+      const cfg = getCategoryConfig(cat);
+      return cfg ? cfg.canonical : cat;
+    }
+
+    function getCategoryDisplayName(cat) {
+      const cfg = getCategoryConfig(cat);
+      return cfg ? cfg.label : (cat || 'কমার্শিয়াল মিডিয়া');
+    }
+
+    function getCategoryServiceUrl(cat) {
+      const cfg = getCategoryConfig(cat);
+      return cfg ? cfg.pageUrl : 'index.html#portfolio';
+    }
+
+    function getCategoryAliases(cat) {
+      if (!cat || cat === 'all') return [];
+      const cfg = getCategoryConfig(cat);
+      return cfg ? [...cfg.aliases] : [cat];
+    }
+
+    function matchesCategory(itemCat, targetCat) {
+      if (!targetCat || targetCat === 'all') return true;
+      if (!itemCat) return false;
+      const normItem = normalize(itemCat);
+      const normTarget = normalize(targetCat);
+      if (normItem === normTarget) return true;
+      const cfgTarget = getCategoryConfig(targetCat);
+      if (cfgTarget) {
+        return cfgTarget.aliases.some(a => normalize(a) === normItem);
+      }
+      const cfgItem = getCategoryConfig(itemCat);
+      if (cfgItem) {
+        return cfgItem.aliases.some(a => normalize(a) === normTarget);
+      }
+      return false;
+    }
+
+    const sys = {
+      CATEGORY_MAP,
+      normalize,
+      getCategoryConfig,
+      getCanonicalCategory,
+      getCategoryDisplayName,
+      getCategoryServiceUrl,
+      getCategoryAliases,
+      matchesCategory
+    };
+
+    if (typeof window !== 'undefined') {
+      window.BongBanglaCategorySystem = sys;
+    }
+    return sys;
+  })();
+
   const CONFIG_KEY = 'bongbangla_supabase_config';
   
   function getConfig() {
@@ -195,12 +307,18 @@
      ========================================================================== */
   async function fetchReels(category = 'all') {
     const client = await ensureClient();
+    const catHelper = window.BongBanglaCategorySystem || BongBanglaCategorySystem;
 
     if (client) {
       try {
         let query = client.from('reels').select('*').order('created_at', { ascending: false });
         if (category !== 'all') {
-          query = query.eq('category', category);
+          const aliases = catHelper ? catHelper.getCategoryAliases(category) : [category];
+          if (aliases.length > 1) {
+            query = query.in('category', aliases);
+          } else if (aliases.length === 1) {
+            query = query.eq('category', aliases[0]);
+          }
         }
 
         const { data, error } = await query;
@@ -237,7 +355,7 @@
     if (category === 'all' && window._cachedCloudReels && Array.isArray(window._cachedCloudReels)) {
       return window._cachedCloudReels;
     } else if (window._cachedCloudReels && Array.isArray(window._cachedCloudReels)) {
-      return window._cachedCloudReels.filter(r => r.category === category);
+      return window._cachedCloudReels.filter(r => catHelper ? catHelper.matchesCategory(r.category, category) : r.category === category);
     }
 
     if (window.BongBanglaReels) {

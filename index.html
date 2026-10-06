@@ -450,13 +450,33 @@
         </div>
 
         <!-- Filter Buttons -->
-        <div class="flex items-center gap-2 flex-wrap text-xs font-bold">
-          <button class="filter-btn bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white border-[#db2777] shadow-[0_0_15px_rgba(237,150,215,0.5)] px-4 py-2 rounded-xl border transition-all" data-filter="all">সব কাজ</button>
-          <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm" data-filter="commercial-ad">অ্যাড ফিল্ম</button>
-          <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm" data-filter="model-shoot">শাড়ি ও মডেল শ্যুট</button>
-          <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm" data-filter="product-reels">প্রোডাক্ট রিলস</button>
-          <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm" data-filter="branding-web">ওয়েবসাইট ও ব্র্যান্ড</button>
+        <div class="flex items-center gap-2 flex-wrap text-xs font-bold" id="portfolio-filter-buttons">
+          <button class="filter-btn bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white border-[#db2777] shadow-[0_0_15px_rgba(237,150,215,0.5)] px-4 py-2 rounded-xl border transition-all cursor-pointer" data-filter="all">সব কাজ</button>
+          <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="commercial-ad">অ্যাড ফিল্ম</button>
+          <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="model-shoot">শাড়ি ও মডেল শুট</button>
+          <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="product-reels">প্রোডাক্ট রিলস</button>
+          <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="branding-web">ওয়েবসাইট ও ব্র্যান্ড</button>
         </div>
+      </div>
+
+      <!-- Dedicated Category Service Page Navigation Banner -->
+      <div id="portfolio-category-banner" class="hidden mb-6 p-4 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#fff0f6] via-white to-[#fff0f6] border border-[#ED96D7]/60 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#db2777] to-[#ED96D7] text-white flex items-center justify-center text-lg shrink-0 shadow-md">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+          <div>
+            <div class="font-bangla font-bold text-sm sm:text-base text-[#2b0e23] flex items-center gap-2">
+              <span id="banner-cat-title">শাড়ি ও মডেল শুট</span>
+              <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink-100 text-[#db2777] font-extrabold border border-[#ED96D7]/40">আলাদা সার্ভিস পেজ</span>
+            </div>
+            <p class="text-xs text-[#8c4f75] font-bangla mt-0.5">এই ক্যাটাগরির সমস্ত ভিডিও রিলস, ৩x৩ শোকেস ও প্যাকেজ বিবরণ আলাদা ডেডিকেটেড পেজে দেখুন।</p>
+          </div>
+        </div>
+        <a id="banner-cat-url" href="service-saree-model-shoot.html" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] hover:from-[#db2777] hover:to-[#be185d] text-white font-bangla font-bold text-xs shadow-md hover:shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 shrink-0">
+          <span>আলাদা পেজে সমস্ত রিলস দেখুন</span>
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+        </a>
       </div>
 
       <!-- Portfolio Grid -->

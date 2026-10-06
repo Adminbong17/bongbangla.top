@@ -4,6 +4,118 @@
  * Supports 3x3 Grid (9 reels/page), Admin Uploads, Pagination, and Video Lightbox
  */
 
+// Unified BongBangla Category Mapping & Aliasing System
+const BongBanglaCategorySystem = window.BongBanglaCategorySystem || (function() {
+  const CATEGORY_MAP = {
+    'cinema-ads': {
+      canonical: 'cinema-ads',
+      label: 'অ্যাড ফিল্ম',
+      english: 'Cinema Ads',
+      pageUrl: 'service-cinema-ads.html',
+      aliases: ['cinema-ads', 'commercial-ad', 'commercial-ads', 'ad-film', 'ad-films', 'অ্যাড ফিল্ম', '৪k সিনেমা অ্যাড', 'cinema-ad']
+    },
+    'saree-shoot': {
+      canonical: 'saree-shoot',
+      label: 'শাড়ি ও মডেল শুট',
+      english: 'Saree & Model Shoot',
+      pageUrl: 'service-saree-model-shoot.html',
+      aliases: ['saree-shoot', 'model-shoot', 'saree-model', 'model-shoots', 'শাড়ি ও মডেল শুট', 'শাড়ি ও মডেল শ্যুট', 'শাড়ি ও বোল্ড শ্যুট', 'শাড়ি ও বোল্ড শুট', 'saree-shoots']
+    },
+    'viral-reels': {
+      canonical: 'viral-reels',
+      label: 'প্রোডাক্ট রিলস',
+      english: 'Product Reels',
+      pageUrl: 'service-viral-reels.html',
+      aliases: ['viral-reels', 'product-reels', 'product-reel', 'reels', 'viral-reel', 'প্রোডাক্ট রিলস', 'ভাইরাল প্রোডাক্ট রিলস', 'ভাইরাল রিলস']
+    },
+    'facebook-ads': {
+      canonical: 'facebook-ads',
+      label: 'ওয়েবসাইট ও ব্র্যান্ড',
+      english: 'Website & Branding',
+      pageUrl: 'service-facebook-ads.html',
+      aliases: ['facebook-ads', 'branding-web', 'website-brand', 'brand-web', 'facebook-ad', 'ওয়েবসাইট ও ব্র্যান্ড', 'ফেসবুক অ্যাডস', 'ফেসবুক অ্যাড']
+    },
+    'jewellery': {
+      canonical: 'jewellery',
+      label: 'জুয়েলারি ও লাক্সারি',
+      english: 'Jewellery & Luxury',
+      pageUrl: 'service-jewellery-luxury.html',
+      aliases: ['jewellery', 'jewellery-luxury', 'jewelry', 'jewelry-luxury', 'জুয়েলারি ও লাক্সারি', 'জুয়েলারি']
+    }
+  };
+
+  function normalize(cat) {
+    if (!cat) return '';
+    return String(cat).toLowerCase().trim();
+  }
+
+  function getCategoryConfig(cat) {
+    if (!cat) return null;
+    const norm = normalize(cat);
+    for (const key in CATEGORY_MAP) {
+      const cfg = CATEGORY_MAP[key];
+      if (key === norm || cfg.aliases.some(a => normalize(a) === norm)) {
+        return cfg;
+      }
+    }
+    return null;
+  }
+
+  function getCanonicalCategory(cat) {
+    const cfg = getCategoryConfig(cat);
+    return cfg ? cfg.canonical : cat;
+  }
+
+  function getCategoryDisplayName(cat) {
+    const cfg = getCategoryConfig(cat);
+    return cfg ? cfg.label : (cat || 'কমার্শিয়াল মিডিয়া');
+  }
+
+  function getCategoryServiceUrl(cat) {
+    const cfg = getCategoryConfig(cat);
+    return cfg ? cfg.pageUrl : 'index.html#portfolio';
+  }
+
+  function getCategoryAliases(cat) {
+    if (!cat || cat === 'all') return [];
+    const cfg = getCategoryConfig(cat);
+    return cfg ? [...cfg.aliases] : [cat];
+  }
+
+  function matchesCategory(itemCat, targetCat) {
+    if (!targetCat || targetCat === 'all') return true;
+    if (!itemCat) return false;
+    const normItem = normalize(itemCat);
+    const normTarget = normalize(targetCat);
+    if (normItem === normTarget) return true;
+    const cfgTarget = getCategoryConfig(targetCat);
+    if (cfgTarget) {
+      return cfgTarget.aliases.some(a => normalize(a) === normItem);
+    }
+    const cfgItem = getCategoryConfig(itemCat);
+    if (cfgItem) {
+      return cfgItem.aliases.some(a => normalize(a) === normTarget);
+    }
+    return false;
+  }
+
+  const sys = {
+    CATEGORY_MAP,
+    normalize,
+    getCategoryConfig,
+    getCanonicalCategory,
+    getCategoryDisplayName,
+    getCategoryServiceUrl,
+    getCategoryAliases,
+    matchesCategory
+  };
+
+  if (typeof window !== 'undefined') {
+    window.BongBanglaCategorySystem = sys;
+  }
+  return sys;
+})();
+
 // Default Seed Reels Data - Empty
 const DEFAULT_REELS = [];
 
@@ -34,7 +146,8 @@ function getReels(category = 'all') {
   }
 
   if (category === 'all') return reels;
-  return reels.filter(r => r.category === category);
+  const catHelper = window.BongBanglaCategorySystem || BongBanglaCategorySystem;
+  return reels.filter(r => catHelper ? catHelper.matchesCategory(r.category, category) : r.category === category);
 }
 
 function saveReels(reels) {
@@ -130,6 +243,10 @@ async function initReelsPage(options = {}) {
       const thumb = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawThumb, 'thumbnails') : rawThumb;
       const video = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawVideo, 'reels') : rawVideo;
 
+      const catHelper = window.BongBanglaCategorySystem;
+      const categoryLabel = catHelper ? catHelper.getCategoryDisplayName(reel.category) : (tagText || 'রিলস');
+      const categoryUrl = catHelper ? catHelper.getCategoryServiceUrl(reel.category) : 'service-saree-model-shoot.html';
+
       return `
         <div class="reel-card group relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white border border-[#ED96D7]/40 shadow-lg hover:shadow-2xl hover:border-[#db2777] transition-all duration-300 flex flex-col justify-between"
              data-reel-id="${reel.id}"
@@ -146,10 +263,10 @@ async function initReelsPage(options = {}) {
 
             <!-- Top Floating Badges -->
             <div class="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none">
-              <span class="px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-[#ED96D7]/60 text-[10px] font-bold text-[#db2777] flex items-center gap-1.5 shadow-sm">
+              <a href="${categoryUrl}" onclick="event.stopPropagation()" class="pointer-events-auto px-2.5 py-1 rounded-full bg-white/95 hover:bg-[#db2777] hover:text-white backdrop-blur-md border border-[#ED96D7]/60 text-[10px] font-bold text-[#db2777] flex items-center gap-1.5 shadow-sm transition-all" title="${categoryLabel} পেজ দেখুন">
                 <span class="w-2 h-2 rounded-full bg-[#db2777] pulse-indicator"></span>
-                <span>${tagText}</span>
-              </span>
+                <span>${categoryLabel}</span>
+              </a>
               <span class="px-2.5 py-1 rounded-full bg-[#2b0e23]/80 backdrop-blur-md border border-white/20 text-[10px] font-bold text-white shadow-sm flex items-center gap-1">
                 <i class="fa-regular fa-eye text-[#ED96D7]"></i> ${viewsText}
               </span>
@@ -331,9 +448,15 @@ function openReelVideoModal(videoUrl, title, client, categoryOrList) {
         <div class="relative w-full h-[88vh] max-h-[820px] bg-black rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-[#ED96D7]/50 flex flex-col" id="reel-modal-card">
           <!-- Top bar with close button -->
           <div class="absolute top-3 inset-x-3 z-30 flex items-center justify-between pointer-events-auto">
-            <div class="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold font-bangla border border-white/20 flex items-center gap-1.5 shadow-md">
-              <span id="modal-reel-client">ক্লায়েন্ট</span>
-              <span class="text-pink-300/80 text-[10px]" id="modal-reel-counter"></span>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <div class="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-bold font-bangla border border-white/20 flex items-center gap-1.5 shadow-md">
+                <span id="modal-reel-client">ক্লায়েন্ট</span>
+                <span class="text-pink-300/80 text-[10px]" id="modal-reel-counter"></span>
+              </div>
+              <a id="modal-reel-category-link" href="#" class="px-2.5 py-1 rounded-full bg-black/60 hover:bg-[#db2777] text-pink-200 hover:text-white backdrop-blur-md text-[11px] font-bold font-bangla border border-white/20 flex items-center gap-1 shadow-md transition-all pointer-events-auto" title="এই ক্যাটাগরির সমস্ত রিলস আলাদা পেজে দেখুন">
+                <span id="modal-reel-category-name">ক্যাটাগরি</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+              </a>
             </div>
             <button id="close-reel-modal-btn" class="w-9 h-9 rounded-full bg-black/60 hover:bg-[#db2777] text-white flex items-center justify-center transition-all border border-white/20 shadow-md cursor-pointer hover:scale-105 active:scale-95">
               <i class="fa-solid fa-xmark text-base"></i>
@@ -510,6 +633,17 @@ function updateReelModalContent(reel, index, total) {
   if (waBtn) {
     waBtn.href = `https://wa.me/8801700000000?text=${encodeURIComponent('নমস্কার BongBangla! আমি ' + title + ' (' + client + ') ভিডিওটি দেখেছি এবং এইরকম রিল শ্যুট করাতে চাই।')}`;
   }
+
+  const catHelper = window.BongBanglaCategorySystem || BongBanglaCategorySystem;
+  const catLinkElem = modal.querySelector('#modal-reel-category-link');
+  const catNameElem = modal.querySelector('#modal-reel-category-name');
+  if (catLinkElem && catNameElem) {
+    const catLabel = catHelper ? catHelper.getCategoryDisplayName(reel.category) : (reel.category || 'সার্ভিস রিলস');
+    const catUrl = catHelper ? catHelper.getCategoryServiceUrl(reel.category) : 'service-saree-model-shoot.html';
+    catNameElem.textContent = catLabel;
+    catLinkElem.href = catUrl;
+    catLinkElem.title = `${catLabel} এর সমস্ত রিলস আলাদা পেজে দেখুন`;
+  }
 }
 
 // Expose functions globally
@@ -520,5 +654,6 @@ window.BongBanglaReels = {
   deleteReel,
   resetReelsToDefault,
   initReelsPage,
-  openReelVideoModal
+  openReelVideoModal,
+  categorySystem: window.BongBanglaCategorySystem || BongBanglaCategorySystem
 };

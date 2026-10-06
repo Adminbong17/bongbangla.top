@@ -245,16 +245,20 @@ function renderFrontendHeroSlides(directData) {
 }
 
 function getFrontendCategoryBadge(category) {
+  const catHelper = window.BongBanglaCategorySystem;
+  if (catHelper && typeof catHelper.getCategoryDisplayName === 'function') {
+    return catHelper.getCategoryDisplayName(category);
+  }
   const map = {
-    'cinema-ads': '৪K সিনেমা অ্যাড',
-    'saree-shoot': 'শাড়ি ও মডেল শ্যুট',
-    'viral-reels': 'ভাইরাল প্রোডাক্ট রিলস',
-    'facebook-ads': 'ফেসবুক অ্যাডস',
+    'cinema-ads': 'অ্যাড ফিল্ম',
+    'saree-shoot': 'শাড়ি ও মডেল শুট',
+    'viral-reels': 'প্রোডাক্ট রিলস',
+    'facebook-ads': 'ওয়েবসাইট ও ব্র্যান্ড',
     'jewellery': 'জুয়েলারি ও লাক্সারি',
-    'commercial-ad': 'কমার্শিয়াল অ্যাড ফিল্ম',
-    'model-shoot': 'শাড়ি ও ফ্যাশন শ্যুট',
-    'product-reels': 'প্রোডাক্ট রিলস প্যাক',
-    'branding-web': 'ব্র্যান্ড ওয়েবসাইট'
+    'commercial-ad': 'অ্যাড ফিল্ম',
+    'model-shoot': 'শাড়ি ও মডেল শুট',
+    'product-reels': 'প্রোডাক্ট রিলস',
+    'branding-web': 'ওয়েবসাইট ও ব্র্যান্ড'
   };
   return map[category] || category || 'কমার্শিয়াল মিডিয়া';
 }
@@ -273,15 +277,10 @@ function renderFrontendPortfolio(filter = 'all', preloadedReels = null) {
   reels = reels.filter(r => r && r.id && !r.id.match(/^reel-[csvfj]\d+$/));
 
   // Filter category mapping
+  const catHelper = window.BongBanglaCategorySystem;
   let filtered = reels;
   if (filter !== 'all') {
-    filtered = reels.filter(r => {
-      if (filter === 'commercial-ad') return r.category === 'cinema-ads' || r.category === 'commercial-ad';
-      if (filter === 'model-shoot') return r.category === 'saree-shoot' || r.category === 'model-shoot';
-      if (filter === 'product-reels') return r.category === 'viral-reels' || r.category === 'product-reels';
-      if (filter === 'branding-web') return r.category === 'facebook-ads' || r.category === 'jewellery' || r.category === 'branding-web';
-      return r.category === filter;
-    });
+    filtered = reels.filter(r => catHelper ? catHelper.matchesCategory(r.category, filter) : r.category === filter);
   }
 
   if (!filtered || filtered.length === 0) {
@@ -312,6 +311,7 @@ function renderFrontendPortfolio(filter = 'all', preloadedReels = null) {
     const thumb = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawThumb, 'thumbnails') : rawThumb;
     const videoUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawVideo, 'reels') : rawVideo;
     const categoryLabel = getFrontendCategoryBadge(item.category);
+    const categoryUrl = catHelper ? catHelper.getCategoryServiceUrl(item.category) : 'service-saree-model-shoot.html';
 
     return `
       <div class="portfolio-item gallery-card group cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden bg-white border border-[#ED96D7]/35 hover:border-[#db2777] shadow-sm hover:shadow-xl transition-all"
@@ -331,7 +331,10 @@ function renderFrontendPortfolio(filter = 'all', preloadedReels = null) {
 
           <!-- Gallery Overlay -->
           <div class="gallery-overlay absolute inset-0 flex flex-col justify-end p-5 bg-gradient-to-t from-black/85 via-black/20 to-transparent">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-[#ED96D7] mb-1 font-bangla">${categoryLabel}</span>
+            <a href="${categoryUrl}" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-pink-200 hover:text-white bg-black/60 hover:bg-[#db2777] px-2.5 py-0.5 rounded-full mb-1 font-bangla border border-pink-300/30 transition-all pointer-events-auto w-fit" title="${categoryLabel} এর আলাদা পেজ দেখুন">
+              <span>${categoryLabel}</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+            </a>
             <h4 class="font-bangla font-bold text-base sm:text-lg text-white mb-2 leading-snug line-clamp-2">${title}</h4>
             <div class="flex items-center justify-between text-xs text-pink-100">
               <span class="font-bangla flex items-center gap-1"><i class="fa-solid fa-user-tag text-[10px]"></i> ${client}</span>
@@ -494,6 +497,29 @@ function initModelsMotionControls() {
 }
 
 
+function updateCategoryBanner(filterValue) {
+  const banner = document.getElementById('portfolio-category-banner');
+  const titleEl = document.getElementById('banner-cat-title');
+  const urlEl = document.getElementById('banner-cat-url');
+  if (!banner) return;
+
+  if (!filterValue || filterValue === 'all') {
+    banner.classList.add('hidden');
+    return;
+  }
+
+  const catHelper = window.BongBanglaCategorySystem;
+  const displayName = catHelper ? catHelper.getCategoryDisplayName(filterValue) : filterValue;
+  const pageUrl = catHelper ? catHelper.getCategoryServiceUrl(filterValue) : 'service-saree-model-shoot.html';
+
+  if (titleEl) titleEl.textContent = displayName;
+  if (urlEl) {
+    urlEl.href = pageUrl;
+    urlEl.title = `${displayName} এর সমস্ত রিলস ও শ্যুট আলাদা পেজে দেখুন`;
+  }
+  banner.classList.remove('hidden');
+}
+
 function initPortfolioFilter() {
   const filterButtons = document.querySelectorAll('.filter-btn');
 
@@ -508,9 +534,26 @@ function initPortfolioFilter() {
       btn.classList.remove('bg-white', 'text-[#572449]', 'border-[#ED96D7]/40');
 
       const filterValue = btn.getAttribute('data-filter') || 'all';
+      updateCategoryBanner(filterValue);
       renderFrontendPortfolio(filterValue);
     });
   });
+
+  // Check URL query parameters for ?category=... or ?filter=... to auto-select
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const catParam = params.get('category') || params.get('filter');
+    if (catParam) {
+      const catHelper = window.BongBanglaCategorySystem;
+      const targetBtn = Array.from(filterButtons).find(b => {
+        const f = b.getAttribute('data-filter');
+        return f === catParam || (catHelper && catHelper.matchesCategory(f, catParam));
+      });
+      if (targetBtn) {
+        setTimeout(() => targetBtn.click(), 80);
+      }
+    }
+  } catch(e) {}
 }
 
 /* ==========================================================================

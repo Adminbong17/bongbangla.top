@@ -2257,7 +2257,11 @@ function initReelsAdmin() {
     if (idInput) idInput.value = reel.id;
     if (titleInput) titleInput.value = reel.title || '';
     if (clientInput) clientInput.value = reel.client || '';
-    if (categorySelect) categorySelect.value = reel.category || 'cinema-ads';
+    if (categorySelect) {
+      const catHelper = window.BongBanglaCategorySystem;
+      const canonical = catHelper ? catHelper.getCanonicalCategory(reel.category) : reel.category;
+      categorySelect.value = canonical || 'cinema-ads';
+    }
     if (tagInput) tagInput.value = reel.tag || '4K CINEMA';
     if (viewsInput) viewsInput.value = reel.views || '১.৫M ভিউজ';
 
@@ -2632,9 +2636,10 @@ function renderAdminReels(category = 'all', preloadedReels = null) {
   const emptyState = document.getElementById('reels-empty-state');
   const selectAll = document.getElementById('reels-select-all');
 
+  const catHelper = window.BongBanglaCategorySystem;
   let reels = [];
   if (Array.isArray(preloadedReels)) {
-    reels = category === 'all' ? preloadedReels : preloadedReels.filter(r => r.category === category);
+    reels = category === 'all' ? preloadedReels : preloadedReels.filter(r => catHelper ? catHelper.matchesCategory(r.category, category) : r.category === category);
   } else if (window.BongBanglaReels) {
     reels = window.BongBanglaReels.getReels(category);
   }
@@ -2669,10 +2674,10 @@ function renderAdminReels(category = 'all', preloadedReels = null) {
   if (emptyState) emptyState.classList.add('hidden');
 
   const categoryNames = {
-    'cinema-ads': '৪K সিনেমা অ্যাড',
-    'saree-shoot': 'শাড়ি ও বোল্ড শ্যুট',
-    'viral-reels': 'ভাইরাল প্রোডাক্ট রিলস',
-    'facebook-ads': 'ফেসবুক অ্যাডস',
+    'cinema-ads': 'অ্যাড ফিল্ম',
+    'saree-shoot': 'শাড়ি ও মডেল শুট',
+    'viral-reels': 'প্রোডাক্ট রিলস',
+    'facebook-ads': 'ওয়েবসাইট ও ব্র্যান্ড',
     'jewellery': 'জুয়েলারি ও লাক্সারি'
   };
 
@@ -2716,9 +2721,10 @@ function renderAdminReels(category = 'all', preloadedReels = null) {
 
           <!-- Category -->
           <td class="py-3 px-4">
-            <span class="inline-block px-2.5 py-1 rounded-full bg-pink-50 text-[#be185d] border border-[#ED96D7]/30 text-[11px] font-semibold">
-              ${categoryNames[r.category] || r.category}
-            </span>
+            <a href="${catHelper ? catHelper.getCategoryServiceUrl(r.category) : 'service-saree-model-shoot.html'}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-pink-50 hover:bg-[#db2777] text-[#be185d] hover:text-white border border-[#ED96D7]/30 text-[11px] font-semibold transition-all" title="এই ক্যাটাগরির আলাদা লাইভ পেজ দেখুন">
+              <span>${catHelper ? catHelper.getCategoryDisplayName(r.category) : (categoryNames[r.category] || r.category)}</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+            </a>
           </td>
 
           <!-- Tag / Resolution -->
@@ -2810,7 +2816,10 @@ function renderAdminReels(category = 'all', preloadedReels = null) {
           <div class="p-3 space-y-1.5 font-bangla text-xs bg-white">
             <div class="font-bold text-[#2b0e23] line-clamp-1" title="${r.title}">${r.title}</div>
             <div class="flex items-center justify-between text-[11px] text-[#8c4f75] pt-1.5 border-t border-[#ED96D7]/20">
-              <span class="text-[#db2777] font-semibold">${categoryNames[r.category] || r.category}</span>
+              <a href="${catHelper ? catHelper.getCategoryServiceUrl(r.category) : 'service-saree-model-shoot.html'}" target="_blank" class="text-[#db2777] hover:underline font-semibold flex items-center gap-1" title="আলাদা পেজ দেখুন">
+                <span>${catHelper ? catHelper.getCategoryDisplayName(r.category) : (categoryNames[r.category] || r.category)}</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+              </a>
               <span class="font-medium">${r.views || ''}</span>
             </div>
             <div class="flex items-center gap-1.5 mt-2">
