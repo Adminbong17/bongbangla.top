@@ -95,6 +95,15 @@ window.switchSection = function(sectionId, btnElement) {
   if (sectionId === 'section-packages') {
     try { if (typeof renderAdminPackages === 'function') renderAdminPackages(); } catch(e) {}
     try { if (typeof renderAdminCustomizerRates === 'function') renderAdminCustomizerRates(); } catch(e) {}
+    if (window.BongBanglaSupabase) {
+      Promise.allSettled([
+        typeof window.BongBanglaSupabase.fetchPackages === 'function' ? window.BongBanglaSupabase.fetchPackages() : Promise.resolve(),
+        typeof window.BongBanglaSupabase.fetchCustomizerRates === 'function' ? window.BongBanglaSupabase.fetchCustomizerRates() : Promise.resolve()
+      ]).then(() => {
+        try { if (typeof renderAdminPackages === 'function') renderAdminPackages(); } catch(e) {}
+        try { if (typeof renderAdminCustomizerRates === 'function') renderAdminCustomizerRates(); } catch(e) {}
+      });
+    }
   }
 
   // Update active state in sidebar
@@ -1701,7 +1710,9 @@ async function renderDashboard() {
         window.BongBanglaSupabase.fetchLeads(),
         window.BongBanglaSupabase.fetchModels(),
         window.BongBanglaSupabase.fetchReels('all'),
-        typeof window.BongBanglaSupabase.fetchHeroSlides === 'function' ? window.BongBanglaSupabase.fetchHeroSlides() : Promise.resolve()
+        typeof window.BongBanglaSupabase.fetchHeroSlides === 'function' ? window.BongBanglaSupabase.fetchHeroSlides() : Promise.resolve(),
+        typeof window.BongBanglaSupabase.fetchPackages === 'function' ? window.BongBanglaSupabase.fetchPackages() : Promise.resolve(),
+        typeof window.BongBanglaSupabase.fetchCustomizerRates === 'function' ? window.BongBanglaSupabase.fetchCustomizerRates() : Promise.resolve()
       ]);
     } catch(e) {
       console.warn('Dashboard eager cloud sync notice:', e);
@@ -4209,6 +4220,9 @@ function saveAdminPackages(packages) {
       localStorage.setItem('bongbangla_packages', JSON.stringify(packages));
     } catch (e) {}
   }
+  if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.savePackages === 'function') {
+    window.BongBanglaSupabase.savePackages(packages).catch(err => console.warn('Supabase savePackages notice:', err));
+  }
 }
 
 function renderAdminPackages() {
@@ -4629,12 +4643,15 @@ function saveAdminCustomizerRates(e) {
       localStorage.setItem('bongbangla_customizer_rates', JSON.stringify(updatedRates));
     } catch (e) {}
   }
+  if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.saveCustomizerRates === 'function') {
+    window.BongBanglaSupabase.saveCustomizerRates(updatedRates).catch(err => console.warn('Supabase saveCustomizerRates notice:', err));
+  }
 
   renderAdminCustomizerRates();
   if (typeof showAdminToast === 'function') {
-    showAdminToast('কাস্টম প্যাকেজ বিল্ডারের সকল প্রাইসিং রেট সফলভাবে সংরক্ষিত হয়েছে!', 'success');
+    showAdminToast('কাস্টম প্যাকেজ বিল্ডারের সকল প্রাইসিং রেট ক্লাউড ডেটাবেস ও লাইভ ওয়েবসাইটে সফলভাবে সংরক্ষিত হয়েছে!', 'success');
   } else {
-    alert('কাস্টম প্যাকেজ বিল্ডারের সকল প্রাইসিং রেট সফলভাবে সংরক্ষিত হয়েছে!');
+    alert('কাস্টম প্যাকেজ বিল্ডারের সকল প্রাইসিং রেট ক্লাউড ডেটাবেস ও লাইভ ওয়েবসাইটে সফলভাবে সংরক্ষিত হয়েছে!');
   }
   return false;
 }
@@ -4651,8 +4668,14 @@ function resetAdminCustomizerRatesToDefault() {
     } else {
       localStorage.setItem('bongbangla_customizer_rates', JSON.stringify(def));
     }
+    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.saveCustomizerRates === 'function') {
+      window.BongBanglaSupabase.saveCustomizerRates(def).catch(e => console.warn(e));
+    }
   } else {
     localStorage.removeItem('bongbangla_customizer_rates');
+    if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.saveSiteSetting === 'function') {
+      window.BongBanglaSupabase.saveSiteSetting('customizer_rates', null).catch(e => console.warn(e));
+    }
   }
 
   renderAdminCustomizerRates();

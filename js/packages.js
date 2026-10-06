@@ -142,6 +142,11 @@ function saveStoredCustomizerRates(rates) {
   } catch (e) {
     console.error('Error saving customizer rates:', e);
   }
+  if (typeof window !== 'undefined' && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.saveCustomizerRates === 'function') {
+    window.BongBanglaSupabase.saveCustomizerRates(rates).catch(err => {
+      console.warn('Supabase saveCustomizerRates notice:', err);
+    });
+  }
 }
 
 // Fallback reference for legacy code
@@ -174,6 +179,38 @@ function saveStoredPackages(packages) {
     localStorage.setItem('bongbangla_packages', JSON.stringify(packages));
   } catch (e) {
     console.error('Error saving packages:', e);
+  }
+  if (typeof window !== 'undefined' && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.savePackages === 'function') {
+    window.BongBanglaSupabase.savePackages(packages).catch(err => {
+      console.warn('Supabase savePackages notice:', err);
+    });
+  }
+}
+
+async function syncCloudPackagesAndRates() {
+  if (typeof window === 'undefined' || !window.BongBanglaSupabase) return;
+  try {
+    const [cloudPkgs, cloudRates] = await Promise.allSettled([
+      typeof window.BongBanglaSupabase.fetchPackages === 'function' ? window.BongBanglaSupabase.fetchPackages() : Promise.resolve(null),
+      typeof window.BongBanglaSupabase.fetchCustomizerRates === 'function' ? window.BongBanglaSupabase.fetchCustomizerRates() : Promise.resolve(null)
+    ]);
+
+    let changed = false;
+    if (cloudPkgs.status === 'fulfilled' && Array.isArray(cloudPkgs.value) && cloudPkgs.value.length > 0) {
+      changed = true;
+    }
+    if (cloudRates.status === 'fulfilled' && cloudRates.value && typeof cloudRates.value === 'object') {
+      CUSTOMIZER_RATES = getStoredCustomizerRates();
+      changed = true;
+    }
+
+    if (changed) {
+      console.log('⚡ Synced packages & customizer rates from Supabase Cloud');
+      renderReadyPackages();
+      updateCustomizerUI();
+    }
+  } catch (err) {
+    console.warn('Cloud pricing sync notice:', err);
   }
 }
 
@@ -386,7 +423,15 @@ function updateCustomizerUI() {
     const sId = chip.getAttribute('data-service');
     const sCfg = rates.services && rates.services[sId];
     if (sCfg) {
-      const baseSpan = chip.querySelector('span.text-\\[10px\\]');
+      const allSpans = chip.querySelectorAll('span');
+      let baseSpan = null;
+      for (const sp of allSpans) {
+        if (sp.textContent && sp.textContent.includes('বেস:')) {
+          baseSpan = sp;
+          break;
+        }
+      }
+      if (!baseSpan) baseSpan = chip.querySelector('span.text-\\[10px\\]') || (allSpans.length > 0 ? allSpans[allSpans.length - 1] : null);
       if (baseSpan) {
         baseSpan.textContent = `বেস: ৳ ${toBnNum(sCfg.base)}`;
       }
@@ -409,6 +454,12 @@ function updateCustomizerUI() {
   if (slider) slider.value = customizerState.reels;
   if (countBadge) countBadge.textContent = `${toBnNum(customizerState.reels)} টি রিলস`;
 
+  // Update dynamic bulk discount hint text if available
+  const discountHint = document.getElementById('customizer-discount-hint') || document.querySelector('#customizer-reels-slider + div > span:nth-child(2)');
+  if (discountHint && rates.bulkDiscountMinReels && rates.bulkDiscountPercent) {
+    discountHint.textContent = `${toBnNum(rates.bulkDiscountMinReels)}টি (${toBnNum(rates.bulkDiscountPercent)}% ছাড়)`;
+  }
+
   // Quick Reels Pills
   document.querySelectorAll('.customizer-reel-pill').forEach(pill => {
     const rVal = parseInt(pill.getAttribute('data-reels'), 10);
@@ -424,7 +475,15 @@ function updateCustomizerUI() {
     const mVal = parseInt(chip.getAttribute('data-models'), 10);
     const mCfg = rates.models && rates.models[mVal];
     if (mCfg) {
-      const priceSpan = chip.querySelector(':scope > span') || chip.querySelector('span.text-xs');
+      const spans = chip.querySelectorAll('span');
+      let priceSpan = null;
+      for (const sp of spans) {
+        if (sp.textContent && (sp.textContent.includes('৳') || sp.textContent.includes('+৳'))) {
+          priceSpan = sp;
+          break;
+        }
+      }
+      if (!priceSpan) priceSpan = chip.querySelector(':scope > span') || (spans.length > 0 ? spans[spans.length - 1] : null);
       if (priceSpan) {
         if (mCfg.price === 0) {
           priceSpan.textContent = '৳ ০';
@@ -452,7 +511,15 @@ function updateCustomizerUI() {
     const aId = chip.getAttribute('data-addon');
     const aCfg = rates.addons && rates.addons[aId];
     if (aCfg) {
-      const priceSpan = chip.querySelector(':scope > span') || chip.querySelector('span.text-xs');
+      const spans = chip.querySelectorAll('span');
+      let priceSpan = null;
+      for (const sp of spans) {
+        if (sp.textContent && (sp.textContent.includes('৳') || sp.textContent.includes('+৳'))) {
+          priceSpan = sp;
+          break;
+        }
+      }
+      if (!priceSpan) priceSpan = chip.querySelector(':scope > span') || (spans.length > 0 ? spans[spans.length - 1] : null);
       if (priceSpan) {
         priceSpan.textContent = `+৳ ${toBnNum(aCfg.price)}`;
       }
@@ -601,6 +668,17 @@ function initCustomPackageBuilder() {
   // Render Ready Packages & Initial Customizer UI
   renderReadyPackages();
   updateCustomizerUI();
+
+  // Background Cloud Sync with Supabase (updates any device live)
+  syncCloudPackagesAndRates();
+
+  if (typeof window !== 'undefined' && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.subscribeToSiteSettings === 'function') {
+    try {
+      window.BongBanglaSupabase.subscribeToSiteSettings(() => {
+        syncCloudPackagesAndRates();
+      });
+    } catch(e) {}
+  }
 }
 
 // Expose globally
@@ -609,6 +687,7 @@ window.BongBanglaPackages = {
   saveStoredPackages,
   getStoredCustomizerRates,
   saveStoredCustomizerRates,
+  syncCloudPackagesAndRates,
   DEFAULT_CUSTOMIZER_RATES,
   renderReadyPackages,
   setPricingMode,
@@ -621,8 +700,17 @@ window.BongBanglaPackages = {
   CUSTOMIZER_RATES
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('pricing')) {
-    initCustomPackageBuilder();
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      if (document.getElementById('pricing')) {
+        initCustomPackageBuilder();
+      }
+    });
+  } else {
+    if (document.getElementById('pricing')) {
+      initCustomPackageBuilder();
+    }
   }
-});
+}
+

@@ -813,15 +813,113 @@
   }
 
   /* ==========================================================================
-     4. Automatic Local-to-Cloud Sync Migration Engine
+     5. Cloud Site Settings & Pricing Synchronization (Global Database Storage)
      ========================================================================== */
-  async function syncLocalDataToSupabase() {
-    // Cloud database is the single source of truth.
-    // Do not auto-upload local items because missing items in cloud were intentionally deleted.
-    return;
+  async function fetchSiteSetting(key) {
+    try {
+      const client = await ensureClient();
+      if (!client) return null;
+      const { data, error } = await client
+        .from('reviews')
+        .select('*')
+        .eq('id', 'setting_' + key)
+        .limit(1);
+
+      if (error) {
+        console.warn(`Supabase fetchSiteSetting("${key}") notice:`, error.message);
+        return null;
+      }
+      if (data && data[0] && data[0].comment) {
+        try {
+          return JSON.parse(data[0].comment);
+        } catch(pe) {
+          return data[0].comment;
+        }
+      }
+    } catch (e) {
+      console.warn(`fetchSiteSetting("${key}") exception:`, e);
+    }
+    return null;
   }
 
-  // Realtime subscription helpers
+  async function saveSiteSetting(key, value) {
+    try {
+      const client = await ensureClient();
+      if (!client) return false;
+      const payload = {
+        id: 'setting_' + key,
+        name: 'site_settings',
+        brand: 'bongbangla',
+        comment: typeof value === 'string' ? value : JSON.stringify(value),
+        created_at: new Date().toISOString()
+      };
+      const { error } = await client
+        .from('reviews')
+        .upsert([payload]);
+
+      if (error) {
+        console.warn(`Supabase saveSiteSetting("${key}") error:`, error.message);
+        return false;
+      }
+      console.log(`☁️ Site setting "${key}" saved to Supabase cloud successfully.`);
+      return true;
+    } catch (e) {
+      console.warn(`saveSiteSetting("${key}") exception:`, e);
+      return false;
+    }
+  }
+
+  async function fetchPackages() {
+    const cloud = await fetchSiteSetting('packages');
+    if (Array.isArray(cloud) && cloud.length > 0) {
+      try {
+        localStorage.setItem('bongbangla_packages', JSON.stringify(cloud));
+      } catch(e) {}
+      return cloud;
+    }
+    return null;
+  }
+
+  async function savePackages(packages) {
+    try {
+      localStorage.setItem('bongbangla_packages', JSON.stringify(packages));
+    } catch(e) {}
+    return await saveSiteSetting('packages', packages);
+  }
+
+  async function fetchCustomizerRates() {
+    const cloud = await fetchSiteSetting('customizer_rates');
+    if (cloud && typeof cloud === 'object') {
+      try {
+        localStorage.setItem('bongbangla_customizer_rates', JSON.stringify(cloud));
+      } catch(e) {}
+      return cloud;
+    }
+    return null;
+  }
+
+  async function saveCustomizerRates(rates) {
+    try {
+      localStorage.setItem('bongbangla_customizer_rates', JSON.stringify(rates));
+    } catch(e) {}
+    return await saveSiteSetting('customizer_rates', rates);
+  }
+
+  function subscribeToSiteSettings(callback) {
+    const client = getClient();
+    if (client) {
+      try {
+        return client
+          .channel('public:settings:realtime')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, payload => {
+            if (callback) callback(payload);
+          })
+          .subscribe();
+      } catch (e) {}
+    }
+    return null;
+  }
+
   function subscribeToLeads(callback) {
     if (supabaseClient) {
       try {
@@ -864,6 +962,10 @@
     return null;
   }
 
+  async function syncLocalDataToSupabase() {
+    return;
+  }
+
   async function uploadStorageFile(file, bucket = 'reels', folder = '') {
     if (!supabaseClient || !file) return null;
     try {
@@ -894,7 +996,7 @@
   // Auto-init when script loads
   if (typeof window !== 'undefined') {
     initClient();
-    if (document.readyState === 'loading') {
+    if (typeof document !== 'undefined' && document.readyState === 'loading') {
       window.addEventListener('DOMContentLoaded', () => {
         initClient();
       });
@@ -926,9 +1028,17 @@
     subscribeToHeroSlides,
     syncLocalDataToSupabase,
     uploadStorageFile,
+    fetchSiteSetting,
+    saveSiteSetting,
+    fetchPackages,
+    savePackages,
+    fetchCustomizerRates,
+    saveCustomizerRates,
+    subscribeToSiteSettings,
     subscribeToLeads,
     subscribeToReels,
     subscribeToModels,
     getClient
   };
 })();
+
