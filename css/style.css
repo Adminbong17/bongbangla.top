@@ -676,4 +676,81 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 25px rgba(237, 150, 215, 0.7);
 }
 
+/* ==========================================================================
+   Portfolio Campaigns Continuous Smooth Motion Slider (Matching Models Section)
+   ========================================================================== */
+.portfolio-motion-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 0.75rem 0 1.5rem;
+}
+
+.portfolio-motion-viewport {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+}
+
+.portfolio-motion-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.portfolio-motion-track {
+  display: flex;
+  gap: 1.5rem;
+  width: max-content;
+  animation: portfolioContinuousMarquee 38s linear infinite;
+  will-change: transform;
+}
+
+.portfolio-motion-track:hover,
+.portfolio-motion-track.is-paused {
+  animation-play-state: paused;
+}
+
+@keyframes portfolioContinuousMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.portfolio-motion-card {
+  width: 290px;
+  min-width: 290px;
+  max-width: 290px;
+  flex-shrink: 0;
+  border-radius: 1.75rem;
+  background: #ffffff;
+  border: 1.5px solid rgba(237, 150, 215, 0.35);
+  box-shadow: 0 12px 30px -5px rgba(237, 150, 215, 0.22), 0 4px 12px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.portfolio-motion-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: #db2777;
+  box-shadow: 0 25px 45px -10px rgba(237, 150, 215, 0.55), 0 0 20px rgba(219, 39, 119, 0.2);
+}
+
+@media (max-width: 640px) {
+  .portfolio-motion-card {
+    width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+  }
+}
+
 

@@ -436,7 +436,7 @@
   <section id="portfolio" class="py-10 md:py-14 bg-[#fff0f6]/60 border-y border-[#ED96D7]/25 relative">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-6 sm:mb-8">
         <div class="space-y-2 max-w-xl">
           <span class="badge-tag px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest inline-block">
             আমাদের কাজসমূহ
@@ -449,13 +449,29 @@
           </p>
         </div>
 
-        <!-- Filter Buttons -->
-        <div class="flex items-center gap-2 flex-wrap text-xs font-bold" id="portfolio-filter-buttons">
-          <button class="filter-btn bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white border-[#db2777] shadow-[0_0_15px_rgba(237,150,215,0.5)] px-4 py-2 rounded-xl border transition-all cursor-pointer" data-filter="all">সব কাজ</button>
-          <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="commercial-ad">অ্যাড ফিল্ম</button>
-          <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="model-shoot">শাড়ি ও মডেল শুট</button>
-          <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="product-reels">প্রোডাক্ট রিলস</button>
-          <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="branding-web">ওয়েবসাইট ও ব্র্যান্ড</button>
+        <!-- Controls: Filter Buttons & Slider Navigation Controls -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 flex-wrap self-start lg:self-end">
+          <!-- Filter Buttons -->
+          <div class="flex items-center gap-2 flex-wrap text-xs font-bold" id="portfolio-filter-buttons">
+            <button class="filter-btn bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white border-[#db2777] shadow-[0_0_15px_rgba(237,150,215,0.5)] px-4 py-2 rounded-xl border transition-all cursor-pointer" data-filter="all">সব কাজ</button>
+            <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="commercial-ad">অ্যাড ফিল্ম</button>
+            <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="model-shoot">শাড়ি ও মডেল শুট</button>
+            <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="product-reels">প্রোডাক্ট রিলস</button>
+            <button class="filter-btn bg-white text-[#572449] border-[#ED96D7]/40 px-4 py-2 rounded-xl border hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all shadow-sm cursor-pointer" data-filter="branding-web">ওয়েবসাইট ও ব্র্যান্ড</button>
+          </div>
+
+          <!-- Slider Navigation Controls & Status Indicator (Matches Models Section Exactly) -->
+          <div class="flex items-center gap-2.5">
+            <span class="text-[11px] text-[#8c4f75] font-bangla font-semibold hidden sm:inline-flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full border border-[#ED96D7]/40 shadow-xs">
+              <span class="w-2 h-2 rounded-full bg-[#db2777] pulse-indicator"></span> <span id="portfolio-slider-status">অটো-স্লাইড হচ্ছে</span>
+            </span>
+            <button id="portfolio-slide-prev" class="model-nav-btn" title="পূর্ববর্তী কাজ" aria-label="Previous Portfolio Item">
+              <i class="fa-solid fa-chevron-left text-xs"></i>
+            </button>
+            <button id="portfolio-slide-next" class="model-nav-btn" title="পরবর্তী কাজ" aria-label="Next Portfolio Item">
+              <i class="fa-solid fa-chevron-right text-xs"></i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -479,9 +495,17 @@
         </a>
       </div>
 
-      <!-- Portfolio Grid -->
-      <div id="portfolio-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Dynamically populated by js/main.js & js/reels.js -->
+      <!-- Portfolio Motion Slider Viewport (Hero/Model Marquee Carousel) -->
+      <div class="portfolio-motion-wrapper">
+        <div id="portfolio-motion-viewport" class="portfolio-motion-viewport">
+          <div id="portfolio-grid" class="portfolio-motion-track">
+            <!-- Dynamically populated by js/main.js & js/reels.js -->
+            <div class="py-12 px-8 bg-white rounded-3xl border border-dashed border-[#ED96D7]/40 text-center w-full min-w-[300px]">
+              <div class="w-10 h-10 border-4 border-[#ED96D7]/30 border-t-[#db2777] rounded-full animate-spin mx-auto mb-3"></div>
+              <p class="text-xs text-[#8c4f75] font-bangla font-semibold">কমার্শিয়াল কাজ ও রিলস লোড হচ্ছে...</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="mt-6 text-center">

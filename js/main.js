@@ -265,6 +265,7 @@ function getFrontendCategoryBadge(category) {
 
 function renderFrontendPortfolio(filter = 'all', preloadedReels = null) {
   const container = document.getElementById('portfolio-grid');
+  const viewport = document.getElementById('portfolio-motion-viewport');
   if (!container) return;
 
   if (Array.isArray(preloadedReels) && preloadedReels.length > 0) {
@@ -284,8 +285,10 @@ function renderFrontendPortfolio(filter = 'all', preloadedReels = null) {
   }
 
   if (!filtered || filtered.length === 0) {
+    container.className = 'w-full';
+    container.style.animation = 'none';
     container.innerHTML = `
-      <div class="col-span-full text-center py-12 bg-white rounded-3xl border border-dashed border-[#ED96D7]/50 p-8 shadow-xs">
+      <div class="col-span-full text-center py-12 bg-white rounded-3xl border border-dashed border-[#ED96D7]/50 p-8 shadow-xs w-full">
         <div class="w-16 h-16 mx-auto rounded-2xl bg-[#fff0f6] text-[#db2777] flex items-center justify-center text-2xl mb-3 shadow-xs">
           <i class="fa-solid fa-film"></i>
         </div>
@@ -299,54 +302,144 @@ function renderFrontendPortfolio(filter = 'all', preloadedReels = null) {
     return;
   }
 
+  // Restore motion track class
+  container.className = 'portfolio-motion-track';
+  container.style.animation = '';
+
+  // Duplicate set to create seamless continuous infinite loop like Hero and Models section
+  let displayReels = [...filtered];
+  if (filtered.length < 4) {
+    displayReels = [...filtered, ...filtered, ...filtered, ...filtered];
+  } else if (filtered.length < 8) {
+    displayReels = [...filtered, ...filtered];
+  }
+
+  // Adjust animation speed based on card count
+  const animDuration = Math.max(25, displayReels.length * 4.5);
+  container.style.animationDuration = `${animDuration}s`;
+
+  // Reset scroll to left when filtered
+  if (viewport) {
+    viewport.scrollTo({ left: 0, behavior: 'smooth' });
+  }
+
   const defaultReelFallback = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80';
 
-  container.innerHTML = filtered.map(item => {
+  container.innerHTML = displayReels.map(item => {
     const title = item.title || 'BongBangla Production';
     const client = item.client || 'BongBangla Client';
     const tag = item.tag || '4K';
     const views = item.views || '১.৫M ভিউজ';
     const rawThumb = item.thumbnail || defaultReelFallback;
-    const rawVideo = item.videoUrl || '';
+    const rawVideo = item.videoUrl || item.video_url || '';
     const thumb = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawThumb, 'thumbnails') : rawThumb;
     const videoUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawVideo, 'reels') : rawVideo;
     const categoryLabel = getFrontendCategoryBadge(item.category);
     const categoryUrl = catHelper ? catHelper.getCategoryServiceUrl(item.category) : 'service-saree-model-shoot.html';
 
     return `
-      <div class="portfolio-item gallery-card group cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden bg-white border border-[#ED96D7]/35 hover:border-[#db2777] shadow-sm hover:shadow-xl transition-all"
+      <div class="portfolio-motion-card group"
            onclick="if(window.BongBanglaReels){window.BongBanglaReels.openReelVideoModal('${videoUrl}', '${encodeURIComponent(title)}', '${encodeURIComponent(client)}')}">
-        <div class="aspect-[3/4] overflow-hidden relative bg-black">
+        
+        <div class="aspect-[3/4] relative overflow-hidden bg-black block group-hover:opacity-95 transition-opacity cursor-pointer">
           <img src="${thumb || defaultReelFallback}" alt="${title}" onerror="this.onerror=null; this.src='${defaultReelFallback}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
           
+          <!-- Atmospheric Vignette Gradient -->
+          <div class="absolute inset-0 bg-gradient-to-t from-[#2b0e23]/90 via-transparent to-black/35 pointer-events-none"></div>
+
           <!-- Top Badges -->
           <div class="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none z-10">
-            <span class="px-2.5 py-1 rounded-full bg-white/90 text-[10px] font-bold text-[#db2777] shadow-sm">
-              ${tag}
-            </span>
-            <span class="px-2.5 py-1 rounded-full bg-black/60 text-[10px] font-bold text-white shadow-sm flex items-center gap-1">
+            <a href="${categoryUrl}" onclick="event.stopPropagation()" class="px-2.5 py-1 rounded-full model-card-badge text-[10px] font-bold text-[#db2777] flex items-center gap-1.5 shadow-sm pointer-events-auto hover:bg-[#db2777] hover:text-white transition-all" title="${categoryLabel} পেজ দেখুন">
+              <span class="w-2 h-2 rounded-full bg-[#db2777] pulse-indicator"></span>
+              <span>${categoryLabel}</span>
+            </a>
+            <span class="px-2.5 py-1 rounded-full bg-black/60 text-[10px] font-bold text-white shadow-sm flex items-center gap-1 border border-white/10 backdrop-blur-md">
               <i class="fa-regular fa-eye text-[#ED96D7]"></i> ${views}
             </span>
           </div>
 
-          <!-- Gallery Overlay -->
-          <div class="gallery-overlay absolute inset-0 flex flex-col justify-end p-5 bg-gradient-to-t from-black/85 via-black/20 to-transparent">
-            <a href="${categoryUrl}" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-pink-200 hover:text-white bg-black/60 hover:bg-[#db2777] px-2.5 py-0.5 rounded-full mb-1 font-bangla border border-pink-300/30 transition-all pointer-events-auto w-fit" title="${categoryLabel} এর আলাদা পেজ দেখুন">
-              <span>${categoryLabel}</span>
-              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
-            </a>
-            <h4 class="font-bangla font-bold text-base sm:text-lg text-white mb-2 leading-snug line-clamp-2">${title}</h4>
-            <div class="flex items-center justify-between text-xs text-pink-100">
-              <span class="font-bangla flex items-center gap-1"><i class="fa-solid fa-user-tag text-[10px]"></i> ${client}</span>
-              <span class="w-9 h-9 rounded-full bg-[#db2777] text-white flex items-center justify-center font-bold shadow-lg shadow-[#db2777]/50 group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-play ml-0.5 text-xs"></i>
-              </span>
+          <!-- Center Big Play Button Overlay -->
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-white/90 backdrop-blur-md text-[#db2777] flex items-center justify-center text-xl sm:text-2xl shadow-xl group-hover:scale-115 group-hover:bg-[#db2777] group-hover:text-white transition-all duration-300">
+              <i class="fa-solid fa-play ml-0.5"></i>
             </div>
           </div>
+
+          <!-- Bottom Floating Content on Image -->
+          <div class="absolute bottom-3 inset-x-3 text-left pointer-events-none z-10">
+            <div class="inline-block px-2.5 py-0.5 rounded-md bg-[#db2777]/90 text-white text-[10px] font-bold mb-1 font-bangla">
+              ${client}
+            </div>
+            <h3 class="text-white font-bangla font-bold text-sm sm:text-base leading-snug line-clamp-2 drop-shadow-md">
+              ${title}
+            </h3>
+          </div>
+        </div>
+
+        <!-- Bottom Card Action Footer -->
+        <div class="p-3.5 bg-white border-t border-[#ED96D7]/20 flex items-center justify-between gap-2 font-bangla">
+          <button type="button" class="flex-1 py-2 rounded-xl bg-[#fdf2f8] hover:bg-[#ED96D7] hover:text-white text-[#db2777] text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs border border-[#ED96D7]/40">
+            <i class="fa-solid fa-circle-play text-[11px]"></i>
+            <span>রিলসটি প্লে করুন</span>
+          </button>
+          <a href="https://wa.me/8801700000000?text=${encodeURIComponent('নমস্কার BongBangla! আমি ' + title + ' (' + client + ') এর মতো ভিডিও শ্যুট করাতে আগ্রহী। বাজেট জানতে চাই।')}" 
+             target="_blank" onclick="event.stopPropagation()"
+             class="w-9 h-9 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center transition-all shadow-xs shrink-0"
+             title="WhatsApp-এ বাজেট আলোচনা">
+            <i class="fa-brands fa-whatsapp text-base"></i>
+          </a>
         </div>
       </div>
     `;
   }).join('');
+
+  initPortfolioMotionControls();
+}
+
+function initPortfolioMotionControls() {
+  const prevBtn = document.getElementById('portfolio-slide-prev');
+  const nextBtn = document.getElementById('portfolio-slide-next');
+  const viewport = document.getElementById('portfolio-motion-viewport');
+  const track = document.getElementById('portfolio-grid');
+  const statusText = document.getElementById('portfolio-slider-status');
+
+  if (!viewport || !track) return;
+
+  if (prevBtn && !prevBtn.dataset.initialized) {
+    prevBtn.dataset.initialized = 'true';
+    prevBtn.addEventListener('click', () => {
+      track.classList.add('is-paused');
+      if (statusText) statusText.textContent = 'স্ক্রোল করা হচ্ছে';
+      viewport.scrollBy({ left: -310, behavior: 'smooth' });
+      setTimeout(() => {
+        track.classList.remove('is-paused');
+        if (statusText) statusText.textContent = 'অটো-স্লাইড হচ্ছে';
+      }, 3000);
+    });
+  }
+
+  if (nextBtn && !nextBtn.dataset.initialized) {
+    nextBtn.dataset.initialized = 'true';
+    nextBtn.addEventListener('click', () => {
+      track.classList.add('is-paused');
+      if (statusText) statusText.textContent = 'স্ক্রোল করা হচ্ছে';
+      viewport.scrollBy({ left: 310, behavior: 'smooth' });
+      setTimeout(() => {
+        track.classList.remove('is-paused');
+        if (statusText) statusText.textContent = 'অটো-স্লাইড হচ্ছে';
+      }, 3000);
+    });
+  }
+
+  if (!viewport.dataset.hoverInitialized) {
+    viewport.dataset.hoverInitialized = 'true';
+    viewport.addEventListener('mouseenter', () => {
+      if (statusText) statusText.textContent = 'পজ করা হয়েছে (হভার)';
+    });
+    viewport.addEventListener('mouseleave', () => {
+      if (statusText) statusText.textContent = 'অটো-স্লাইড হচ্ছে';
+    });
+  }
 }
 
 function renderFrontendModels(directData) {
