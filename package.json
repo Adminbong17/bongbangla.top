@@ -5,7 +5,7 @@
   "description": "BongBangla Media & Creative Agency Website with Supabase & Lovable Integration",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node -e \"const fs=require('fs'); fs.cpSync('js', 'dist/js', {recursive:true}); fs.cpSync('css', 'dist/css', {recursive:true}); fs.cpSync('assets', 'dist/assets', {recursive:true, force:false}); try { fs.copyFileSync('favicon.ico', 'dist/favicon.ico'); fs.copyFileSync('favicon.png', 'dist/favicon.png'); } catch(e){}\"",
+    "build": "vite build && node -e \"const fs=require('fs'); fs.cpSync('js', 'dist/js', {recursive:true}); fs.cpSync('css', 'dist/css', {recursive:true}); fs.cpSync('assets', 'dist/assets', {recursive:true, force:false}); try { fs.copyFileSync('favicon.ico', 'dist/favicon.ico'); fs.copyFileSync('favicon.png', 'dist/favicon.png'); } catch(e){}; try { if(fs.existsSync('CNAME')) fs.copyFileSync('CNAME', 'dist/CNAME'); } catch(e){}\"",
     "preview": "vite preview"
   },
   "dependencies": {

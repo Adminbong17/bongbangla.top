@@ -410,7 +410,21 @@ function renderFrontendModels(directData) {
   container.innerHTML = displayModels.map(m => {
     const rawImg = m.image || defaultModelFallback;
     const modelImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImg, 'models') : rawImg;
-    const detailsUrl = `model-details.html?id=${encodeURIComponent(m.id)}`;
+    const detailsUrl = `model-details.html?id=${encodeURIComponent(m.id)}#model-gallery-section`;
+
+    const galleryItems = Array.isArray(m.gallery) ? m.gallery : [];
+    let modelReelsCount = galleryItems.filter(i => (i.type || '').toLowerCase() === 'video' || (i.url && /\.(mp4|webm|mov)(\?|$)/i.test(i.url))).length;
+    if (window._cachedCloudReels && Array.isArray(window._cachedCloudReels)) {
+      const mNorm = (m.name || '').toLowerCase();
+      const mIdNorm = (m.id || '').toLowerCase();
+      const matched = window._cachedCloudReels.filter(r => {
+        const rTitle = (r.title || '').toLowerCase();
+        const rClient = (r.client || '').toLowerCase();
+        const rModelId = (r.model_id || r.modelId || '').toLowerCase();
+        return (rModelId && rModelId === mIdNorm) || (mNorm.length > 2 && (rTitle.includes(mNorm) || rClient.includes(mNorm) || (mNorm.includes('merina') && rTitle.includes('mumtahina'))));
+      });
+      modelReelsCount += matched.length;
+    }
 
     return `
       <div class="model-motion-card group">
@@ -428,9 +442,10 @@ function renderFrontendModels(directData) {
             </span>
           </div>
 
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
             <span class="text-white text-xs font-bold font-bangla flex items-center gap-1.5">
-              <span>সম্পূর্ণ প্রোফাইল ও গ্যালারি</span>
+              <i class="fa-solid fa-play text-[#ED96D7] text-[10px]"></i>
+              <span>ভিডিও রিলস ও পোর্টফোলিও স্লাইডার</span>
               <i class="fa-solid fa-arrow-right text-[10px]"></i>
             </span>
           </div>
@@ -444,6 +459,14 @@ function renderFrontendModels(directData) {
             <span class="text-[11px] text-[#8c4f75] font-semibold truncate"><i class="fa-solid fa-location-dot text-[#db2777] text-[10px] mr-0.5"></i>${m.location || 'ঢাকা'}</span>
           </div>
 
+          <div class="flex items-center justify-between text-[10px] text-[#db2777] bg-[#fdf2f8] px-2.5 py-1 rounded-lg border border-[#ED96D7]/25 font-bold">
+            <span class="flex items-center gap-1">
+              <i class="fa-solid fa-film text-[10px]"></i>
+              <span>${modelReelsCount > 0 ? `${modelReelsCount}টি রিলস ভিডিও` : 'ফটো পোর্টফোলিও'}</span>
+            </span>
+            <span class="text-pink-600 bg-white px-2 py-0.5 rounded-full border border-[#ED96D7]/40 shadow-xs">স্লাইডার ভিউ</span>
+          </div>
+
           <div class="grid grid-cols-2 gap-2 text-center text-[10px] text-[#572449] bg-[#fdf2f8] p-2 rounded-xl border border-[#ED96D7]/25">
             <div>হাইট: <span class="text-[#2b0e23] font-bold">${m.height || "৫'৭\""}</span></div>
             <div>শ্যুট: <span class="text-[#2b0e23] font-bold">${m.shoots || '২০+'}</span></div>
@@ -452,8 +475,8 @@ function renderFrontendModels(directData) {
           <div class="grid grid-cols-2 gap-2 pt-0.5">
             <a href="${detailsUrl}"
                class="py-2 rounded-xl bg-white hover:bg-[#fdf2f8] text-[#be185d] text-xs font-bold transition-all border border-[#ED96D7]/50 shadow-xs flex items-center justify-center gap-1 hover:border-[#db2777]">
-              <i class="fa-solid fa-circle-user text-[11px]"></i>
-              <span>প্রোফাইল</span>
+              <i class="fa-solid fa-sliders text-[11px]"></i>
+              <span>স্লাইডার</span>
             </a>
             <button onclick="if(window.openBookingForModel){window.openBookingForModel('${encodeURIComponent(m.name)}')}else{const mBtn=document.querySelector('.open-booking-modal'); if(mBtn) mBtn.click();}"
                class="py-2 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white text-xs font-bold transition-all shadow-xs hover:shadow-md flex items-center justify-center gap-1">

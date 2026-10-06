@@ -341,8 +341,11 @@
         <!-- ========================================================================
              1. Section: Model Photo & Video Gallery Portfolio (Auto loads on page load)
              ======================================================================== -->
+        <!-- ========================================================================
+             1. Section: Model Photo & Video Gallery Portfolio (Interactive Motion Slider & Grid)
+             ======================================================================== -->
         <section id="model-gallery-section" class="pt-8 border-t border-[#ED96D7]/30 space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <span class="badge-tag px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest inline-block">
                 এক্সক্লুসিভ পোর্টফোলিও
@@ -354,23 +357,79 @@
               <p class="text-xs text-[#8c4f75] mt-0.5">এই মডেলের পূর্ববর্তী শ্যুট, ক্যাটালগ ফটো ও সোশ্যাল মিডিয়া ভাইরাল রিলস ভিডিওসমূহ</p>
             </div>
 
-            <!-- Gallery Filter Tabs -->
-            <div class="inline-flex rounded-2xl bg-white p-1 border border-[#ED96D7]/40 shadow-xs text-xs font-bangla font-bold">
-              <button type="button" class="model-gallery-filter-btn px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white shadow-xs" data-filter="all" onclick="filterModelGallery('all')">
-                সবগুলো (<span id="gallery-count-all">০</span>)
-              </button>
-              <button type="button" class="model-gallery-filter-btn px-4 py-1.5 rounded-xl text-[#572449] hover:text-[#db2777] transition-all" data-filter="photo" onclick="filterModelGallery('photo')">
-                <i class="fa-solid fa-camera mr-1"></i>ছবি (<span id="gallery-count-photos">০</span>)
-              </button>
-              <button type="button" class="model-gallery-filter-btn px-4 py-1.5 rounded-xl text-[#572449] hover:text-[#db2777] transition-all" data-filter="video" onclick="filterModelGallery('video')">
-                <i class="fa-solid fa-film mr-1"></i>ভিডিও রিলস (<span id="gallery-count-videos">০</span>)
-              </button>
+            <!-- Controls: Filter Tabs & View Mode Switcher -->
+            <div class="flex items-center gap-3 flex-wrap">
+              <!-- Gallery Filter Tabs -->
+              <div class="inline-flex rounded-2xl bg-white p-1 border border-[#ED96D7]/40 shadow-xs text-xs font-bangla font-bold">
+                <button type="button" class="model-gallery-filter-btn px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white shadow-xs" data-filter="all" onclick="filterModelGallery('all')">
+                  সবগুলো (<span id="gallery-count-all">০</span>)
+                </button>
+                <button type="button" class="model-gallery-filter-btn px-3.5 py-1.5 rounded-xl text-[#572449] hover:text-[#db2777] transition-all" data-filter="photo" onclick="filterModelGallery('photo')">
+                  <i class="fa-solid fa-camera mr-1"></i>ছবি (<span id="gallery-count-photos">০</span>)
+                </button>
+                <button type="button" class="model-gallery-filter-btn px-3.5 py-1.5 rounded-xl text-[#572449] hover:text-[#db2777] transition-all" data-filter="video" onclick="filterModelGallery('video')">
+                  <i class="fa-solid fa-film mr-1"></i>ভিডিও রিলস (<span id="gallery-count-videos">০</span>)
+                </button>
+              </div>
+
+              <!-- View Mode Toggle (Slider vs Grid) -->
+              <div class="inline-flex rounded-2xl bg-[#fff0f6] p-1 border border-[#ED96D7]/50 shadow-xs text-xs font-bangla font-bold">
+                <button id="view-mode-slider-btn" type="button" onclick="setModelGalleryView('slider')" class="px-3 py-1.5 rounded-xl bg-white text-[#db2777] border border-[#ED96D7]/60 shadow-xs flex items-center gap-1.5 transition-all" title="মোশন স্লাইডার ভিউ">
+                  <i class="fa-solid fa-sliders"></i>
+                  <span>স্লাইডার</span>
+                </button>
+                <button id="view-mode-grid-btn" type="button" onclick="setModelGalleryView('grid')" class="px-3 py-1.5 rounded-xl text-[#572449] hover:text-[#db2777] flex items-center gap-1.5 transition-all" title="গ্রিড ভিউ">
+                  <i class="fa-solid fa-table-cells"></i>
+                  <span>গ্রিড</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- Dynamic Gallery Grid -->
-          <div id="model-full-gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-            <!-- Dynamically populated -->
+          <!-- ====================================================================
+               A. Interactive Motion Slider View (Default)
+               ==================================================================== -->
+          <div id="model-gallery-slider-section" class="space-y-4">
+            <!-- Slider Subheader & Navigation Controls -->
+            <div class="flex items-center justify-between gap-3 px-1">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#ED96D7]/50 text-[11px] font-bold text-[#db2777] shadow-xs">
+                  <span class="w-2 h-2 rounded-full bg-[#db2777] pulse-indicator"></span>
+                  <span id="slider-status-text">স্মুথ মোশন স্লাইডার</span>
+                </span>
+                <span class="text-xs text-[#8c4f75] hidden sm:inline-flex items-center gap-1 font-bangla">
+                  <i class="fa-solid fa-arrows-left-right text-[#ED96D7]"></i> স্ক্রোল অথবা ড্র্যাগ করে দেখুন
+                </span>
+              </div>
+
+              <!-- Prev / Next Arrow Buttons -->
+              <div class="flex items-center gap-2">
+                <button type="button" id="model-gallery-slide-prev" class="w-10 h-10 rounded-full bg-white hover:bg-gradient-to-r hover:from-[#ED96D7] hover:to-[#db2777] hover:text-white text-[#db2777] border border-[#ED96D7]/50 shadow-sm flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95" title="পূর্ববর্তী আইটেম" aria-label="Previous Gallery Item">
+                  <i class="fa-solid fa-chevron-left text-xs"></i>
+                </button>
+                <button type="button" id="model-gallery-slide-next" class="w-10 h-10 rounded-full bg-white hover:bg-gradient-to-r hover:from-[#ED96D7] hover:to-[#db2777] hover:text-white text-[#db2777] border border-[#ED96D7]/50 shadow-sm flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95" title="পরবর্তী আইটেম" aria-label="Next Gallery Item">
+                  <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Slider Viewport Track -->
+            <div class="relative w-full overflow-hidden rounded-3xl p-1 bg-gradient-to-b from-white/60 to-pink-50/30 border border-[#ED96D7]/30 shadow-inner">
+              <div id="model-gallery-slider-viewport" class="overflow-x-auto scroll-smooth py-3 px-2 flex gap-4 sm:gap-5 scrollbar-none select-none cursor-grab active:cursor-grabbing" style="scrollbar-width: none; -ms-overflow-style: none;">
+                <div id="model-gallery-slider-track" class="flex gap-4 sm:gap-5 w-max">
+                  <!-- Dynamically populated slider cards -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ====================================================================
+               B. Dynamic Gallery Grid View (Alternative toggle)
+               ==================================================================== -->
+          <div id="model-gallery-grid-section" class="hidden">
+            <div id="model-full-gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+              <!-- Dynamically populated grid cards -->
+            </div>
           </div>
         </section>
 
@@ -574,7 +633,14 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button type="button" id="slider-audio-btn" onclick="toggleSliderAudio()" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/15 hover:bg-[#db2777] text-white flex items-center justify-center text-sm transition-all shadow-md border border-white/20 cursor-pointer hidden" title="সাউন্ড চালু/বন্ধ করুন">
+          <i id="slider-audio-icon" class="fa-solid fa-volume-xmark"></i>
+        </button>
+        <a id="slider-whatsapp-btn" href="https://wa.me/8801700000000" target="_blank" class="px-3.5 py-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition-all font-bangla">
+          <i class="fa-brands fa-whatsapp text-sm"></i>
+          <span class="hidden sm:inline">এই শ্যুটটি বুক করুন</span>
+        </a>
         <button type="button" onclick="closeGallerySliderModal()" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/15 hover:bg-[#db2777] text-white flex items-center justify-center text-lg sm:text-xl transition-all shadow-lg hover:scale-105 active:scale-95 border border-white/20 cursor-pointer" title="বন্ধ করুন (Esc)">
           <i class="fa-solid fa-xmark"></i>
         </button>
@@ -1090,7 +1156,7 @@
       }
 
       // =========================================================================
-      // Dynamic Model Gallery & Video Portfolio
+      // Dynamic Model Gallery & Video Portfolio (Photos & Video Reels Slider)
       // =========================================================================
       window.currentModelGalleryItems = [];
 
@@ -1114,6 +1180,63 @@
         ];
       }
 
+      // Automatically enrich model portfolio with associated reels from Supabase or localStorage
+      try {
+        let allReels = [];
+        if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.fetchReels === 'function') {
+          allReels = await window.BongBanglaSupabase.fetchReels('all');
+        } else if (typeof getReels === 'function') {
+          allReels = getReels('all');
+        } else {
+          const rawReels = localStorage.getItem('bongbangla_reels');
+          if (rawReels) allReels = JSON.parse(rawReels);
+        }
+
+        if (Array.isArray(allReels) && allReels.length > 0) {
+          const modelNameNorm = (model.name || '').toLowerCase();
+          const modelIdNorm = (model.id || '').toLowerCase();
+          const bioNorm = (model.bio || '').toLowerCase();
+          const specNorm = (model.specialties || '').toLowerCase();
+
+          // Extract search tokens for model
+          const nameTokens = modelNameNorm.split(/\s+/).filter(t => t.length > 2);
+          if (bioNorm.includes('mumtahina') || specNorm.includes('mumtahina')) {
+            nameTokens.push('mumtahina');
+          }
+
+          const matchedReels = allReels.filter(r => {
+            if (!r || (!r.videoUrl && !r.video_url)) return false;
+            const rModelId = (r.model_id || r.modelId || '').toLowerCase();
+            const rTitle = (r.title || '').toLowerCase();
+            const rClient = (r.client || '').toLowerCase();
+
+            if (rModelId && rModelId === modelIdNorm) return true;
+            return nameTokens.some(token => rTitle.includes(token) || rClient.includes(token));
+          });
+
+          // If no specific reel matches by name, provide top trending reels as featured collaboration reels
+          const reelsToAdd = matchedReels.length > 0 ? matchedReels : allReels.slice(0, 2);
+
+          reelsToAdd.forEach(r => {
+            const vUrl = r.video_url || r.videoUrl;
+            const exists = galleryList.some(g => g.url === vUrl || (g.url && vUrl && g.url.includes(vUrl)));
+            if (!exists) {
+              galleryList.unshift({
+                type: 'video',
+                url: vUrl,
+                thumbnail: r.thumbnail_url || r.thumbnail || modelImg,
+                title: r.title || `${model.name} - এক্সক্লুসিভ কমার্শিয়াল রিল`,
+                client: r.client || 'BongBangla Production',
+                tag: r.tag || '4K REEL',
+                reelId: r.id
+              });
+            }
+          });
+        }
+      } catch(err) {
+        console.warn('Error enriching model gallery with reels:', err);
+      }
+
       window.currentModelGalleryItems = galleryList;
 
       const photoCount = galleryList.filter(i => i.type === 'photo').length;
@@ -1130,7 +1253,8 @@
       if (countPhotos) countPhotos.textContent = photoCount;
       if (countVideos) countVideos.textContent = videoCount;
 
-      renderModelGalleryGrid('all');
+      renderModelGallery('all');
+      initModelGallerySliderControls();
 
       // =========================================================================
       // 3. Dynamic Model Reviews & Ratings
@@ -1393,9 +1517,9 @@
     let currentSliderIndex = 0;
     let currentSliderFilteredItems = [];
 
-    window.renderModelGalleryGrid = function(filter = 'all') {
+    window.renderModelGallery = function(filter = 'all') {
+      const sliderTrack = document.getElementById('model-gallery-slider-track');
       const grid = document.getElementById('model-full-gallery-grid');
-      if (!grid) return;
 
       let items = window.currentModelGalleryItems || [];
       if (filter === 'photo') items = items.filter(i => i.type === 'photo');
@@ -1404,55 +1528,267 @@
       window.currentFilteredGalleryItems = items;
 
       if (items.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full text-center py-10 bg-white rounded-3xl border border-dashed border-[#ED96D7]/40 text-[#8c4f75] text-xs font-bangla">
+        const emptyHtml = `
+          <div class="col-span-full py-12 px-6 text-center bg-white rounded-3xl border border-dashed border-[#ED96D7]/50 text-[#8c4f75] text-xs font-bangla w-full">
+            <i class="fa-solid fa-camera-retro text-3xl text-[#ED96D7] mb-2 block"></i>
             এই ফিল্টারে কোনো ফটো বা ভিডিও পাওয়া যায়নি।
           </div>
         `;
+        if (sliderTrack) sliderTrack.innerHTML = emptyHtml;
+        if (grid) grid.innerHTML = emptyHtml;
         return;
       }
 
-      grid.innerHTML = items.map((item, idx) => {
-        const isVideo = item.type === 'video';
-        const rawUrl = item.url || '';
-        const formattedUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawUrl, isVideo ? 'reels' : 'models') : rawUrl;
+      // 1. Render Slider Cards
+      if (sliderTrack) {
+        sliderTrack.innerHTML = items.map((item, idx) => {
+          const isVideo = item.type === 'video';
+          const rawUrl = item.url || '';
+          const formattedUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawUrl, isVideo ? 'reels' : 'models') : rawUrl;
+          const rawThumb = item.thumbnail || (isVideo ? 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80' : rawUrl);
+          const formattedThumb = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawThumb, isVideo ? 'thumbnails' : 'models') : rawThumb;
+          const title = item.title || (isVideo ? '৪K সিনেমাটিক রিলস' : 'এক্সক্লুসিভ পোর্ট্রেট');
+          const clientName = item.client || 'BongBangla Shoot';
 
-        if (isVideo) {
-          return `
-            <div class="group relative rounded-3xl overflow-hidden bg-black aspect-[9/16] shadow-md border border-[#ED96D7]/30 hover:border-[#db2777] transition-all cursor-pointer flex flex-col justify-between"
-                 onclick="openGallerySliderModal(${idx})">
-              <video src="${formattedUrl}" preload="metadata" muted playsinline webkit-playsinline class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"></video>
-              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 flex flex-col justify-between p-4 pointer-events-none">
-                <div class="flex items-center justify-between">
-                  <span class="px-2.5 py-1 rounded-full bg-red-600/90 text-white text-[10px] font-bold tracking-wider uppercase backdrop-blur-md flex items-center gap-1 shadow-sm font-mono">
-                    <i class="fa-solid fa-play text-[8px]"></i> 4K REEL
+          if (isVideo) {
+            return `
+              <div class="group relative rounded-3xl overflow-hidden bg-black aspect-[9/16] w-[230px] sm:w-[270px] shrink-0 shadow-lg border border-[#ED96D7]/40 hover:border-[#db2777] transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                   onclick="openGallerySliderModal(${idx})">
+                <video src="${formattedUrl}" poster="${formattedThumb}" preload="metadata" muted loop playsinline webkit-playsinline
+                       onmouseenter="try{this.play()}catch(e){}" onmouseleave="try{this.pause();this.currentTime=0}catch(e){}"
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"></video>
+                
+                <!-- Atmospheric Gradient Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/35 pointer-events-none"></div>
+
+                <!-- Top Floating Badges -->
+                <div class="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none z-10">
+                  <span class="px-2.5 py-1 rounded-full bg-red-600/90 text-white text-[10px] font-bold tracking-wider uppercase backdrop-blur-md flex items-center gap-1.5 shadow-sm font-mono">
+                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                    <span>4K REEL</span>
+                  </span>
+                  <span class="px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] backdrop-blur-sm border border-white/20">
+                    <i class="fa-solid fa-volume-high text-[9px]"></i>
                   </span>
                 </div>
-                <div class="w-12 h-12 mx-auto rounded-full bg-white/30 backdrop-blur-md text-white flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-[#db2777] transition-all shadow-lg">
-                  <i class="fa-solid fa-play ml-0.5"></i>
+
+                <!-- Center Big Play Button Overlay -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                  <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-white/85 backdrop-blur-md text-[#db2777] flex items-center justify-center text-xl sm:text-2xl shadow-xl group-hover:scale-115 group-hover:bg-[#db2777] group-hover:text-white transition-all duration-300">
+                    <i class="fa-solid fa-play ml-0.5"></i>
+                  </div>
                 </div>
-                <div class="text-center">
-                  <span class="text-white/90 font-bangla font-semibold text-xs bg-black/50 px-3 py-1 rounded-full backdrop-blur-xs">ভিডিও দেখতে ক্লিক করুন</span>
+
+                <!-- Bottom Content & Action Trigger -->
+                <div class="p-3.5 z-10 space-y-2 pointer-events-none">
+                  <div>
+                    <span class="inline-block px-2 py-0.5 rounded-md bg-[#db2777]/90 text-white text-[10px] font-bold font-bangla mb-0.5">${clientName}</span>
+                    <h4 class="text-white font-bangla font-bold text-xs sm:text-sm line-clamp-1 drop-shadow-md">${title}</h4>
+                  </div>
+                  <button type="button" class="pointer-events-auto w-full py-2 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] hover:from-[#db2777] hover:to-[#be185d] text-white text-xs font-bold font-bangla flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-95">
+                    <i class="fa-solid fa-circle-play text-[11px]"></i>
+                    <span>রিলসটি প্লে করুন</span>
+                  </button>
                 </div>
               </div>
-            </div>
-          `;
-        } else {
-          return `
-            <div class="group relative rounded-3xl overflow-hidden bg-pink-50 aspect-[3/4] shadow-md border border-[#ED96D7]/30 hover:border-[#db2777] transition-all cursor-pointer"
-                 onclick="openGallerySliderModal(${idx})">
-              <img src="${formattedUrl}" alt="Model Portfolio Photo" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4 pointer-events-none">
-                <span class="text-white text-xs font-bold font-bangla flex items-center gap-1.5">
-                  <i class="fa-solid fa-expand text-xs"></i>
-                  <span>বড় করে স্লাইড দেখুন</span>
-                </span>
-                <span class="px-2 py-0.5 rounded-full bg-white/90 text-[#db2777] text-[10px] font-bold font-mono">PHOTO</span>
+            `;
+          } else {
+            return `
+              <div class="group relative rounded-3xl overflow-hidden bg-pink-50 aspect-[3/4] w-[230px] sm:w-[270px] shrink-0 shadow-lg border border-[#ED96D7]/40 hover:border-[#db2777] transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                   onclick="openGallerySliderModal(${idx})">
+                <img src="${formattedUrl}" alt="${title}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                
+                <!-- Atmospheric Gradient Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25 pointer-events-none"></div>
+
+                <!-- Top Floating Badge -->
+                <div class="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none z-10">
+                  <span class="px-2.5 py-1 rounded-full bg-[#db2777]/90 text-white text-[10px] font-bold tracking-wider uppercase backdrop-blur-md flex items-center gap-1 shadow-sm font-mono">
+                    <i class="fa-solid fa-camera text-[9px]"></i> PHOTO
+                  </span>
+                  <span class="px-2 py-0.5 rounded-full bg-white/90 text-[#db2777] text-[10px] font-bold font-mono">HD</span>
+                </div>
+
+                <!-- Center Expand Icon on Hover -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <div class="w-12 h-12 rounded-full bg-white/90 backdrop-blur-md text-[#db2777] flex items-center justify-center text-lg shadow-xl">
+                    <i class="fa-solid fa-expand"></i>
+                  </div>
+                </div>
+
+                <!-- Bottom Content & Action Trigger -->
+                <div class="p-3.5 z-10 space-y-2 pointer-events-none">
+                  <h4 class="text-white font-bangla font-semibold text-xs sm:text-sm line-clamp-1 drop-shadow-md">${title}</h4>
+                  <button type="button" class="pointer-events-auto w-full py-2 rounded-xl bg-white/95 hover:bg-[#db2777] hover:text-white text-[#2b0e23] text-xs font-bold font-bangla flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-95">
+                    <i class="fa-solid fa-magnifying-glass-plus text-[11px]"></i>
+                    <span>বড় করে স্লাইড দেখুন</span>
+                  </button>
+                </div>
               </div>
-            </div>
-          `;
+            `;
+          }
+        }).join('');
+      }
+
+      // 2. Render Grid Cards (for Grid View toggle)
+      if (grid) {
+        grid.innerHTML = items.map((item, idx) => {
+          const isVideo = item.type === 'video';
+          const rawUrl = item.url || '';
+          const formattedUrl = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawUrl, isVideo ? 'reels' : 'models') : rawUrl;
+          const title = item.title || (isVideo ? '৪K সিনেমাটিক রিলস' : 'পোর্ট্রেট শ্যুট');
+
+          if (isVideo) {
+            return `
+              <div class="group relative rounded-3xl overflow-hidden bg-black aspect-[9/16] shadow-md border border-[#ED96D7]/30 hover:border-[#db2777] transition-all cursor-pointer flex flex-col justify-between"
+                   onclick="openGallerySliderModal(${idx})">
+                <video src="${formattedUrl}" preload="metadata" muted playsinline webkit-playsinline class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"></video>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 flex flex-col justify-between p-4 pointer-events-none">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-1 rounded-full bg-red-600/90 text-white text-[10px] font-bold tracking-wider uppercase backdrop-blur-md flex items-center gap-1 shadow-sm font-mono">
+                      <i class="fa-solid fa-play text-[8px]"></i> 4K REEL
+                    </span>
+                  </div>
+                  <div class="w-12 h-12 mx-auto rounded-full bg-white/30 backdrop-blur-md text-white flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-[#db2777] transition-all shadow-lg">
+                    <i class="fa-solid fa-play ml-0.5"></i>
+                  </div>
+                  <div class="text-center">
+                    <span class="text-white/90 font-bangla font-semibold text-xs bg-black/50 px-3 py-1 rounded-full backdrop-blur-xs">ভিডিও দেখতে ক্লিক করুন</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          } else {
+            return `
+              <div class="group relative rounded-3xl overflow-hidden bg-pink-50 aspect-[3/4] shadow-md border border-[#ED96D7]/30 hover:border-[#db2777] transition-all cursor-pointer"
+                   onclick="openGallerySliderModal(${idx})">
+                <img src="${formattedUrl}" alt="Model Portfolio Photo" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4 pointer-events-none">
+                  <span class="text-white text-xs font-bold font-bangla flex items-center gap-1.5">
+                    <i class="fa-solid fa-expand text-xs"></i>
+                    <span>বড় করে স্লাইড দেখুন</span>
+                  </span>
+                  <span class="px-2 py-0.5 rounded-full bg-white/90 text-[#db2777] text-[10px] font-bold font-mono">PHOTO</span>
+                </div>
+              </div>
+            `;
+          }
+        }).join('');
+      }
+    };
+
+    window.renderModelGalleryGrid = function(filter = 'all') {
+      window.renderModelGallery(filter);
+    };
+
+    window.setModelGalleryView = function(view) {
+      const sliderSec = document.getElementById('model-gallery-slider-section');
+      const gridSec = document.getElementById('model-gallery-grid-section');
+      const sliderBtn = document.getElementById('view-mode-slider-btn');
+      const gridBtn = document.getElementById('view-mode-grid-btn');
+
+      if (view === 'grid') {
+        if (sliderSec) sliderSec.classList.add('hidden');
+        if (gridSec) gridSec.classList.remove('hidden');
+        if (sliderBtn) {
+          sliderBtn.className = 'px-3 py-1.5 rounded-xl text-[#572449] hover:text-[#db2777] flex items-center gap-1.5 transition-all';
         }
-      }).join('');
+        if (gridBtn) {
+          gridBtn.className = 'px-3 py-1.5 rounded-xl bg-white text-[#db2777] border border-[#ED96D7]/60 shadow-xs flex items-center gap-1.5 transition-all';
+        }
+      } else {
+        if (sliderSec) sliderSec.classList.remove('hidden');
+        if (gridSec) gridSec.classList.add('hidden');
+        if (sliderBtn) {
+          sliderBtn.className = 'px-3 py-1.5 rounded-xl bg-white text-[#db2777] border border-[#ED96D7]/60 shadow-xs flex items-center gap-1.5 transition-all';
+        }
+        if (gridBtn) {
+          gridBtn.className = 'px-3 py-1.5 rounded-xl text-[#572449] hover:text-[#db2777] flex items-center gap-1.5 transition-all';
+        }
+      }
+    };
+
+    let modelGalleryAutoSlideInterval = null;
+    window.initModelGallerySliderControls = function() {
+      const prevBtn = document.getElementById('model-gallery-slide-prev');
+      const nextBtn = document.getElementById('model-gallery-slide-next');
+      const viewport = document.getElementById('model-gallery-slider-viewport');
+      const statusText = document.getElementById('slider-status-text');
+
+      if (!viewport) return;
+
+      const slideAmount = 280;
+
+      if (prevBtn && !prevBtn.dataset.initialized) {
+        prevBtn.dataset.initialized = 'true';
+        prevBtn.addEventListener('click', () => {
+          viewport.scrollBy({ left: -slideAmount, behavior: 'smooth' });
+        });
+      }
+
+      if (nextBtn && !nextBtn.dataset.initialized) {
+        nextBtn.dataset.initialized = 'true';
+        nextBtn.addEventListener('click', () => {
+          if (viewport.scrollLeft + viewport.clientWidth >= viewport.scrollWidth - 20) {
+            viewport.scrollTo({ left: 0, behavior: 'smooth' });
+          } else {
+            viewport.scrollBy({ left: slideAmount, behavior: 'smooth' });
+          }
+        });
+      }
+
+      // Mouse drag to scroll
+      let isDown = false;
+      let startX = 0;
+      let scrollLeft = 0;
+
+      if (!viewport.dataset.dragInitialized) {
+        viewport.dataset.dragInitialized = 'true';
+
+        viewport.addEventListener('mousedown', (e) => {
+          isDown = true;
+          startX = e.pageX - viewport.offsetLeft;
+          scrollLeft = viewport.scrollLeft;
+        });
+
+        viewport.addEventListener('mouseleave', () => {
+          isDown = false;
+          if (statusText) statusText.textContent = 'স্মুথ মোশন স্লাইডার';
+        });
+
+        viewport.addEventListener('mouseup', () => {
+          isDown = false;
+        });
+
+        viewport.addEventListener('mousemove', (e) => {
+          if (!isDown) return;
+          e.preventDefault();
+          const x = e.pageX - viewport.offsetLeft;
+          const walk = (x - startX) * 1.5;
+          viewport.scrollLeft = scrollLeft - walk;
+        });
+
+        // Hover pause and resume
+        viewport.addEventListener('mouseenter', () => {
+          if (statusText) statusText.textContent = 'পজ করা হয়েছে (হভার)';
+        });
+        viewport.addEventListener('mouseleave', () => {
+          if (statusText) statusText.textContent = 'স্মুথ মোশন স্লাইডার';
+        });
+      }
+
+      // Auto-slide interval
+      if (modelGalleryAutoSlideInterval) clearInterval(modelGalleryAutoSlideInterval);
+      modelGalleryAutoSlideInterval = setInterval(() => {
+        if (isDown) return;
+        if (viewport.matches(':hover')) return;
+
+        if (viewport.scrollLeft + viewport.clientWidth >= viewport.scrollWidth - 30) {
+          viewport.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          viewport.scrollBy({ left: slideAmount, behavior: 'smooth' });
+        }
+      }, 4000);
     };
 
     window.filterModelGallery = function(filter) {
@@ -1464,7 +1800,7 @@
           btn.className = 'model-gallery-filter-btn px-4 py-1.5 rounded-xl text-[#572449] hover:text-[#db2777] transition-all';
         }
       });
-      renderModelGalleryGrid(filter);
+      renderModelGallery(filter);
     };
 
     let swipeHintTimeout = null;
@@ -1619,6 +1955,21 @@
           imgEl.classList.remove('hidden');
           imgEl.src = formattedUrl;
         }
+      // Audio & WhatsApp Header Actions
+      const audioBtn = document.getElementById('slider-audio-btn');
+      const audioIcon = document.getElementById('slider-audio-icon');
+      const waBtn = document.getElementById('slider-whatsapp-btn');
+
+      if (audioBtn) {
+        audioBtn.classList.toggle('hidden', !isVideo);
+      }
+      if (audioIcon && vidEl) {
+        audioIcon.className = vidEl.muted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high text-emerald-400';
+      }
+      if (waBtn) {
+        const activeName = window.currentActiveModel ? window.currentActiveModel.name : 'মডেল';
+        const itemTitle = item.title || (isVideo ? 'ভিডিও রিলস' : 'ফটো পোর্টফোলিও');
+        waBtn.href = `https://wa.me/8801700000000?text=${encodeURIComponent('নমস্কার BongBangla! আমি ' + activeName + '-এর ' + itemTitle + ' দেখে এই ধরনের শুটের জন্য বুকিং করতে চাই।')}`;
       }
 
       // Render Thumbnail Strip (Only show when there is more than 1 item)
@@ -1645,6 +1996,16 @@
             </button>
           `;
         }).join('');
+      }
+    };
+
+    window.toggleSliderAudio = function() {
+      const vid = document.getElementById('slider-active-video');
+      const icon = document.getElementById('slider-audio-icon');
+      if (!vid) return;
+      vid.muted = !vid.muted;
+      if (icon) {
+        icon.className = vid.muted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high text-emerald-400';
       }
     };
 
