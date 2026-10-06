@@ -1744,6 +1744,7 @@ async function renderDashboard() {
   try { renderAdminHeroSlides(window._cachedCloudHeroSlides); } catch(e) { console.error('renderAdminHeroSlides error:', e); }
   try { initReelsAdmin(); } catch(e) { console.error('initReelsAdmin error:', e); }
   try { initHeroSlidesAdmin(); } catch(e) { console.error('initHeroSlidesAdmin error:', e); }
+  try { renderAdminPackages(); } catch(e) { console.error('renderAdminPackages error:', e); }
   try { initSupabaseAdmin(); } catch(e) { console.error('initSupabaseAdmin error:', e); }
   try { populateInstaModelSelect(); } catch(e) { console.error('populateInstaModelSelect error:', e); }
 }
@@ -4206,6 +4207,307 @@ window.handleInstaManualFiles = async function(fileList) {
   updateStats();
   showAdminToast(`${successCount} টি ফাইল সফলভাবে মডেল গ্যালারিতে যুক্ত করা হয়েছে!`, 'success');
 };
+
+/* ==========================================================================
+   PACKAGES & PRICING RATE ADMIN CONTROLLERS
+   ========================================================================== */
+
+function getAdminPackages() {
+  if (window.BongBanglaPackages && typeof window.BongBanglaPackages.getStoredPackages === 'function') {
+    return window.BongBanglaPackages.getStoredPackages();
+  }
+  try {
+    const raw = localStorage.getItem('bongbangla_packages');
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return [];
+}
+
+function saveAdminPackages(packages) {
+  if (window.BongBanglaPackages && typeof window.BongBanglaPackages.saveStoredPackages === 'function') {
+    window.BongBanglaPackages.saveStoredPackages(packages);
+  } else {
+    try {
+      localStorage.setItem('bongbangla_packages', JSON.stringify(packages));
+    } catch (e) {}
+  }
+}
+
+function renderAdminPackages() {
+  const grid = document.getElementById('admin-packages-grid');
+  const countBadge = document.getElementById('admin-packages-count-badge');
+  const emptyState = document.getElementById('packages-empty-state');
+  if (!grid) return;
+
+  const packages = getAdminPackages();
+  const count = packages.length;
+
+  if (countBadge) {
+    const bnNum = (typeof toBnNum === 'function') ? toBnNum(count) : (count + '');
+    countBadge.textContent = `${bnNum}টি`;
+  }
+
+  if (count === 0) {
+    grid.innerHTML = '';
+    if (emptyState) emptyState.classList.remove('hidden');
+    return;
+  }
+
+  if (emptyState) emptyState.classList.add('hidden');
+
+  grid.innerHTML = packages.map(pkg => {
+    const isFeatured = !!pkg.isFeatured;
+    const badgeText = pkg.badge || (isFeatured ? 'জনপ্রিয় চয়েস' : '');
+    const priceDisplay = pkg.price.startsWith('৳') ? pkg.price : `৳ ${pkg.price}`;
+
+    const featuresHtml = (pkg.features || []).map(f => `
+      <li class="flex items-start gap-2">
+        <i class="fa-solid fa-check text-emerald-600 text-[11px] mt-0.5 shrink-0"></i>
+        <span class="text-xs text-[#572449] leading-snug">${f}</span>
+      </li>
+    `).join('');
+
+    const presetService = (pkg.defaultConfig && pkg.defaultConfig.service) || 'viral-reels';
+    const presetReels = (pkg.defaultConfig && pkg.defaultConfig.reels) || 6;
+    const presetModels = (pkg.defaultConfig && pkg.defaultConfig.models !== undefined) ? pkg.defaultConfig.models : 1;
+
+    return `
+      <div class="glass-panel p-5 rounded-3xl border ${isFeatured ? 'border-2 border-[#db2777] bg-gradient-to-b from-pink-50/50 via-white to-white' : 'border-[#ED96D7]/40 bg-white'} shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative group">
+        
+        <!-- Top Status & Actions -->
+        <div>
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div>
+              ${badgeText ? `
+                <span class="inline-block px-2.5 py-0.5 rounded-full ${isFeatured ? 'bg-gradient-to-r from-[#db2777] to-[#be185d] text-white shadow-xs' : 'bg-pink-100 text-[#db2777]'} text-[10px] font-bold tracking-wide uppercase">
+                  ${badgeText}
+                </span>
+              ` : `
+                <span class="inline-block px-2.5 py-0.5 rounded-full bg-slate-100 text-[#8c4f75] text-[10px] font-bold">
+                  স্ট্যান্ডার্ড প্যাক
+                </span>
+              `}
+              <h4 class="font-bold text-base text-[#2b0e23] mt-1.5 font-bangla">${pkg.title}</h4>
+            </div>
+            
+            ${isFeatured ? `
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-200 shrink-0">
+                <i class="fa-solid fa-star text-amber-500 mr-1"></i>হাইলাইট
+              </span>
+            ` : ''}
+          </div>
+
+          <!-- Price Display -->
+          <div class="mb-3 pb-3 border-b border-[#ED96D7]/20 flex items-baseline gap-1.5">
+            <span class="font-heading font-extrabold text-2xl text-[#2b0e23]">${priceDisplay}</span>
+            <span class="text-xs text-[#8c4f75] font-bangla">${pkg.period || '/ ফুল ক্যাম্পেইন'}</span>
+          </div>
+
+          ${pkg.description ? `
+            <p class="text-xs text-[#8c4f75] leading-relaxed mb-3.5 line-clamp-2">${pkg.description}</p>
+          ` : ''}
+
+          <!-- Features List -->
+          <ul class="space-y-1.5 mb-4">
+            ${featuresHtml}
+          </ul>
+
+          <!-- Config Preset Pill -->
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] text-[#572449] flex items-center justify-between font-bangla mb-4">
+            <span class="flex items-center gap-1.5 font-medium">
+              <i class="fa-solid fa-sliders text-[#db2777]"></i>
+              <span>বিল্ডার লিংক:</span>
+            </span>
+            <span class="font-bold text-[#db2777]">${presetReels}টি রিলস • ${presetModels} জন মডেল</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-3 border-t border-[#ED96D7]/20 flex items-center gap-2">
+          <button type="button" onclick="openEditPackageModal('${pkg.id}')" class="flex-1 py-2 rounded-xl bg-pink-50 hover:bg-[#db2777] text-[#db2777] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-2xs cursor-pointer">
+            <i class="fa-solid fa-pen-to-square text-xs"></i>
+            <span>এডিট করুন</span>
+          </button>
+          <button type="button" onclick="deleteAdminPackage('${pkg.id}')" class="w-9 h-9 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white flex items-center justify-center text-xs transition-all shadow-2xs cursor-pointer" title="প্যাকেজ ডিলিট করুন">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+
+      </div>
+    `;
+  }).join('');
+}
+window.renderAdminPackages = renderAdminPackages;
+
+window.openAddPackageModal = function() {
+  const form = document.getElementById('edit-package-form');
+  if (form) form.reset();
+
+  const idInput = document.getElementById('pkg-modal-id');
+  if (idInput) idInput.value = '';
+
+  const modalTitle = document.getElementById('edit-package-modal-title');
+  if (modalTitle) {
+    modalTitle.innerHTML = '<i class="fa-solid fa-plus text-[#db2777]"></i> <span>নতুন প্যাকেজ তৈরি করুন</span>';
+  }
+
+  const submitLabel = document.getElementById('pkg-modal-submit-label');
+  if (submitLabel) submitLabel.textContent = 'প্যাকেজ সেভ করুন';
+
+  const periodInput = document.getElementById('pkg-modal-period');
+  if (periodInput) periodInput.value = '/ ফুল ক্যাম্পেইন';
+
+  const reelsInput = document.getElementById('pkg-modal-reels');
+  if (reelsInput) reelsInput.value = '6';
+
+  const modelsInput = document.getElementById('pkg-modal-models');
+  if (modelsInput) modelsInput.value = '1';
+
+  const serviceInput = document.getElementById('pkg-modal-service');
+  if (serviceInput) serviceInput.value = 'viral-reels';
+
+  const modal = document.getElementById('edit-package-modal');
+  if (modal) modal.classList.remove('hidden');
+};
+
+window.openEditPackageModal = function(id) {
+  const packages = getAdminPackages();
+  const pkg = packages.find(p => p.id === id);
+  if (!pkg) {
+    alert('প্যাকেজটি পাওয়া যায়নি!');
+    return;
+  }
+
+  const idInput = document.getElementById('pkg-modal-id');
+  const titleInput = document.getElementById('pkg-modal-title');
+  const badgeInput = document.getElementById('pkg-modal-badge');
+  const priceInput = document.getElementById('pkg-modal-price');
+  const periodInput = document.getElementById('pkg-modal-period');
+  const descInput = document.getElementById('pkg-modal-desc');
+  const featuredInput = document.getElementById('pkg-modal-featured');
+  const featuresInput = document.getElementById('pkg-modal-features');
+  const serviceInput = document.getElementById('pkg-modal-service');
+  const reelsInput = document.getElementById('pkg-modal-reels');
+  const modelsInput = document.getElementById('pkg-modal-models');
+
+  if (idInput) idInput.value = pkg.id;
+  if (titleInput) titleInput.value = pkg.title || '';
+  if (badgeInput) badgeInput.value = pkg.badge || '';
+  if (priceInput) priceInput.value = (pkg.price || '').replace(/^৳\s*/, '');
+  if (periodInput) periodInput.value = pkg.period || '/ ফুল ক্যাম্পেইন';
+  if (descInput) descInput.value = pkg.description || '';
+  if (featuredInput) featuredInput.checked = !!pkg.isFeatured;
+  if (featuresInput) featuresInput.value = (pkg.features || []).join('\n');
+  if (serviceInput) serviceInput.value = (pkg.defaultConfig && pkg.defaultConfig.service) || 'viral-reels';
+  if (reelsInput) reelsInput.value = (pkg.defaultConfig && pkg.defaultConfig.reels) || 6;
+  if (modelsInput) modelsInput.value = (pkg.defaultConfig && pkg.defaultConfig.models !== undefined) ? pkg.defaultConfig.models : 1;
+
+  const modalTitle = document.getElementById('edit-package-modal-title');
+  if (modalTitle) {
+    modalTitle.innerHTML = `<i class="fa-solid fa-pen-to-square text-[#db2777]"></i> <span>প্যাকেজ সম্পাদনা: ${pkg.title}</span>`;
+  }
+
+  const submitLabel = document.getElementById('pkg-modal-submit-label');
+  if (submitLabel) submitLabel.textContent = 'আপডেট সেভ করুন';
+
+  const modal = document.getElementById('edit-package-modal');
+  if (modal) modal.classList.remove('hidden');
+};
+
+window.closePackageModal = function() {
+  const modal = document.getElementById('edit-package-modal');
+  if (modal) modal.classList.add('hidden');
+};
+
+window.savePackageFromModal = function(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  const idInput = document.getElementById('pkg-modal-id');
+  const titleInput = document.getElementById('pkg-modal-title');
+  const badgeInput = document.getElementById('pkg-modal-badge');
+  const priceInput = document.getElementById('pkg-modal-price');
+  const periodInput = document.getElementById('pkg-modal-period');
+  const descInput = document.getElementById('pkg-modal-desc');
+  const featuredInput = document.getElementById('pkg-modal-featured');
+  const featuresInput = document.getElementById('pkg-modal-features');
+  const serviceInput = document.getElementById('pkg-modal-service');
+  const reelsInput = document.getElementById('pkg-modal-reels');
+  const modelsInput = document.getElementById('pkg-modal-models');
+
+  const title = titleInput ? titleInput.value.trim() : '';
+  if (!title) {
+    alert('অনুগ্রহ করে প্যাকেজের নাম লিখুন!');
+    return false;
+  }
+
+  const priceVal = priceInput ? priceInput.value.trim() : '০';
+  const features = featuresInput ? featuresInput.value.split('\n').map(s => s.trim()).filter(Boolean) : [];
+
+  const packages = getAdminPackages();
+  const pkgId = idInput && idInput.value ? idInput.value.trim() : ('pkg-' + Date.now());
+
+  const packageObj = {
+    id: pkgId,
+    title,
+    badge: badgeInput ? badgeInput.value.trim() : '',
+    price: priceVal,
+    period: periodInput ? periodInput.value.trim() : '/ ফুল ক্যাম্পেইন',
+    description: descInput ? descInput.value.trim() : '',
+    isFeatured: featuredInput ? featuredInput.checked : false,
+    features,
+    servicePreset: 'ad-video',
+    defaultConfig: {
+      service: serviceInput ? serviceInput.value : 'viral-reels',
+      reels: reelsInput ? parseInt(reelsInput.value, 10) || 6 : 6,
+      models: modelsInput ? parseInt(modelsInput.value, 10) || 1 : 1,
+      addons: ['photos']
+    }
+  };
+
+  const existingIdx = packages.findIndex(p => p.id === pkgId);
+  if (existingIdx > -1) {
+    packages[existingIdx] = packageObj;
+  } else {
+    packages.push(packageObj);
+  }
+
+  saveAdminPackages(packages);
+  closePackageModal();
+  renderAdminPackages();
+
+  if (window.BongBanglaPackages && typeof window.BongBanglaPackages.renderReadyPackages === 'function') {
+    window.BongBanglaPackages.renderReadyPackages();
+  }
+
+  showAdminToast('প্যাকেজ তথ্য সফলভাবে সেভ করা হয়েছে!', 'success');
+  return false;
+};
+
+window.deleteAdminPackage = function(id) {
+  if (!confirm('আপনি কি এই প্যাকেজটি মুছে ফেলতে চান?')) return;
+  let packages = getAdminPackages().filter(p => p.id !== id);
+  saveAdminPackages(packages);
+  renderAdminPackages();
+  if (window.BongBanglaPackages && typeof window.BongBanglaPackages.renderReadyPackages === 'function') {
+    window.BongBanglaPackages.renderReadyPackages();
+  }
+  showAdminToast('প্যাকেজটি সফলভাবে মুছে ফেলা হয়েছে!', 'info');
+};
+
+window.resetAdminPackagesToDefault = function() {
+  if (!confirm('আপনি কি সব কাস্টম প্যাকেজ মুছে BongBangla-র ৩টি মূল ডিফল্ট প্যাকেজ রিস্টোর করতে চান?')) return;
+  const def = (window.BongBanglaPackages && window.BongBanglaPackages.DEFAULT_PACKAGES) ? window.BongBanglaPackages.DEFAULT_PACKAGES : [];
+  saveAdminPackages(def);
+  renderAdminPackages();
+  if (window.BongBanglaPackages && typeof window.BongBanglaPackages.renderReadyPackages === 'function') {
+    window.BongBanglaPackages.renderReadyPackages();
+  }
+  showAdminToast('ডিফল্ট প্যাকেজসমূহ রিস্টোর করা হয়েছে!', 'success');
+};
+
 
 
 

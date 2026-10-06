@@ -221,6 +221,10 @@
               </span>
               <span class="px-1.5 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[9px] font-bold shadow-xs">FastDL</span>
             </button>
+            <button type="button" id="nav-btn-packages" onclick="switchSection('section-packages', this)" class="admin-nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[#572449] hover:bg-[#fdf2f8] hover:text-[#db2777] transition-all text-left font-medium">
+              <i class="fa-solid fa-tags w-4 text-center text-[#db2777]"></i>
+              <span class="sidebar-label">প্যাকেজ ও প্রাইসিং রেট</span>
+            </button>
           </div>
         </div>
 
@@ -807,6 +811,69 @@
             </div>
 
           </div>
+        </section>
+
+        <!-- ================================================================
+             SECTION: PACKAGES & PRICING RATE CUSTOMIZATION
+             ================================================================ -->
+        <section id="section-packages" class="admin-section-view hidden space-y-6 font-bangla">
+          
+          <!-- Gradient Top Banner -->
+          <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#831843] via-[#db2777] to-[#ED96D7] p-6 sm:p-8 text-white shadow-xl">
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div class="space-y-1.5 max-w-2xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-bold tracking-wide uppercase">
+                  <i class="fa-solid fa-tags text-white"></i>
+                  <span>Pricing & Custom Packages Manager</span>
+                </div>
+                <h3 class="text-2xl sm:text-3xl font-extrabold tracking-tight">প্যাকেজ ও প্রাইসিং রেট কাস্টমাইজেশন</h3>
+                <p class="text-xs sm:text-sm text-white/90 leading-relaxed">
+                  ওয়েবসাইটে প্রদর্শিত রেডিমেড প্যাকেজগুলোর নাম, দাম, ফিচার এবং ডিফল্ট কনফিগারেশন পরিবর্তন করুন অথবা নিজের মতো নতুন প্যাকেজ তৈরি করুন। পরিবর্তনগুলো সরাসরি লাইভ সাইটে প্রতিফলিত হবে।
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button type="button" onclick="openAddPackageModal()" class="px-4 py-2.5 rounded-xl bg-white text-[#db2777] hover:bg-pink-50 font-bold text-xs shadow-md flex items-center gap-2 transition-all cursor-pointer">
+                  <i class="fa-solid fa-plus text-xs"></i>
+                  <span>নতুন প্যাকেজ যোগ করুন</span>
+                </button>
+                <button type="button" onclick="resetAdminPackagesToDefault()" class="px-3.5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-xs border border-white/25 transition-all flex items-center gap-1.5 cursor-pointer" title="ডিফল্ট ৩টি প্যাকেজে রিস্টোর করুন">
+                  <i class="fa-solid fa-rotate-left text-xs"></i>
+                  <span>ডিফল্ট রিস্টোর</span>
+                </button>
+                <a href="index.html#pricing" target="_blank" class="px-3.5 py-2.5 rounded-xl bg-black/20 hover:bg-black/30 text-white font-semibold text-xs border border-white/20 transition-all flex items-center gap-1.5">
+                  <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                  <span>লাইভ সাইটে দেখুন</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Packages Grid Card -->
+          <div class="glass-panel p-6 rounded-3xl border border-[#ED96D7]/40 shadow-xs space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-[#ED96D7]/20">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-layer-group text-[#db2777]"></i>
+                <h4 class="font-bold text-base text-[#2b0e23]">বর্তমান অ্যাক্টিভ প্যাকেজসমূহ</h4>
+                <span id="admin-packages-count-badge" class="px-2 py-0.5 rounded-full bg-pink-100 text-[#db2777] text-xs font-bold">৩টি</span>
+              </div>
+              <p class="text-xs text-[#8c4f75] hidden sm:block">যেকোনো প্যাকেজের 'এডিট' বাটনে চেপে সরাসরি তথ্য পরিবর্তন করতে পারবেন</p>
+            </div>
+
+            <!-- Grid container -->
+            <div id="admin-packages-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <!-- Dynamically populated via renderAdminPackages() -->
+            </div>
+
+            <!-- Empty state placeholder -->
+            <div id="packages-empty-state" class="hidden text-center py-12 text-[#8c4f75] text-sm font-bangla bg-[#fdf2f8] rounded-2xl border border-dashed border-[#ED96D7]/40">
+              <div class="w-14 h-14 mx-auto rounded-2xl bg-white text-[#db2777] flex items-center justify-center text-xl mb-3 shadow-xs">
+                <i class="fa-solid fa-tags"></i>
+              </div>
+              <h4 class="font-bold text-base text-[#2b0e23]">বর্তমানে কোনো প্যাকেজ তালিকাভুক্ত নেই</h4>
+              <p class="text-xs text-[#8c4f75] mt-1">ওপরের <strong>"নতুন প্যাকেজ যোগ করুন"</strong> বা <strong>"ডিফল্ট রিস্টোর"</strong> বাটন ব্যবহার করুন।</p>
+            </div>
+          </div>
+
         </section>
 
         <!-- ================================================================
@@ -1872,6 +1939,110 @@
   </div>
 
   <!-- ========================================================================
+       Modal: Add / Edit Package
+       ======================================================================== -->
+  <div id="edit-package-modal" class="fixed inset-0 z-50 hidden bg-[#2b0e23]/60 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="max-w-xl w-full glass-panel p-6 sm:p-7 rounded-3xl border border-[#ED96D7]/50 shadow-2xl space-y-4 my-8">
+      <div class="flex items-center justify-between border-b border-[#ED96D7]/20 pb-3">
+        <h4 id="edit-package-modal-title" class="text-base font-bold text-[#2b0e23] font-bangla flex items-center gap-2">
+          <i class="fa-solid fa-tags text-[#db2777]"></i> <span>প্যাকেজ এডিট করুন</span>
+        </h4>
+        <button type="button" onclick="closePackageModal()" class="text-[#8c4f75] hover:text-[#db2777] p-1"><i class="fa-solid fa-xmark text-base"></i></button>
+      </div>
+
+      <form id="edit-package-form" onsubmit="savePackageFromModal(event)" class="space-y-4 text-xs font-bangla">
+        <input type="hidden" id="pkg-modal-id" name="id">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-[#572449] font-bold mb-1">প্যাকেজের শিরোনাম / নাম *</label>
+            <input type="text" id="pkg-modal-title" required placeholder="উদাঃ সিনেমা TVC + ফেসবুক বুস্টিং" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] focus:border-[#db2777] focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-[#572449] font-bold mb-1">ব্যাজ / রিবন ট্যাগ</label>
+            <input type="text" id="pkg-modal-badge" placeholder="উদাঃ ব্র্যান্ডের সর্বাধিক জনপ্রিয় / হট অফার" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] focus:border-[#db2777] focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-[#572449] font-bold mb-1">প্যাকেজের মূল্য (৳ BDT) *</label>
+            <input type="text" id="pkg-modal-price" required placeholder="উদাঃ ৫৫,০০০ বা 55000" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] font-mono focus:border-[#db2777] focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-[#572449] font-bold mb-1">ক্যাম্পেইন মেয়াদ / পিরিয়ড</label>
+            <input type="text" id="pkg-modal-period" placeholder="উদাঃ / ফুল ক্যাম্পেইন" value="/ ফুল ক্যাম্পেইন" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] focus:border-[#db2777] focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[#572449] font-bold mb-1">সংক্ষিপ্ত বিবরণ (Short Description)</label>
+          <input type="text" id="pkg-modal-desc" placeholder="উদাঃ ৪K সিনেমা অ্যাড ফিল্ম প্রোডাকশন এবং সেলস দ্বিগুণ করার জন্য মেটা অ্যাডস।" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] focus:border-[#db2777] focus:outline-none">
+        </div>
+
+        <!-- Featured check -->
+        <div class="flex items-center gap-2 p-3 bg-pink-50/60 rounded-xl border border-[#ED96D7]/30">
+          <input type="checkbox" id="pkg-modal-featured" class="w-4 h-4 text-[#db2777] rounded focus:ring-0">
+          <label for="pkg-modal-featured" class="text-xs font-bold text-[#be185d] cursor-pointer">
+            এই প্যাকেজটি 'জনপ্রিয় / হাইলাইট' (Featured Card) হিসেবে বড় করে দেখান
+          </label>
+        </div>
+
+        <!-- Features list -->
+        <div>
+          <label class="block text-[#572449] font-bold mb-1">
+            প্যাকেজের ফিচার ও সুবিধাসমূহ (প্রতি লাইনে একটি করে লিখুন) *
+          </label>
+          <textarea id="pkg-modal-features" required rows="5" placeholder="১টি মেইন ৪K সিনেমা কমার্শিয়াল অ্যাড (৬০ সেকেন্ড)&#10;৪টি কাটডাউন শর্ট হুক ভিডিও&#10;২ জন প্রফেশনাল মডেল&#10;স্টুডিও লোকেশন ও লাইটিং&#10;মেকআপ আর্টিস্ট অন্তর্ভুক্ত" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-3 py-2 text-[#2b0e23] focus:border-[#db2777] focus:outline-none leading-relaxed"></textarea>
+          <p class="text-[10px] text-[#8c4f75] mt-1">প্রতিটি নতুন লাইন লাইভ সাইটে একটি সবুজ টিকচিহ্ন সহ আলাদা পয়েন্ট হিসেবে দেখাবে।</p>
+        </div>
+
+        <!-- Default Customizer Preset -->
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+          <span class="font-bold text-[#572449] text-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-sliders text-[#db2777]"></i> কাস্টম বিল্ডারের সাথে লিংক (Optional Preset)
+          </span>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[11px] text-[#8c4f75] mb-1">সার্ভিস টাইপ</label>
+              <select id="pkg-modal-service" class="w-full bg-white border border-slate-300 rounded-lg p-1.5 text-[11px]">
+                <option value="cinema-ads">৪K সিনেমা অ্যাড</option>
+                <option value="saree-shoot">শাড়ি ও মডেল শুট</option>
+                <option value="viral-reels">ভাইরাল রিলস</option>
+                <option value="facebook-ads">ফেসবুক অ্যাডস</option>
+                <option value="jewellery">জুয়েলারি ও লাক্সারি</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] text-[#8c4f75] mb-1">রিলস সংখ্যা</label>
+              <input type="number" id="pkg-modal-reels" min="1" max="50" value="6" class="w-full bg-white border border-slate-300 rounded-lg p-1.5 text-[11px]">
+            </div>
+            <div>
+              <label class="block text-[11px] text-[#8c4f75] mb-1">মডেল সংখ্যা</label>
+              <select id="pkg-modal-models" class="w-full bg-white border border-slate-300 rounded-lg p-1.5 text-[11px]">
+                <option value="0">০ জন (অনলি প্রোডাক্ট)</option>
+                <option value="1">১ জন মডেল</option>
+                <option value="2">২ জন মডেল</option>
+                <option value="3">৩+ জন মডেল</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#ED96D7]/20">
+          <button type="button" onclick="closePackageModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#572449] font-bold text-xs transition-colors">
+            বাতিল
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl btn-pink-primary font-bold text-xs shadow-md flex items-center gap-1.5">
+            <i class="fa-solid fa-floppy-disk text-xs"></i>
+            <span id="pkg-modal-submit-label">প্যাকেজ সেভ করুন</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
        Modal: Supabase & Vault CDN Cloud Configuration
        ======================================================================== -->
   <div id="supabase-settings-modal" class="fixed inset-0 z-50 hidden bg-[#2b0e23]/60 backdrop-blur-md flex items-center justify-center p-4">
@@ -1957,7 +2128,8 @@
   <script src="js/supabase-config.js?v=20261005_v2"></script>
   <script src="js/supabase-client.js?v=20261005_v2"></script>
   <script src="js/reels.js?v=20261005_v2"></script>
-  <script src="js/admin.js?v=20261005_v3"></script>
+  <script src="js/packages.js?v=20261006_v3"></script>
+  <script src="js/admin.js?v=20261006_v1"></script>
 </body>
 </html>
 

@@ -918,109 +918,366 @@
   <section id="pricing" class="py-10 md:py-14 bg-[#fff0f6]/60 border-t border-[#ED96D7]/25 relative">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
+      <!-- Section Header -->
       <div class="text-center max-w-3xl mx-auto mb-8 sm:mb-10 space-y-2.5">
         <span class="badge-tag px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest inline-block">
-          জনপ্রিয় প্যাকেজসমূহ
+          প্যাকেজ ও কাস্টমাইজেশন
         </span>
         <h2 class="font-heading font-extrabold text-3xl sm:text-4xl text-[#2b0e23]">
-          রেডিমেড <span class="text-gradient-pink">ব্র্যান্ড গ্রোথ প্যাকেজ</span>
+          রেডিমেড ও <span class="text-gradient-pink">কাস্টম ব্র্যান্ড প্যাকেজ</span>
         </h2>
         <p class="text-[#8c4f75] text-sm font-medium">
-          একটি ব্র্যান্ডের শুরু থেকে স্কেলিং পর্যন্ত প্রতিটি স্টেজের জন্য ফিক্সড-কস্ট প্যাকেজ।
+          আপনার ব্র্যান্ডের শুরু থেকে স্কেলিং পর্যন্ত ফিক্সড প্যাকেজ বেছে নিন অথবা নিজের বাজেট ও প্রয়োজন অনুযায়ী কাস্টমাইজ করুন।
         </p>
+
+        <!-- Mode Toggle Pill Bar -->
+        <div class="pt-3 flex items-center justify-center">
+          <div class="inline-flex p-1 rounded-2xl bg-white border border-[#ED96D7]/40 shadow-sm gap-1">
+            <button type="button" id="pricing-tab-ready" onclick="BongBanglaPackages.setPricingMode('ready')" class="pricing-toggle-btn px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold font-bangla bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white shadow-md transition-all cursor-pointer">
+              <i class="fa-solid fa-box-archive mr-1.5"></i> রেডিমেড প্যাকেজসমূহ
+            </button>
+            <button type="button" id="pricing-tab-custom" onclick="BongBanglaPackages.setPricingMode('custom')" class="pricing-toggle-btn px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold font-bangla text-[#572449] hover:text-[#db2777] transition-all cursor-pointer">
+              <i class="fa-solid fa-sliders mr-1.5 text-[#db2777]"></i> নিজের মতো কাস্টমাইজ করুন ✨
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-        
-        <!-- Package 1: Starter Viral Reels -->
-        <div class="glass-panel p-8 rounded-3xl border border-[#ED96D7]/30 flex flex-col justify-between hover:border-[#db2777] transition-all bg-white shadow-sm hover:shadow-xl">
-          <div>
-            <span class="text-xs font-bold text-[#db2777] uppercase tracking-widest">স্টার্টার প্যাক</span>
-            <h3 class="font-bangla font-extrabold text-2xl text-[#2b0e23] mt-1">ভাইরাল রিলস ও সোশ্যাল বাজ</h3>
-            <p class="text-[#8c4f75] text-xs mt-2 font-bangla font-medium">নতুন পণ্য লঞ্চ, এফ-কমার্স ড্রপ ও দৈনিক সোশ্যাল মিডিয়া কন্টেন্টের জন্য পারফেক্ট।</p>
-            
-            <div class="mt-6 mb-6">
-              <span class="font-heading font-extrabold text-3xl text-[#2b0e23]">৳ ২৫,০০০</span>
-              <span class="text-[#8c4f75] text-xs font-bangla font-semibold"> / ফুল ক্যাম্পেইন</span>
-            </div>
-
-            <ul class="space-y-3 text-xs text-[#572449] border-t border-[#ED96D7]/20 pt-6 font-bangla font-medium">
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600"></i> ৬টি হাই-কনভার্টিং ভাইরাল রিলস (৯:১৬)</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600"></i> ১ জন মডেল অন্তর্ভুক্ত</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600"></i> ট্রেন্ডিং মিউজিক ও ডায়নামিক ক্যাপশন</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600"></i> ১০টি হাই-রেজ্যুলেশন স্টিল ফটো</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600"></i> ৪ কর্মদিবসের মধ্যে ডেলিভারি</li>
-            </ul>
-          </div>
-
-          <div class="pt-8">
-            <button class="open-booking-modal w-full btn-secondary-glass py-3.5 rounded-xl font-bangla text-xs font-bold uppercase tracking-wider shadow-sm" data-service-preset="product-reels">
-              এই প্যাকেজটি সিলেক্ট করুন
-            </button>
-          </div>
+      <!-- 1. Ready-Made Bundles View -->
+      <div id="pricing-ready-view" class="transition-all duration-300">
+        <div id="pricing-cards-container" class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+          <!-- Dynamically populated by js/packages.js with fallback packages -->
         </div>
-
-        <!-- Package 2: Commercial Ad + Meta Scale (Featured White Pink Luxury) -->
-        <div class="glass-panel p-8 rounded-3xl border-2 border-[#ED96D7] relative flex flex-col justify-between shadow-2xl shadow-[#ED96D7]/35 bg-gradient-to-b from-white via-[#fff8fa] to-[#fce7f3]">
-          <div class="absolute -top-3.5 left-1/2 transform -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white text-[10px] font-extrabold uppercase tracking-widest shadow-md font-bangla">
-            ব্র্যান্ডের সর্বাধিক জনপ্রিয়
-          </div>
-          <div>
-            <span class="text-xs font-bold text-[#db2777] uppercase tracking-widest font-bangla">ব্র্যান্ড গ্রোথ স্যুট</span>
-            <h3 class="font-bangla font-extrabold text-2xl text-[#2b0e23] mt-1">সিনেমা TVC + ফেসবুক বুস্টিং</h3>
-            <p class="text-[#572449] text-xs mt-2 font-bangla font-medium">৪K সিনেমা অ্যাড ফিল্ম প্রোডাকশন এবং সেলস দ্বিগুণ করার জন্য মেটা অ্যাডস ম্যানেজমেন্ট।</p>
-            
-            <div class="mt-6 mb-6">
-              <span class="font-heading font-extrabold text-3xl text-[#db2777] royal-text-glow">৳ ৫৫,০০০</span>
-              <span class="text-[#8c4f75] text-xs font-bangla font-bold"> / ফুল ক্যাম্পেইন</span>
-            </div>
-
-            <ul class="space-y-3 text-xs text-[#2b0e23] border-t border-[#ED96D7]/30 pt-6 font-bangla font-medium">
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#db2777]"></i> ১টি মেইন ৪K সিনেমা কমার্শিয়াল অ্যাড (৬০ সেকেন্ড)</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#db2777]"></i> ৪টি কাটডাউন শর্ট হুক ভিডিও (অ্যাডের জন্য)</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#db2777]"></i> ২ জন প্রফেশনাল মডেল (নারী ও পুরুষ)</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#db2777]"></i> স্টুডিও লোকেশন ও সিনেমাটিক লাইটিং রিগ</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#db2777]"></i> মেকআপ ও হেয়ার আর্টিস্ট অন-সেট</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#db2777]"></i> ১ মাস মেটা অ্যাড ক্যাম্পেইন সেটআপ ও অপটিমাইজেশন</li>
-            </ul>
-          </div>
-
-          <div class="pt-8">
-            <button class="open-booking-modal w-full btn-primary-glow py-4 rounded-xl font-bangla text-xs font-bold uppercase tracking-wider shadow-lg" data-service-preset="ad-video">
-              গ্রোথ স্যুট বুক করুন
-            </button>
-          </div>
-        </div>
-
-        <!-- Package 3: 360° Brand Empire -->
-        <div class="glass-panel p-8 rounded-3xl border border-[#ED96D7]/30 flex flex-col justify-between hover:border-[#db2777] transition-all bg-white shadow-sm hover:shadow-xl">
-          <div>
-            <span class="text-xs font-bold text-[#db2777] uppercase tracking-widest font-bangla">৩৬০° এন্টারপ্রাইজ</span>
-            <h3 class="font-bangla font-extrabold text-2xl text-[#2b0e23] mt-1">পূর্ণাঙ্গ ব্র্যান্ড মিডিয়া সল্যুশন</h3>
-            <p class="text-[#8c4f75] text-xs mt-2 font-bangla font-medium">অ্যাড ফিল্ম, শাড়ি/বোল্ড শ্যুট, ই-কমার্স ওয়েবসাইট এবং সেলস স্কেলিং রিটেইনার।</p>
-            
-            <div class="mt-6 mb-6">
-              <span class="font-heading font-extrabold text-3xl text-[#2b0e23]">৳ ৯৫,০০০</span>
-              <span class="text-[#8c4f75] text-xs font-bangla font-semibold"> / কমপ্লিট সল্যুশন</span>
-            </div>
-
-            <ul class="space-y-3 text-xs text-[#572449] border-t border-[#ED96D7]/20 pt-6 font-bangla font-medium">
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#db2777]"></i> একাধিক ৪K সিনেমা কমার্শিয়াল অ্যাড</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#db2777]"></i> ঐতিহ্যবাহী ও বোল্ড ক্যাটালগ শ্যুট (৩০+ রিটাচড ফটো)</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#db2777]"></i> ১২টি ভাইরাল প্রোডাক্ট রিলস ও শর্ট ভিডিও</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#db2777]"></i> কাস্টম ব্র্যান্ড ওয়েবসাইট (বিকাশ/নগদ পেমেন্ট সহ)</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#db2777]"></i> ডেডিকেটেড ক্রিয়েটিভ ডিরেক্টর সাপোর্ট</li>
-            </ul>
-          </div>
-
-          <div class="pt-8">
-            <button class="open-booking-modal w-full btn-secondary-glass py-3.5 rounded-xl font-bangla text-xs font-bold uppercase tracking-wider shadow-sm" data-service-preset="brand-website">
-              এন্টারপ্রাইজ আলোচনা করুন
-            </button>
-          </div>
-        </div>
-
       </div>
+
+      <!-- 2. Interactive Custom Package Builder & Calculator View -->
+      <div id="pricing-custom-view" class="hidden transition-all duration-300">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          <!-- Left: Customization Options (8 Cols) -->
+          <div class="lg:col-span-8 space-y-6">
+            
+            <!-- Step 1: Shoot & Service Type -->
+            <div class="glass-panel p-6 sm:p-7 rounded-3xl bg-white border border-[#ED96D7]/40 shadow-sm space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-[#db2777] uppercase tracking-wider font-bangla flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-lg bg-[#db2777] text-white flex items-center justify-center text-xs">১</span>
+                  সার্ভিসের ধরন বেছে নিন
+                </span>
+                <span class="text-[11px] text-[#8c4f75] font-bangla font-semibold">৪K আল্ট্রা HD প্রোডাকশন</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div class="customizer-service-chip p-3.5 rounded-2xl border border-[#ED96D7]/40 bg-white hover:border-[#db2777] flex items-center gap-2.5 cursor-pointer transition-all" data-service="cinema-ads">
+                  <div class="chip-icon w-8 h-8 rounded-xl bg-[#fdf2f8] text-[#db2777] flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-clapperboard"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">৪K সিনেমা অ্যাড ফিল্ম</h4>
+                    <span class="text-[10px] text-[#8c4f75] font-bangla">বেস: ৳ ১৫,০০০</span>
+                  </div>
+                </div>
+
+                <div class="customizer-service-chip p-3.5 rounded-2xl border border-[#ED96D7]/40 bg-white hover:border-[#db2777] flex items-center gap-2.5 cursor-pointer transition-all" data-service="saree-shoot">
+                  <div class="chip-icon w-8 h-8 rounded-xl bg-[#fdf2f8] text-[#db2777] flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-camera-retro"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">শাড়ি ও মডেল শুট</h4>
+                    <span class="text-[10px] text-[#8c4f75] font-bangla">বেস: ৳ ১২,০০০</span>
+                  </div>
+                </div>
+
+                <div class="customizer-service-chip p-3.5 rounded-2xl border-2 border-[#db2777] bg-[#fff0f6] text-[#db2777] flex items-center gap-2.5 cursor-pointer transition-all" data-service="viral-reels">
+                  <div class="chip-icon w-8 h-8 rounded-xl bg-[#db2777] text-white flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-bolt"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">ভাইরাল প্রোডাক্ট রিলস</h4>
+                    <span class="text-[10px] text-[#8c4f75] font-bangla">বেস: ৳ ১০,০০০</span>
+                  </div>
+                </div>
+
+                <div class="customizer-service-chip p-3.5 rounded-2xl border border-[#ED96D7]/40 bg-white hover:border-[#db2777] flex items-center gap-2.5 cursor-pointer transition-all" data-service="facebook-ads">
+                  <div class="chip-icon w-8 h-8 rounded-xl bg-[#fdf2f8] text-[#db2777] flex items-center justify-center text-sm">
+                    <i class="fa-brands fa-facebook-f"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">ফেসবুক অ্যাড স্কেলিং</h4>
+                    <span class="text-[10px] text-[#8c4f75] font-bangla">বেস: ৳ ৮,০০০</span>
+                  </div>
+                </div>
+
+                <div class="customizer-service-chip p-3.5 rounded-2xl border border-[#ED96D7]/40 bg-white hover:border-[#db2777] flex items-center gap-2.5 cursor-pointer transition-all" data-service="jewellery">
+                  <div class="chip-icon w-8 h-8 rounded-xl bg-[#fdf2f8] text-[#db2777] flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-gem"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">জুয়েলারি ও লাক্সারি</h4>
+                    <span class="text-[10px] text-[#8c4f75] font-bangla">বেস: ৳ ১৪,০০০</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Reels Count Slider & Quick Pills -->
+            <div class="glass-panel p-6 sm:p-7 rounded-3xl bg-white border border-[#ED96D7]/40 shadow-sm space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-[#db2777] uppercase tracking-wider font-bangla flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-lg bg-[#db2777] text-white flex items-center justify-center text-xs">২</span>
+                  ভিডিও রিলস সংখ্যা (৯:১৬ আল্ট্রা HD)
+                </span>
+                <span id="customizer-reels-val" class="px-3 py-1 rounded-full bg-[#fdf2f8] border border-[#ED96D7]/60 text-xs font-bold font-bangla text-[#db2777]">
+                  ৬ টি রিলস
+                </span>
+              </div>
+
+              <!-- Range Slider -->
+              <div class="space-y-2 pt-1">
+                <input id="customizer-reels-slider" type="range" min="2" max="20" step="1" value="6" class="w-full accent-[#db2777] cursor-pointer h-2 bg-pink-100 rounded-lg">
+                <div class="flex justify-between text-[11px] text-[#8c4f75] font-bangla font-semibold px-1">
+                  <span>২টি (মিনিমাম)</span>
+                  <span>১০টি (১০% ছাড়)</span>
+                  <span>২০টি (ম্যাক্সিমাম)</span>
+                </div>
+              </div>
+
+              <!-- Quick Select Buttons -->
+              <div class="flex items-center gap-2 flex-wrap pt-2">
+                <span class="text-xs text-[#8c4f75] font-bangla mr-1">কুইক সিলেক্ট:</span>
+                <button type="button" class="customizer-reel-pill px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-[#572449] hover:border-[#db2777] font-semibold text-xs transition-all cursor-pointer" data-reels="2">২ টি</button>
+                <button type="button" class="customizer-reel-pill px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-[#572449] hover:border-[#db2777] font-semibold text-xs transition-all cursor-pointer" data-reels="4">৪ টি</button>
+                <button type="button" class="customizer-reel-pill px-3 py-1.5 rounded-xl bg-[#db2777] text-white font-bold text-xs shadow-xs transition-all cursor-pointer" data-reels="6">৬ টি</button>
+                <button type="button" class="customizer-reel-pill px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-[#572449] hover:border-[#db2777] font-semibold text-xs transition-all cursor-pointer" data-reels="8">৮ টি</button>
+                <button type="button" class="customizer-reel-pill px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-[#572449] hover:border-[#db2777] font-semibold text-xs transition-all cursor-pointer" data-reels="12">১২ টি</button>
+                <button type="button" class="customizer-reel-pill px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-[#572449] hover:border-[#db2777] font-semibold text-xs transition-all cursor-pointer" data-reels="16">১৬ টি</button>
+                <button type="button" class="customizer-reel-pill px-3 py-1.5 rounded-xl bg-white border border-[#ED96D7]/40 text-[#572449] hover:border-[#db2777] font-semibold text-xs transition-all cursor-pointer" data-reels="20">২০ টি</button>
+              </div>
+            </div>
+
+            <!-- Step 3: Model Requirement Selection -->
+            <div class="glass-panel p-6 sm:p-7 rounded-3xl bg-white border border-[#ED96D7]/40 shadow-sm space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-[#db2777] uppercase tracking-wider font-bangla flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-lg bg-[#db2777] text-white flex items-center justify-center text-xs">৩</span>
+                  মডেল নির্বাচন করুন
+                </span>
+                <span class="text-[11px] text-[#8c4f75] font-bangla font-semibold">প্রফেশনাল ফেস ও কাস্টিং</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="customizer-model-chip p-3 rounded-2xl border border-[#ED96D7]/40 bg-white hover:border-[#db2777] flex items-center justify-between cursor-pointer transition-all" data-models="0">
+                  <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-box text-sm text-[#8c4f75]"></i>
+                    <div>
+                      <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">কোনো মডেল ছাড়া (অনলি প্রোডাক্ট)</h4>
+                      <p class="text-[10px] text-[#8c4f75] font-bangla">ম্যাক্রো ও লাইভ আনবক্সিং শট</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-emerald-600 font-bangla">৳ ০</span>
+                </div>
+
+                <div class="customizer-model-chip p-3 rounded-2xl border-2 border-[#db2777] bg-[#fff0f6] text-[#db2777] flex items-center justify-between cursor-pointer transition-all" data-models="1">
+                  <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-user text-sm text-[#db2777]"></i>
+                    <div>
+                      <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">১ জন প্রফেশনাল মডেল</h4>
+                      <p class="text-[10px] text-[#8c4f75] font-bangla">টপ ফিমেল অথবা মেল আর্টিস্ট</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-[#db2777] font-bangla">+৳ ৫,০০০</span>
+                </div>
+
+                <div class="customizer-model-chip p-3 rounded-2xl border border-[#ED96D7]/40 bg-white hover:border-[#db2777] flex items-center justify-between cursor-pointer transition-all" data-models="2">
+                  <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-user-group text-sm text-[#8c4f75]"></i>
+                    <div>
+                      <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">২ জন মডেল (কাপল / ডুয়েল)</h4>
+                      <p class="text-[10px] text-[#8c4f75] font-bangla">নারী ও পুরুষ অথবা ডুয়েল ফিমেল</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-[#db2777] font-bangla">+৳ ৯,০০০</span>
+                </div>
+
+                <div class="customizer-model-chip p-3 rounded-2xl border border-[#ED96D7]/40 bg-white hover:border-[#db2777] flex items-center justify-between cursor-pointer transition-all" data-models="3">
+                  <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-users text-sm text-[#8c4f75]"></i>
+                    <div>
+                      <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">৩+ জন বা ফুল গ্রুপ কাস্ট</h4>
+                      <p class="text-[10px] text-[#8c4f75] font-bangla">লার্জ স্কেল ক্যাম্পেইনের জন্য</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-[#db2777] font-bangla">+৳ ১৩,০০০</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 4: Optional Add-ons -->
+            <div class="glass-panel p-6 sm:p-7 rounded-3xl bg-white border border-[#ED96D7]/40 shadow-sm space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-[#db2777] uppercase tracking-wider font-bangla flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-lg bg-[#db2777] text-white flex items-center justify-center text-xs">৪</span>
+                  অতিরিক্ত অ্যাড-অনস যোগ করুন (ঐচ্ছিক)
+                </span>
+                <span class="text-[11px] text-[#8c4f75] font-bangla font-semibold">আপনার চাহিদা অনুযায়ী</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="customizer-addon-chip p-3 rounded-2xl border-2 border-[#db2777] bg-[#fff0f6] flex items-center justify-between cursor-pointer transition-all" data-addon="photos">
+                  <div class="flex items-center gap-2.5">
+                    <div class="addon-checkbox w-5 h-5 rounded-md bg-[#db2777] text-white flex items-center justify-center text-xs shadow-xs">
+                      <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                      <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">১০টি আল্ট্রা-HD স্টিল ফটো প্যাক</h4>
+                      <p class="text-[10px] text-[#8c4f75] font-bangla">হাই-এন্ড স্কিন ও কালার রিটাচিং</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-[#db2777] font-bangla">+৳ ৪,০০০</span>
+                </div>
+
+                <div class="customizer-addon-chip p-3 rounded-2xl border border-[#ED96D7]/40 bg-white hover:border-[#db2777] flex items-center justify-between cursor-pointer transition-all" data-addon="makeup">
+                  <div class="flex items-center gap-2.5">
+                    <div class="addon-checkbox w-5 h-5 rounded-md border border-[#ED96D7]/60 bg-white text-transparent flex items-center justify-center text-xs">
+                      <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                      <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">অন-সেট মেকআপ ও হেয়ার স্টাইলিস্ট</h4>
+                      <p class="text-[10px] text-[#8c4f75] font-bangla">পুরো শ্যুটিং জুড়ে টাচ-আপ সাপোর্ট</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-[#db2777] font-bangla">+৳ ৩,৫০০</span>
+                </div>
+
+                <div class="customizer-addon-chip p-3 rounded-2xl border border-[#ED96D7]/40 bg-white hover:border-[#db2777] flex items-center justify-between cursor-pointer transition-all" data-addon="studio">
+                  <div class="flex items-center gap-2.5">
+                    <div class="addon-checkbox w-5 h-5 rounded-md border border-[#ED96D7]/60 bg-white text-transparent flex items-center justify-center text-xs">
+                      <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                      <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">প্রিমিয়াম ইনডোর স্টুডিও / লোকেশন</h4>
+                      <p class="text-[10px] text-[#8c4f75] font-bangla">এয়ার-কন্ডিশন্ড সেট ও সিনেমা লাইটিং</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-[#db2777] font-bangla">+৳ ৬,০০০</span>
+                </div>
+
+                <div class="customizer-addon-chip p-3 rounded-2xl border border-[#ED96D7]/40 bg-white hover:border-[#db2777] flex items-center justify-between cursor-pointer transition-all" data-addon="voiceover">
+                  <div class="flex items-center gap-2.5">
+                    <div class="addon-checkbox w-5 h-5 rounded-md border border-[#ED96D7]/60 bg-white text-transparent flex items-center justify-center text-xs">
+                      <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                      <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">সিনেমাটিক ভয়েসওভার ও সাউন্ডট্র্যাক</h4>
+                      <p class="text-[10px] text-[#8c4f75] font-bangla">প্রফেশনাল ভয়েস ডাবিং ও সাউন্ড ডিজাইন</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-[#db2777] font-bangla">+৳ ২,৫০০</span>
+                </div>
+
+                <div class="customizer-addon-chip p-3 rounded-2xl border border-[#ED96D7]/40 bg-white hover:border-[#db2777] flex items-center justify-between cursor-pointer transition-all" data-addon="meta-ads">
+                  <div class="flex items-center gap-2.5">
+                    <div class="addon-checkbox w-5 h-5 rounded-md border border-[#ED96D7]/60 bg-white text-transparent flex items-center justify-center text-xs">
+                      <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                      <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">মেটা অ্যাড সেটআপ ও ১ মাস স্কেলিং</h4>
+                      <p class="text-[10px] text-[#8c4f75] font-bangla">হাই-ROAS ফেসবুক ও ইনস্টাগ্রাম ক্যাম্পেইন</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-[#db2777] font-bangla">+৳ ৮,০০০</span>
+                </div>
+
+                <div class="customizer-addon-chip p-3 rounded-2xl border border-[#ED96D7]/40 bg-white hover:border-[#db2777] flex items-center justify-between cursor-pointer transition-all" data-addon="express">
+                  <div class="flex items-center gap-2.5">
+                    <div class="addon-checkbox w-5 h-5 rounded-md border border-[#ED96D7]/60 bg-white text-transparent flex items-center justify-center text-xs">
+                      <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                      <h4 class="font-bangla font-bold text-xs text-[#2b0e23]">জরুরি ৩-দিনের এক্সপ্রেস ডেলিভারি</h4>
+                      <p class="text-[10px] text-[#8c4f75] font-bangla">দ্রুত প্রজেক্ট লঞ্চ ও রিলস হ্যান্ডওভার</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold text-[#db2777] font-bangla">+৳ ৩,০০০</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right: Live Dynamic Summary & Action Card (4 Cols - Sticky on Desktop) -->
+          <div class="lg:col-span-4 sticky top-24">
+            <div class="glass-panel p-6 sm:p-7 rounded-3xl bg-white border-2 border-[#ED96D7] shadow-xl space-y-6 relative overflow-hidden">
+              
+              <!-- Ambient Top Gradient -->
+              <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-[#ED96D7] via-[#db2777] to-[#ED96D7]"></div>
+
+              <div>
+                <span class="badge-tag px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest inline-block mb-2">
+                  লাইভ এস্টিমেটেড ক্যালকুলেটর
+                </span>
+                <h3 class="font-heading font-extrabold text-lg sm:text-xl text-[#2b0e23]">
+                  আপনার <span class="text-gradient-pink">কাস্টম বাজেট</span>
+                </h3>
+                <p class="text-xs text-[#8c4f75] font-bangla mt-0.5">সবগুলো সিলেকশন অনুযায়ী স্বয়ংক্রিয়ভাবে হিসাব করা হয়েছে।</p>
+              </div>
+
+              <!-- Big Price Display -->
+              <div class="p-4 rounded-2xl bg-gradient-to-b from-[#fff0f6] to-[#fce7f3] border border-[#ED96D7]/40 text-center">
+                <span class="text-xs text-[#8c4f75] font-bangla font-bold block mb-1">মোট আনুমানিক বাজেট</span>
+                <span id="customizer-total-price" class="font-heading font-extrabold text-3xl sm:text-4xl text-[#db2777] royal-text-glow">
+                  ৳ ৩১,০০০
+                </span>
+                <span class="text-[11px] text-[#8c4f75] font-bangla block mt-1">সবকিছু অন্তর্ভুক্ত (No Hidden Fee)</span>
+              </div>
+
+              <!-- Itemized Breakdown -->
+              <div class="space-y-2.5 text-xs font-bangla border-t border-[#ED96D7]/20 pt-4">
+                <div class="flex items-center justify-between text-[#572449]">
+                  <span class="text-[#8c4f75]">সার্ভিস:</span>
+                  <span id="calc-summary-service" class="font-bold text-[#2b0e23]">ভাইরাল প্রোডাক্ট রিলস</span>
+                </div>
+                <div class="flex items-center justify-between text-[#572449]">
+                  <span class="text-[#8c4f75]">রিলস সংখ্যা:</span>
+                  <span id="calc-summary-reels" class="font-bold text-[#2b0e23]">৬ টি রিলস (৳ ১২,০০০)</span>
+                </div>
+                <div class="flex items-center justify-between text-[#572449]">
+                  <span class="text-[#8c4f75]">মডেল:</span>
+                  <span id="calc-summary-models" class="font-bold text-[#2b0e23]">১ জন প্রফেশনাল মডেল (৳ ৫,০০০)</span>
+                </div>
+                <div class="flex items-center justify-between text-[#572449]">
+                  <span class="text-[#8c4f75]">অ্যাড-অনস:</span>
+                  <span id="calc-summary-addons" class="font-bold text-[#2b0e23]">১টি অ্যাড-অনস (৳ ৪,০০০)</span>
+                </div>
+              </div>
+
+              <!-- Action Triggers -->
+              <div class="space-y-2.5 pt-2">
+                <button type="button" onclick="BongBanglaPackages.bookCustomizedPackage()" class="w-full btn-primary-glow py-3.5 rounded-xl font-bangla text-xs sm:text-sm font-bold shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>এই কাস্টম প্যাকেজ বুক করুন</span>
+                </button>
+
+                <a id="customizer-whatsapp-btn" href="#" target="_blank" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bangla text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-all">
+                  <i class="fa-brands fa-whatsapp text-sm"></i>
+                  <span>WhatsApp-এ বিস্তারিত পাঠান</span>
+                </a>
+              </div>
+
+              <div class="text-center pt-1">
+                <p class="text-[11px] text-[#8c4f75] font-bangla">
+                  <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i>১০০% স্যাটিসফ্যাকশন ও ৪K কোয়ালিটি গ্যারান্টি
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
 
     </div>
   </section>
@@ -1501,6 +1758,7 @@
   <script src="js/supabase-config.js?v=20261006_v2"></script>
   <script src="js/supabase-client.js?v=20261006_v2"></script>
   <script src="js/reels.js?v=20261006_v2"></script>
+  <script src="js/packages.js?v=20261006_v3"></script>
   <script src="js/main.js?v=20261006_v2"></script>
 </body>
 </html>
