@@ -1,0 +1,461 @@
+/**
+ * BongBangla Media & Creative Lab
+ * Instagram Media Grabber API Endpoint (Serverless Node.js on Vercel)
+ * 
+ * Features:
+ * 1. Extracts ALL carousel media (photos & 4K/HD video reels) from public Instagram posts/reels.
+ * 2. Provides media proxy mode (?proxy_media=1&url=...) to bypass browser CORS when downloading blobs for CDN re-upload.
+ */
+
+function cleanUrl(u) {
+  if (!u || typeof u !== 'string') return '';
+  return u
+    .replace(/\\u0026/g, '&')
+    .replace(/\\\\\//g, '/')
+    .replace(/\\\//g, '/')
+    .replace(/&amp;/g, '&');
+}
+
+function cleanCaption(c) {
+  if (!c || typeof c !== 'string') return '';
+  const cleaned = c.replace(/^Instagram:|\s*on Instagram:.*$/i, '').trim();
+  const lower = cleaned.toLowerCase();
+  if (
+    lower === 'instagram' ||
+    lower.includes('login') ||
+    lower.includes('error') ||
+    lower.includes('cloudflare') ||
+    lower.includes('520:') ||
+    lower.includes('500:')
+  ) {
+    return '';
+  }
+  return cleaned;
+}
+
+function extractMediaFromHtml(html) {
+  const extracted = [];
+  const seenUrls = new Set();
+  let caption = '';
+
+  function addMedia(type, url, thumbnail, title) {
+    if (!url || typeof url !== 'string') return;
+    const cu = cleanUrl(url);
+    if (!cu || seenUrls.has(cu)) return;
+
+    // Filter out profile avatars, small icons, static assets
+    if (
+      cu.includes('s150x150') ||
+      cu.includes('s100x100') ||
+      cu.includes('s320x320') ||
+      cu.includes('/t51.82787-19/') ||
+      cu.includes('rsrc.php')
+    ) {
+      return;
+    }
+
+    seenUrls.add(cu);
+    extracted.push({
+      type: type,
+      url: cu,
+      thumbnail: thumbnail ? cleanUrl(thumbnail) : cu,
+      title: title || (type === 'video' ? 'Instagram Reel' : 'Instagram Photo')
+    });
+  }
+
+  // 1. Primary: Search in s.handle / gql_data / shortcode_media
+  const handleMatches = [...html.matchAll(/s\.handle\((\{[\s\S]*?\})\);/g)];
+  for (const hm of handleMatches) {
+    try {
+      const data = JSON.parse(hm[1]);
+      function findContextJson(obj) {
+        if (!obj) return;
+        if (typeof obj === 'string') {
+          if (
+            obj.includes('gql_data') ||
+            obj.includes('edge_sidecar_to_children') ||
+            obj.includes('shortcode_media') ||
+            obj.includes('carousel_media')
+          ) {
+            try {
+              const inner = JSON.parse(obj);
+              processGql(inner);
+            } catch (e) {}
+          }
+          return;
+        }
+        if (typeof obj === 'object') {
+          if (obj.gql_data) {
+            processGql(obj);
+          }
+          for (const k of Object.keys(obj)) {
+            findContextJson(obj[k]);
+          }
+        }
+      }
+
+      function processGql(root) {
+        const sc =
+          (root && root.gql_data && root.gql_data.shortcode_media) ||
+          (root && root.shortcode_media);
+        if (!sc) return;
+
+        // Caption
+        if (!caption && sc.edge_media_to_caption && sc.edge_media_to_caption.edges && sc.edge_media_to_caption.edges[0]) {
+          caption = cleanCaption(sc.edge_media_to_caption.edges[0].node.text || '');
+        }
+        if (!caption && sc.accessibility_caption) {
+          caption = cleanCaption(sc.accessibility_caption);
+        }
+
+        // Carousel items (Photos & Videos)
+        if (sc.edge_sidecar_to_children && sc.edge_sidecar_to_children.edges && Array.isArray(sc.edge_sidecar_to_children.edges)) {
+          sc.edge_sidecar_to_children.edges.forEach((edge, idx) => {
+            const n = edge.node;
+            if (!n) return;
+            if (n.is_video && n.video_url) {
+              addMedia('video', n.video_url, n.display_url, n.accessibility_caption || `Instagram Reel #${idx + 1}`);
+            } else if (n.display_url) {
+              addMedia('photo', n.display_url, n.display_url, n.accessibility_caption || `Instagram Photo #${idx + 1}`);
+            }
+          });
+        } else {
+          // Single photo or reel
+          if (sc.is_video && sc.video_url) {
+            addMedia('video', sc.video_url, sc.display_url, sc.accessibility_caption || 'Instagram Reel');
+          } else if (sc.display_url) {
+            addMedia('photo', sc.display_url, sc.display_url, sc.accessibility_caption || 'Instagram Photo');
+          }
+        }
+      }
+
+      findContextJson(data);
+    } catch (err) {}
+  }
+
+  // 2. Secondary: Search ScheduledServerJS / script tags with carousel_media or image_versions2
+  if (extracted.length === 0) {
+    const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
+    let match;
+    while ((match = scriptRegex.exec(html)) !== null) {
+      const content = match[1].trim();
+      if (
+        !content.includes('carousel_media') &&
+        !content.includes('video_versions') &&
+        !content.includes('image_versions2') &&
+        !content.includes('edge_sidecar_to_children')
+      ) {
+        continue;
+      }
+
+      try {
+        const data = JSON.parse(content);
+        function searchObj(obj) {
+          if (!obj || typeof obj !== 'object') return;
+
+          if (!caption && obj.caption && typeof obj.caption.text === 'string') {
+            caption = cleanCaption(obj.caption.text);
+          }
+
+          // Edge sidecar
+          if (obj.edge_sidecar_to_children && Array.isArray(obj.edge_sidecar_to_children.edges)) {
+            obj.edge_sidecar_to_children.edges.forEach((edge, idx) => {
+              const n = edge.node;
+              if (!n) return;
+              if (n.is_video && n.video_url) {
+                addMedia('video', n.video_url, n.display_url, `Instagram Reel #${idx + 1}`);
+              } else if (n.display_url) {
+                addMedia('photo', n.display_url, n.display_url, `Instagram Photo #${idx + 1}`);
+              }
+            });
+          }
+
+          // Carousel media array
+          if (obj.carousel_media && Array.isArray(obj.carousel_media)) {
+            obj.carousel_media.forEach((item, idx) => {
+              if (item.video_versions && item.video_versions.length > 0) {
+                const vid = item.video_versions[0].url;
+                const thumb = (item.image_versions2 && item.image_versions2.candidates && item.image_versions2.candidates[0])
+                  ? item.image_versions2.candidates[0].url
+                  : '';
+                addMedia('video', vid, thumb, `Instagram Reel #${idx + 1}`);
+              } else if (item.image_versions2 && item.image_versions2.candidates && item.image_versions2.candidates.length > 0) {
+                const img = item.image_versions2.candidates[0].url;
+                addMedia('photo', img, img, `Instagram Photo #${idx + 1}`);
+              }
+            });
+          }
+
+          // Single video
+          if (obj.video_versions && Array.isArray(obj.video_versions) && obj.video_versions.length > 0) {
+            const bestVideo = obj.video_versions[0];
+            if (bestVideo && bestVideo.url) {
+              let thumb = '';
+              if (obj.image_versions2 && obj.image_versions2.candidates && obj.image_versions2.candidates[0]) {
+                thumb = obj.image_versions2.candidates[0].url;
+              }
+              addMedia('video', bestVideo.url, thumb, 'Instagram Reel');
+            }
+          }
+
+          // Single photo
+          if (
+            obj.image_versions2 &&
+            obj.image_versions2.candidates &&
+            Array.isArray(obj.image_versions2.candidates) &&
+            obj.image_versions2.candidates.length > 0
+          ) {
+            if (!obj.video_versions || obj.video_versions.length === 0) {
+              const bestImg = obj.image_versions2.candidates[0];
+              if (bestImg && bestImg.url) {
+                addMedia('photo', bestImg.url, bestImg.url, 'Instagram Photo');
+              }
+            }
+          }
+
+          for (const k of Object.keys(obj)) {
+            if (typeof obj[k] === 'object') searchObj(obj[k]);
+          }
+        }
+
+        searchObj(data);
+      } catch (jsonErr) {}
+    }
+  }
+
+  // 3. Fallback: High-res CDN media URLs from HTML
+  if (extracted.length === 0) {
+    const cdnRegex = /https:[\\\/]+[a-z0-9.-]*scontent[a-z0-9.-]*\.cdninstagram\.com[\\\/]v[\\\/]t51\.[0-9-]+[\\\/][^"'\s\)]+/gi;
+    const cdnMatches = html.match(cdnRegex) || [];
+    for (const m of cdnMatches) {
+      addMedia('photo', m, m, 'Instagram Photo');
+    }
+
+    const videoRegex = /(https?:\/\/[^\s\)\"\']+\.mp4[^\s\)\"\']*)/gi;
+    let vMatch;
+    while ((vMatch = videoRegex.exec(html)) !== null) {
+      addMedia('video', vMatch[1], '', 'Instagram Reel');
+    }
+  }
+
+  // Caption fallback
+  if (!caption) {
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    if (titleMatch && titleMatch[1]) {
+      caption = cleanCaption(titleMatch[1]);
+    }
+  }
+
+  return { mediaList: extracted, caption };
+}
+
+async function fetchInstagramPost(shortcode) {
+  const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
+  
+  // Headers that cause Instagram embed to return clean ServerJS with s.handle
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache'
+  };
+
+  // Attempt 1: Desktop UA
+  try {
+    const res = await fetch(embedUrl, { headers, signal: AbortSignal.timeout(12000) });
+    if (res.ok) {
+      const html = await res.text();
+      const parsed = extractMediaFromHtml(html);
+      if (parsed.mediaList && parsed.mediaList.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('[instagram-grab] Attempt 1 failed:', e.message);
+  }
+
+  // Attempt 2: Mobile UA
+  try {
+    const mobileHeaders = {
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9'
+    };
+    const res2 = await fetch(embedUrl, { headers: mobileHeaders, signal: AbortSignal.timeout(12000) });
+    if (res2.ok) {
+      const html2 = await res2.text();
+      const parsed2 = extractMediaFromHtml(html2);
+      if (parsed2.mediaList && parsed2.mediaList.length > 0) {
+        return parsed2;
+      }
+    }
+  } catch (e2) {
+    console.warn('[instagram-grab] Attempt 2 failed:', e2.message);
+  }
+
+  // Attempt 3: Embed with _fb_noscript=1
+  try {
+    const res3 = await fetch(`${embedUrl}?_fb_noscript=1`, { headers, signal: AbortSignal.timeout(12000) });
+    if (res3.ok) {
+      const html3 = await res3.text();
+      const parsed3 = extractMediaFromHtml(html3);
+      if (parsed3.mediaList && parsed3.mediaList.length > 0) {
+        return parsed3;
+      }
+    }
+  } catch (e3) {
+    console.warn('[instagram-grab] Attempt 3 failed:', e3.message);
+  }
+
+  // Attempt 4: oEmbed API + Microlink Fallback
+  let fallbackCaption = '';
+  let fallbackMedia = [];
+  try {
+    const oembedRes = await fetch(`https://www.instagram.com/api/v1/oembed/?url=https://www.instagram.com/p/${shortcode}/`, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+      signal: AbortSignal.timeout(8000)
+    });
+    if (oembedRes.ok) {
+      const oembedData = await oembedRes.json();
+      fallbackCaption = oembedData.title || '';
+      if (oembedData.thumbnail_url) {
+        fallbackMedia.push({
+          type: 'photo',
+          url: oembedData.thumbnail_url,
+          thumbnail: oembedData.thumbnail_url,
+          title: oembedData.title || 'Instagram Media'
+        });
+      }
+    }
+  } catch (e4) {}
+
+  // Attempt 5: Microlink API fallback
+  try {
+    const postUrl = `https://www.instagram.com/p/${shortcode}/`;
+    const microRes = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(postUrl)}&video=true`, {
+      signal: AbortSignal.timeout(8000)
+    });
+    if (microRes.ok) {
+      const microJson = await microRes.json();
+      if (microJson.data) {
+        if (!fallbackCaption) {
+          fallbackCaption = microJson.data.description || microJson.data.title || '';
+        }
+        if (microJson.data.video && microJson.data.video.url) {
+          fallbackMedia = [{
+            type: 'video',
+            url: microJson.data.video.url,
+            thumbnail: microJson.data.image ? microJson.data.image.url : '',
+            title: 'Instagram Reel'
+          }];
+        } else if (microJson.data.image && microJson.data.image.url && fallbackMedia.length === 0) {
+          fallbackMedia = [{
+            type: 'photo',
+            url: microJson.data.image.url,
+            thumbnail: microJson.data.image.url,
+            title: 'Instagram Photo'
+          }];
+        }
+      }
+    }
+  } catch (e5) {}
+
+  return { mediaList: fallbackMedia, caption: fallbackCaption };
+}
+
+async function handler(req, res) {
+  // CORS Headers
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  const query = req.query || {};
+
+  // Media Proxy mode (to download blob for CDN without browser CORS blockage)
+  if (query.proxy_media && (query.url || query.media_url)) {
+    const targetUrl = query.url || query.media_url;
+    try {
+      const mediaRes = await fetch(targetUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+          'Referer': 'https://www.instagram.com/'
+        },
+        signal: AbortSignal.timeout(25000)
+      });
+      if (!mediaRes.ok) {
+        return res.status(mediaRes.status).end('Failed to fetch media');
+      }
+      res.setHeader('Content-Type', mediaRes.headers.get('content-type') || 'application/octet-stream');
+      const ab = await mediaRes.arrayBuffer();
+      return res.end(Buffer.from(ab));
+    } catch (pe) {
+      return res.status(500).json({ error: pe.message });
+    }
+  }
+
+  let rawUrl = query.url || query.shortcode || '';
+  if (!rawUrl && req.body) {
+    if (typeof req.body === 'string') {
+      try {
+        const parsed = JSON.parse(req.body);
+        rawUrl = parsed.url || parsed.shortcode || '';
+      } catch (e) {}
+    } else {
+      rawUrl = req.body.url || req.body.shortcode || '';
+    }
+  }
+
+  let shortcode = '';
+  const match = (rawUrl || '').match(/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/i);
+  if (match) {
+    shortcode = match[1];
+  } else if (/^[A-Za-z0-9_-]{8,25}$/.test(rawUrl)) {
+    shortcode = rawUrl;
+  }
+
+  if (!shortcode) {
+    return res.status(400).json({
+      success: false,
+      error: 'সঠিক ইনস্টাগ্রাম পোস্ট বা রিলসের লিংক দিন! (উদাঃ https://www.instagram.com/p/DcjX9lvEwfT/)'
+    });
+  }
+
+  try {
+    const data = await fetchInstagramPost(shortcode);
+    const mediaList = data.mediaList || [];
+    const caption = data.caption || '';
+
+    if (mediaList.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'পোস্টটি থেকে কোনো মিডিয়া পাওয়া যায়নি। পোস্টটি প্রাইভেট হতে পারে।'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      shortcode: shortcode,
+      count: mediaList.length,
+      caption: caption,
+      mediaList: mediaList
+    });
+  } catch (error) {
+    console.error('[instagram-grab] Error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'মিডিয়া আনতে গিয়ে সমস্যা হয়েছে।'
+    });
+  }
+}
+
+module.exports = handler;
+module.exports.default = handler;

@@ -3664,7 +3664,7 @@ window.executeInstagramGrab = async function() {
   const match = rawUrl.match(/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/i);
   if (match) {
     shortcode = match[1];
-  } else if (/^[A-Za-z0-9_-]{8,15}$/.test(rawUrl)) {
+  } else if (/^[A-Za-z0-9_-]{8,25}$/.test(rawUrl)) {
     shortcode = rawUrl;
   }
 
@@ -3700,100 +3700,134 @@ window.executeInstagramGrab = async function() {
     let extracted = [];
     let caption = '';
 
-    const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
-    const postUrl = `https://www.instagram.com/p/${shortcode}/`;
-
-    // Multi-Mirror Cascading Engine
-    const mirrors = [
-      {
-        name: 'AllOrigins Embed Raw',
-        statusText: 'হাই-স্পিড মিরর ১ থেকে খোঁজা হচ্ছে...',
-        fetch: () => fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(embedUrl)}`, {
-          signal: AbortSignal.timeout(12000)
-        })
-      },
-      {
-        name: 'CORS.eu.org Embed',
-        statusText: 'হাই-স্পিড মিরর ২ থেকে খোঁজা হচ্ছে...',
-        fetch: () => fetch(`https://cors.eu.org/${embedUrl}`, {
-          signal: AbortSignal.timeout(12000)
-        })
-      },
-      {
-        name: 'Jina AI Embed',
-        statusText: 'হাই-স্পিড মিরর ৩ থেকে খোঁজা হচ্ছে...',
-        fetch: () => fetch(`https://r.jina.ai/${embedUrl}`, {
-          headers: { 'Accept': 'text/html', 'X-Return-Format': 'html' },
-          signal: AbortSignal.timeout(12000)
-        })
-      },
-      {
-        name: 'AllOrigins Post Raw',
-        statusText: 'মিরর ৪ থেকে ফুল ডাটা আনা হচ্ছে...',
-        fetch: () => fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(postUrl)}`, {
-          signal: AbortSignal.timeout(12000)
-        })
-      },
-      {
-        name: 'Jina AI Post HTML',
-        statusText: 'মিরর ৫ থেকে ফুল ডাটা আনা হচ্ছে...',
-        fetch: () => fetch(`https://r.jina.ai/${postUrl}`, {
-          headers: { 'Accept': 'text/html', 'X-Return-Format': 'html' },
-          signal: AbortSignal.timeout(12000)
-        })
-      }
+    // 1. PRIMARY ENGINE: High-Speed Serverless API (/api/instagram-grab)
+    // Extracts ALL carousel photos & 4K video reels with zero browser CORS restrictions
+    setGrabStatus('সার্ভার ইঞ্জিন থেকে সব মিডিয়া আনা হচ্ছে...');
+    const apiEndpoints = [
+      `/api/instagram-grab?shortcode=${encodeURIComponent(shortcode)}`,
+      `https://bongbangla.top/api/instagram-grab?shortcode=${encodeURIComponent(shortcode)}`
     ];
 
-    for (const m of mirrors) {
-      setGrabStatus(m.statusText);
+    for (const ep of apiEndpoints) {
       try {
-        const res = await m.fetch();
-        if (!res.ok) continue;
-        const html = await res.text();
-        if (!html || html.length < 500) continue;
-
-        const parsed = extractInstagramMediaFromHtml(html);
-        if (parsed.mediaList && parsed.mediaList.length > 0) {
-          extracted = parsed.mediaList;
-          caption = parsed.caption;
-          console.log(`⚡ Instagram Grabber successfully extracted via [${m.name}]: ${extracted.length} items`);
-          break;
+        const apiRes = await fetch(ep, {
+          signal: AbortSignal.timeout(15000),
+          headers: { 'Accept': 'application/json' }
+        });
+        if (apiRes.ok) {
+          const json = await apiRes.json();
+          if (json.success && Array.isArray(json.mediaList) && json.mediaList.length > 0) {
+            extracted = json.mediaList;
+            caption = json.caption || '';
+            console.log(`⚡ Instagram Grabber successfully extracted via BongBangla Engine [${ep}]: ${extracted.length} items`);
+            break;
+          }
         }
-      } catch(mirrorErr) {
-        console.warn(`Mirror [${m.name}] attempt failed:`, mirrorErr.message);
+      } catch(apiErr) {
+        console.warn(`[instagram-grab] Endpoint ${ep} attempt failed:`, apiErr.message);
       }
     }
 
-    // Secondary Microlink API fallback for single photo/reel if carousels weren't found
+    // 2. Client-side Mirror Fallback (if serverless API endpoint not reached)
     if (extracted.length === 0) {
-      setGrabStatus('ব্যাকআপ এপিআই থেকে খোঁজা হচ্ছে...');
-      try {
-        const microRes = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(postUrl)}&video=true`, {
-          signal: AbortSignal.timeout(10000)
-        });
-        if (microRes.ok) {
-          const json = await microRes.json();
-          if (json.data) {
-            caption = json.data.description || json.data.title || '';
-            if (json.data.video && json.data.video.url) {
-              extracted.push({
-                type: 'video',
-                url: json.data.video.url,
-                thumbnail: json.data.image ? json.data.image.url : '',
-                title: 'Instagram Video / Reel'
-              });
-            } else if (json.data.image && json.data.image.url) {
-              extracted.push({
-                type: 'photo',
-                url: json.data.image.url,
-                thumbnail: json.data.image.url,
-                title: 'Instagram Photo'
-              });
-            }
+      const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
+      const postUrl = `https://www.instagram.com/p/${shortcode}/`;
+
+      const mirrors = [
+        {
+          name: 'AllOrigins Get (JSON)',
+          statusText: 'হাই-স্পিড মিরর ১ থেকে খোঁজা হচ্ছে...',
+          fetch: async () => {
+            const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(embedUrl)}`, {
+              signal: AbortSignal.timeout(10000)
+            });
+            if (!r.ok) return '';
+            const j = await r.json();
+            return j.contents || '';
+          }
+        },
+        {
+          name: 'AllOrigins Raw',
+          statusText: 'হাই-স্পিড মিরর ২ থেকে খোঁজা হচ্ছে...',
+          fetch: async () => {
+            const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(embedUrl)}`, {
+              signal: AbortSignal.timeout(10000)
+            });
+            return r.ok ? await r.text() : '';
+          }
+        },
+        {
+          name: 'CORS.eu.org Embed',
+          statusText: 'হাই-স্পিড মিরর ৩ থেকে খোঁজা হচ্ছে...',
+          fetch: async () => {
+            const r = await fetch(`https://cors.eu.org/${embedUrl}`, {
+              signal: AbortSignal.timeout(10000)
+            });
+            return r.ok ? await r.text() : '';
+          }
+        },
+        {
+          name: 'Jina AI Embed',
+          statusText: 'হাই-স্পিড মিরর ৪ থেকে খোঁজা হচ্ছে...',
+          fetch: async () => {
+            const r = await fetch(`https://r.jina.ai/${embedUrl}`, {
+              headers: { 'Accept': 'text/html', 'X-Return-Format': 'html' },
+              signal: AbortSignal.timeout(10000)
+            });
+            return r.ok ? await r.text() : '';
           }
         }
-      } catch(err3) {
-        console.warn('Microlink grab error:', err3);
+      ];
+
+      for (const m of mirrors) {
+        setGrabStatus(m.statusText);
+        try {
+          const html = await m.fetch();
+          if (!html || html.length < 500) continue;
+
+          const parsed = extractInstagramMediaFromHtml(html);
+          if (parsed.mediaList && parsed.mediaList.length > 0) {
+            extracted = parsed.mediaList;
+            caption = parsed.caption;
+            console.log(`⚡ Instagram Grabber extracted via mirror [${m.name}]: ${extracted.length} items`);
+            break;
+          }
+        } catch(mirrorErr) {
+          console.warn(`Mirror [${m.name}] attempt failed:`, mirrorErr.message);
+        }
+      }
+
+      // 3. Fallback: Instagram oEmbed + Microlink
+      if (extracted.length === 0) {
+        setGrabStatus('ব্যাকআপ এপিআই থেকে খোঁজা হচ্ছে...');
+        try {
+          const microRes = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(postUrl)}&video=true`, {
+            signal: AbortSignal.timeout(10000)
+          });
+          if (microRes.ok) {
+            const json = await microRes.json();
+            if (json.data) {
+              caption = json.data.description || json.data.title || '';
+              if (json.data.video && json.data.video.url) {
+                extracted.push({
+                  type: 'video',
+                  url: json.data.video.url,
+                  thumbnail: json.data.image ? json.data.image.url : '',
+                  title: 'Instagram Video / Reel'
+                });
+              } else if (json.data.image && json.data.image.url) {
+                extracted.push({
+                  type: 'photo',
+                  url: json.data.image.url,
+                  thumbnail: json.data.image.url,
+                  title: 'Instagram Photo'
+                });
+              }
+            }
+          }
+        } catch(err3) {
+          console.warn('Microlink grab error:', err3);
+        }
       }
     }
 
@@ -3994,6 +4028,23 @@ async function executeUploadAndAttach(items, modelId, destination = 'gallery') {
         }
       } catch(fetchErr) {
         console.warn('Direct blob fetch error:', fetchErr);
+      }
+
+      // If direct fetch fails due to browser CORS, download via BongBangla serverless proxy
+      if (!blob && item.url) {
+        const proxyUrls = [
+          `/api/instagram-grab?proxy_media=1&url=${encodeURIComponent(item.url)}`,
+          `https://bongbangla.top/api/instagram-grab?proxy_media=1&url=${encodeURIComponent(item.url)}`
+        ];
+        for (const pu of proxyUrls) {
+          try {
+            const pRes = await fetch(pu, { signal: AbortSignal.timeout(20000) });
+            if (pRes.ok) {
+              blob = await pRes.blob();
+              break;
+            }
+          } catch(e) {}
+        }
       }
 
       let permanentUrl = '';
