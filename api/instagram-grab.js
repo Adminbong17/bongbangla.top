@@ -413,6 +413,79 @@ async function fetchInstagramPost(shortcode) {
   return { mediaList: fallbackMedia, caption: fallbackCaption };
 }
 
+async function fetchInstagramProfile(username) {
+  const profileUrl = `https://www.instagram.com/${username}/`;
+  const botUAs = [
+    'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+    'Twitterbot/1.0',
+    'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+  ];
+
+  for (const ua of botUAs) {
+    try {
+      const res = await fetch(profileUrl, {
+        headers: {
+          'User-Agent': ua,
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9'
+        },
+        signal: AbortSignal.timeout(12000)
+      });
+      if (res.ok) {
+        const html = await res.text();
+        const ogImg = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i);
+        const ogTitle = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i);
+        const ogDesc = html.match(/<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/i);
+
+        let avatarUrl = '';
+        if (ogImg && ogImg[1]) {
+          avatarUrl = ogImg[1].replace(/&amp;/g, '&');
+        }
+
+        let name = username;
+        if (ogTitle && ogTitle[1]) {
+          const cleanTitle = ogTitle[1]
+            .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCodePoint(parseInt(code, 16)))
+            .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(parseInt(code, 10)))
+            .replace(/\s*[•|]\s*Instagram.*$/i, '')
+            .trim();
+          if (cleanTitle) name = cleanTitle;
+        }
+
+        let bio = '';
+        if (ogDesc && ogDesc[1]) {
+          bio = ogDesc[1]
+            .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCodePoint(parseInt(code, 16)))
+            .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(parseInt(code, 10)))
+            .trim();
+        }
+
+        if (avatarUrl) {
+          return {
+            isProfile: true,
+            username: username,
+            name: name,
+            bio: bio,
+            avatarUrl: avatarUrl,
+            mediaList: [
+              {
+                type: 'photo',
+                url: avatarUrl,
+                thumbnail: avatarUrl,
+                title: `${name} - প্রোফাইল ছবি (HD Avatar)`
+              }
+            ]
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('[instagram-grab] Profile fetch attempt failed:', e.message);
+    }
+  }
+
+  return null;
+}
+
 async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -464,18 +537,62 @@ async function handler(req, res) {
   }
 
   let shortcode = '';
-  const match = (rawUrl || '').match(/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/i);
-  if (match) {
-    shortcode = match[1];
-  } else if (/^[A-Za-z0-9_-]{8,25}$/.test(rawUrl)) {
+  const postMatch = (rawUrl || '').match(/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/i);
+  if (postMatch) {
+    shortcode = postMatch[1];
+  }
+
+  // Check for Profile URL (e.g. instagram.com/priyanka_biswas666/ or @priyanka_biswas666 or username query param)
+  let profileUsername = query.username || '';
+  if (!shortcode && !profileUsername) {
+    const profileMatch = (rawUrl || '').match(/(?:instagram\.com\/|@)([A-Za-z0-9_.-]+)\/?(?:[?#].*)?$/i);
+    if (profileMatch) {
+      const u = profileMatch[1];
+      if (!['explore', 'reels', 'stories', 'direct', 'accounts', 'developer', 'p', 'reel', 'tv'].includes(u.toLowerCase())) {
+        profileUsername = u;
+      }
+    }
+  }
+
+  if (!shortcode && !profileUsername && /^[A-Za-z0-9_-]{8,25}$/.test(rawUrl)) {
     shortcode = rawUrl;
   }
 
-  if (!shortcode) {
+  if (!shortcode && !profileUsername) {
     return res.status(400).json({
       success: false,
-      error: 'সঠিক ইনস্টাগ্রাম পোস্ট বা রিলসের লিংক দিন! (উদাঃ https://www.instagram.com/p/DcjX9lvEwfT/)'
+      error: 'সঠিক ইনস্টাগ্রাম পোস্ট, রিলস বা প্রোফাইলের লিংক দিন! (উদাঃ https://www.instagram.com/p/xxx/ অথবা https://www.instagram.com/username/)'
     });
+  }
+
+  // Handle Profile Grab
+  if (profileUsername) {
+    try {
+      const profileData = await fetchInstagramProfile(profileUsername);
+      if (profileData && profileData.mediaList && profileData.mediaList.length > 0) {
+        return res.status(200).json({
+          success: true,
+          isProfile: true,
+          username: profileData.username,
+          name: profileData.name,
+          bio: profileData.bio,
+          caption: `${profileData.name} • ${profileData.bio}`,
+          count: profileData.mediaList.length,
+          mediaList: profileData.mediaList,
+          message: 'প্রোফাইল থেকে তথ্য ও ছবি সংগ্রহ করা হয়েছে। ফুল-বডি আনক্রপড ফটো ও ৪K রিলস গ্যালারিতে যোগ করতে পোস্টের লিংক দিন।'
+        });
+      } else {
+        return res.status(404).json({
+          success: false,
+          error: `ইনস্টাগ্রাম প্রোফাইল @${profileUsername} থেকে মিডিয়া পাওয়া যায়নি। প্রোফাইলটি প্রাইভেট হতে পারে।`
+        });
+      }
+    } catch (profErr) {
+      return res.status(500).json({
+        success: false,
+        error: profErr.message || 'প্রোফাইল ডাটা আনতে সমস্যা হয়েছে।'
+      });
+    }
   }
 
   try {

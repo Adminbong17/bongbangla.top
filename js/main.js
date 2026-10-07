@@ -560,7 +560,7 @@ function renderFrontendModels(directData) {
     return `
       <div class="model-motion-card group">
         <a href="${detailsUrl}" class="aspect-[3/4] relative overflow-hidden bg-[#fdf2f8] block group-hover:opacity-95 transition-opacity">
-          <img src="${modelImg || defaultModelFallback}" alt="${m.name}" onerror="this.onerror=null; this.src='${defaultModelFallback}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+          <img src="${modelImg || defaultModelFallback}" alt="${m.name}" onerror="this.onerror=null; this.src='${defaultModelFallback}';" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500" loading="lazy">
           
           <!-- Top Badges -->
           <div class="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none z-10">

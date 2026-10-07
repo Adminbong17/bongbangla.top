@@ -3703,22 +3703,36 @@ window.executeInstagramGrab = async function() {
   const rawUrl = input ? input.value.trim() : '';
 
   if (!rawUrl) {
-    alert('অনুগ্রহ করে ইনস্টাগ্রাম পোস্ট বা রিলসের লিংক লিখুন!');
+    alert('অনুগ্রহ করে ইনস্টাগ্রাম পোস্ট, রিলস বা প্রোফাইলের লিংক লিখুন!');
     if (input) input.focus();
     return;
   }
 
-  // Extract shortcode
+  // 1. Extract shortcode
   let shortcode = '';
   const match = rawUrl.match(/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/i);
   if (match) {
     shortcode = match[1];
-  } else if (/^[A-Za-z0-9_-]{8,25}$/.test(rawUrl)) {
+  }
+
+  // 2. Extract profile username for profile URLs
+  let profileUsername = '';
+  if (!shortcode) {
+    const profileMatch = rawUrl.match(/(?:instagram\.com\/|@)([A-Za-z0-9_.-]+)\/?(?:[?#].*)?$/i);
+    if (profileMatch) {
+      const u = profileMatch[1];
+      if (!['explore', 'reels', 'stories', 'direct', 'accounts', 'developer', 'p', 'reel', 'tv'].includes(u.toLowerCase())) {
+        profileUsername = u;
+      }
+    }
+  }
+
+  if (!shortcode && !profileUsername && /^[A-Za-z0-9_-]{8,25}$/.test(rawUrl)) {
     shortcode = rawUrl;
   }
 
-  if (!shortcode) {
-    alert('সঠিক ইনস্টাগ্রাম পোস্ট বা রিলসের লিংক দিন! (উদাঃ https://www.instagram.com/p/DcjX9lvEwfT/)');
+  if (!shortcode && !profileUsername) {
+    alert('সঠিক ইনস্টাগ্রাম পোস্ট, রিলস বা প্রোফাইলের লিংক দিন! (উদাঃ https://www.instagram.com/p/DcjX9lvEwfT/ অথবা https://www.instagram.com/priyanka_biswas666/)');
     return;
   }
 
@@ -3748,13 +3762,18 @@ window.executeInstagramGrab = async function() {
   try {
     let extracted = [];
     let caption = '';
+    let profileMeta = null;
 
     // 1. PRIMARY ENGINE: High-Speed Serverless API (/api/instagram-grab)
     // Extracts ALL carousel photos & 4K video reels with zero browser CORS restrictions
-    setGrabStatus('সার্ভার ইঞ্জিন থেকে সব মিডিয়া আনা হচ্ছে...');
+    setGrabStatus(profileUsername ? 'প্রোফাইল থেকে তথ্য ও ছবি আনা হচ্ছে...' : 'সার্ভার ইঞ্জিন থেকে সব মিডিয়া আনা হচ্ছে...');
+    const queryParam = shortcode
+      ? `shortcode=${encodeURIComponent(shortcode)}`
+      : `username=${encodeURIComponent(profileUsername)}&url=${encodeURIComponent(rawUrl)}`;
+
     const apiEndpoints = [
-      `/api/instagram-grab?shortcode=${encodeURIComponent(shortcode)}`,
-      `https://bongbangla.top/api/instagram-grab?shortcode=${encodeURIComponent(shortcode)}`
+      `/api/instagram-grab?${queryParam}`,
+      `https://bongbangla.top/api/instagram-grab?${queryParam}`
     ];
 
     for (const ep of apiEndpoints) {
@@ -3768,6 +3787,15 @@ window.executeInstagramGrab = async function() {
           if (json.success && Array.isArray(json.mediaList) && json.mediaList.length > 0) {
             extracted = json.mediaList;
             caption = json.caption || '';
+            if (json.isProfile) {
+              profileMeta = {
+                isProfile: true,
+                username: json.username,
+                name: json.name,
+                bio: json.bio,
+                message: json.message
+              };
+            }
             console.log(`⚡ Instagram Grabber successfully extracted via BongBangla Engine [${ep}]: ${extracted.length} items`);
             break;
           }
@@ -3777,8 +3805,8 @@ window.executeInstagramGrab = async function() {
       }
     }
 
-    // 2. Client-side Mirror Fallback (if serverless API endpoint not reached)
-    if (extracted.length === 0) {
+    // 2. Client-side Mirror Fallback (if serverless API endpoint not reached and shortcode present)
+    if (extracted.length === 0 && shortcode) {
       const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
       const postUrl = `https://www.instagram.com/p/${shortcode}/`;
 
@@ -3881,12 +3909,12 @@ window.executeInstagramGrab = async function() {
     }
 
     if (extracted.length === 0) {
-      alert('ইনস্টাগ্রাম থেকে মিডিয়া এক্সট্র্যাক্ট করা সম্ভব হয়নি। পোস্টটি প্রাইভেট হতে পারে অথবা ইনস্টাগ্রামের সার্ভার সাময়িক ব্যস্ত রয়েছে।\n\nআপনি নিচে থাকা "FastDL-এ পোস্টটি খুলুন" বাটনে ক্লিক করে সহজে ডাউনলোড করে নিচের ড্রপজোনে ড্র্যাগ করতে পারেন।');
+      alert('ইনস্টাগ্রাম থেকে মিডিয়া এক্সট্র্যাক্ট করা সম্ভব হয়নি। পোস্ট বা প্রোফাইলটি প্রাইভেট হতে পারে অথবা ইনস্টাগ্রামের সার্ভার সাময়িক ব্যস্ত রয়েছে।\n\nআপনি নিচে থাকা "FastDL-এ পোস্টটি খুলুন" বাটনে ক্লিক করে সহজে ডাউনলোড করে নিচের ড্রপজোনে ড্র্যাগ করতে পারেন।');
       return;
     }
 
     currentInstaExtractedMedia = extracted;
-    renderInstaExtractedMedia(extracted, caption);
+    renderInstaExtractedMedia(extracted, caption, profileMeta);
     showAdminToast(`${extracted.length} টি ফুল-রেজুলেশন মিডিয়া পাওয়া গেছে!`, 'success');
   } catch(e) {
     console.error('executeInstagramGrab error:', e);
@@ -3900,7 +3928,7 @@ window.executeInstagramGrab = async function() {
   }
 };
 
-function renderInstaExtractedMedia(items, caption) {
+function renderInstaExtractedMedia(items, caption, profileMeta = null) {
   const container = document.getElementById('insta-results-container');
   const grid = document.getElementById('insta-media-grid');
   const countEl = document.getElementById('insta-results-count');
@@ -3909,9 +3937,31 @@ function renderInstaExtractedMedia(items, caption) {
   if (!container || !grid) return;
 
   if (countEl) countEl.textContent = `${items.length} টি মিডিয়া পাওয়া গেছে`;
-  if (captionEl) captionEl.textContent = caption ? `ক্যাপশন: ${caption}` : '';
+  if (captionEl) captionEl.textContent = caption ? `বিবরণ: ${caption}` : '';
 
-  grid.innerHTML = items.map((item, idx) => {
+  let profileBannerHtml = '';
+  if (profileMeta && profileMeta.isProfile) {
+    profileBannerHtml = `
+      <div class="col-span-full p-4.5 rounded-3xl bg-gradient-to-r from-pink-50 via-[#fff8fa] to-pink-50 border border-[#ED96D7]/50 text-xs text-[#572449] space-y-2.5 shadow-xs">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2 text-[#db2777] font-bold text-sm">
+            <i class="fa-brands fa-instagram text-lg"></i>
+            <span>${profileMeta.name || `@${profileMeta.username}`}</span>
+          </div>
+          <span class="text-[10px] bg-pink-100 text-[#be185d] px-2.5 py-0.5 rounded-full font-mono font-bold border border-[#ED96D7]/40">ইনস্টাগ্রাম প্রোফাইল</span>
+        </div>
+        ${profileMeta.bio ? `<p class="text-[11px] text-[#8c4f75] italic leading-relaxed font-sans bg-white/70 p-2.5 rounded-xl border border-pink-100">"${profileMeta.bio}"</p>` : ''}
+        <div class="p-3 rounded-2xl bg-white border border-[#ED96D7]/40 text-[11px] text-[#2b0e23] font-medium flex items-start gap-2.5 shadow-2xs">
+          <i class="fa-solid fa-lightbulb text-amber-500 text-base shrink-0 mt-0.5"></i>
+          <span class="leading-relaxed">
+            <strong>টিপস (আনক্রপড ফুল সাইজ পেতে):</strong> ইনস্টাগ্রামের সিকিউরিটি পলিসির কারণে প্রোফাইল পেজ থেকে পুরো টাইমলাইনের সব পোস্ট এক ক্লিকে স্ক্র্যাপ করতে লগইন চায়। মডেলের যেকোনো সিঙ্গেল/ক্যারোসেল ফটো বা ৪K রিলস আসল ফুল-পোর্ট্রেট আনক্রপড সাইজে গ্যালারিতে আনতে সরাসরি নির্দিষ্ট পোস্টের লিংক (যেমন: <code>https://www.instagram.com/p/...</code> অথবা <code>/reel/...</code>) দিন — আমাদের নতুন ইঞ্জিন স্বয়ংক্রিয়ভাবে অরিজিনাল ফুল রেজোলিউশন এক্সট্র্যাক্ট করে Vault-এ আপলোড করে দেবে!
+          </span>
+        </div>
+      </div>
+    `;
+  }
+
+  grid.innerHTML = profileBannerHtml + items.map((item, idx) => {
     const isVideo = item.type === 'video';
     return `
       <div class="glass-panel rounded-2xl border border-[#ED96D7]/40 overflow-hidden bg-white shadow-xs hover:shadow-md transition-all flex flex-col group relative">
@@ -3925,24 +3975,24 @@ function renderInstaExtractedMedia(items, caption) {
             <span class="px-2 py-0.5 rounded-md bg-black/50 backdrop-blur-md text-white font-extrabold text-[10px] uppercase tracking-wide">
               ${isVideo ? '<i class="fa-solid fa-video text-rose-400 mr-1"></i>REEL' : '<i class="fa-solid fa-image text-pink-300 mr-1"></i>PHOTO'}
             </span>
-            <span class="px-1.5 py-0.5 rounded-md bg-pink-600/80 backdrop-blur-md text-white font-bold text-[10px]">
-              HD
+            <span class="px-1.5 py-0.5 rounded-md bg-emerald-600/90 backdrop-blur-md text-white font-bold text-[10px]">
+              UNCROPPED
             </span>
           </div>
         </div>
 
-        <!-- Media Preview Area -->
-        <div class="relative w-full aspect-square bg-slate-900 overflow-hidden flex items-center justify-center">
+        <!-- Media Preview Area (Aspect 3:4 Portrait with object-cover object-top) -->
+        <div class="relative w-full aspect-[3/4] bg-slate-950 overflow-hidden flex items-center justify-center">
           ${isVideo 
-            ? `<video src="${item.url}" controls class="w-full h-full object-cover"></video>` 
-            : `<img src="${item.url}" alt="Instagram Media" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" referrerpolicy="no-referrer">`
+            ? `<video src="${item.url}" controls class="w-full h-full object-cover object-top"></video>` 
+            : `<img src="${item.url}" alt="Instagram Media" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" loading="lazy" referrerpolicy="no-referrer">`
           }
         </div>
 
         <!-- Card Footer Actions -->
         <div class="p-3.5 space-y-2.5 bg-gradient-to-b from-[#fffafc] to-white border-t border-[#ED96D7]/20 flex-1 flex flex-col justify-between">
           <div class="text-[11px] font-bold text-[#2b0e23] truncate">
-            ${isVideo ? 'ইনস্টাগ্রাম ভিডিও/রিলস' : `ইনস্টাগ্রাম ছবি #${idx + 1}`}
+            ${item.title || (isVideo ? 'ইনস্টাগ্রাম ভিডিও/রিলস' : `ইনস্টাগ্রাম ছবি #${idx + 1}`)}
           </div>
           
           <div class="grid grid-cols-2 gap-2">
