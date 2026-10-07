@@ -3909,7 +3909,24 @@ window.executeInstagramGrab = async function() {
     }
 
     if (extracted.length === 0) {
-      alert('ইনস্টাগ্রাম থেকে মিডিয়া এক্সট্র্যাক্ট করা সম্ভব হয়নি। পোস্ট বা প্রোফাইলটি প্রাইভেট হতে পারে অথবা ইনস্টাগ্রামের সার্ভার সাময়িক ব্যস্ত রয়েছে।\n\nআপনি নিচে থাকা "FastDL-এ পোস্টটি খুলুন" বাটনে ক্লিক করে সহজে ডাউনলোড করে নিচের ড্রপজোনে ড্র্যাগ করতে পারেন।');
+      if (profileUsername) {
+        // Auto-assign instagram handle to target model
+        const targetModelId = modelSelect ? modelSelect.value : '';
+        const models = getModels();
+        const model = models.find(m => m.id === targetModelId);
+        if (model && (!model.instagram || model.instagram !== `@${profileUsername}`)) {
+          model.instagram = `@${profileUsername}`;
+          saveModels(models);
+          if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.updateModel === 'function') {
+            window.BongBanglaSupabase.updateModel(model).catch(() => {});
+          }
+        }
+
+        renderProfileGuidanceCard(profileUsername, model);
+        return;
+      }
+
+      alert('ইনস্টাগ্রাম থেকে মিডিয়া এক্সট্র্যাক্ট করা সম্ভব হয়নি। পোস্ট বা প্রোফাইলটি প্রাইভেট হতে পারে অথবা ইনস্টাগ্রামের সার্ভার সাময়িক ব্যস্ত রয়েছে。\n\nআপনি নিচে থাকা "FastDL-এ পোস্টটি খুলুন" বাটনে ক্লিক করে সহজে ডাউনলোড করে নিচের ড্রপজোনে ড্র্যাগ করতে পারেন।');
       return;
     }
 
@@ -3927,6 +3944,78 @@ window.executeInstagramGrab = async function() {
     }
   }
 };
+
+function renderProfileGuidanceCard(username, model) {
+  const container = document.getElementById('insta-results-container');
+  const grid = document.getElementById('insta-media-grid');
+  const countEl = document.getElementById('insta-results-count');
+  const captionEl = document.getElementById('insta-results-caption');
+  const importAllBtn = document.getElementById('insta-import-all-btn');
+
+  if (!container || !grid) return;
+
+  if (countEl) countEl.textContent = `প্রোফাইল শনাক্ত: @${username}`;
+  if (captionEl) captionEl.textContent = model ? `টার্গেট মডেল: ${model.name || model.category}` : '';
+  if (importAllBtn) {
+    importAllBtn.disabled = true;
+    importAllBtn.style.opacity = '0.5';
+  }
+
+  grid.innerHTML = `
+    <div class="col-span-full p-6 rounded-3xl bg-gradient-to-br from-pink-50 via-white to-pink-50 border-2 border-[#ED96D7]/60 text-xs text-[#572449] space-y-4 shadow-sm">
+      <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-pink-100">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-pink-600 to-purple-600 text-white flex items-center justify-center text-2xl shadow-xs">
+            <i class="fa-brands fa-instagram"></i>
+          </div>
+          <div>
+            <div class="font-extrabold text-base text-[#2b0e23]">@${username}</div>
+            <div class="text-[11px] text-pink-600 font-semibold">মডেলের ইনস্টাগ্রাম হ্যান্ডেল স্বয়ংক্রিয়ভাবে সংরক্ষিত হয়েছে</div>
+          </div>
+        </div>
+        <a href="https://www.instagram.com/${username}/" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-[#db2777] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs hover:bg-[#be185d] transition-all">
+          <i class="fa-solid fa-arrow-up-right-from-square text-[11px]"></i> প্রোফাইল পেজ খুলুন
+        </a>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-[#78350f] space-y-2">
+        <div class="flex items-center gap-2 font-bold text-xs text-amber-900">
+          <i class="fa-solid fa-circle-exclamation text-amber-600 text-sm"></i>
+          <span>কেন প্রোফাইল থেকে ছবি হাফ-সাইজ বা ক্রপ হয়ে আসে?</span>
+        </div>
+        <p class="text-[11px] leading-relaxed">
+          ইনস্টাগ্রাম তাদের সার্ভারে প্রোফাইল টাইমলাইনে সব ছবির কেবল <strong>Square 640x640 ক্রপড প্রিভিউ</strong> রাখে। ফলে সরাসরি প্রোফাইল থেকে আনা ছবিগুলো বুক বা কোমর থেকে কেটে অর্ধেক (Half-size) হয়ে যায়।
+        </p>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-950 space-y-2.5">
+        <div class="flex items-center gap-2 font-bold text-xs text-emerald-900">
+          <i class="fa-solid fa-wand-magic-sparkles text-emerald-600 text-sm"></i>
+          <span>মাথা থেকে পা পর্যন্ত আসল ফুল-পোর্ট্রেট (Uncropped Full-Body) ছবি আনার নিয়ম:</span>
+        </div>
+        <ol class="text-[11px] space-y-1.5 list-decimal list-inside text-emerald-900 font-medium leading-relaxed">
+          <li>মডেলের ইনস্টাগ্রাম প্রোফাইলে গিয়ে নির্দিষ্ট যেকোনো ফটো বা ভিডিও পোস্ট খুলুন।</li>
+          <li>পোস্টটির লিংক কপি করুন (যেমন: <code class="bg-emerald-100 text-emerald-900 px-1.5 py-0.5 rounded font-mono text-[10px]">https://www.instagram.com/p/...</code> অথবা <code class="bg-emerald-100 text-emerald-900 px-1.5 py-0.5 rounded font-mono text-[10px]">/reel/...</code>)।</li>
+          <li>ওপরের বক্সে পেস্ট করে <strong>"মিডিয়া আনুন"</strong> চাপুন।</li>
+        </ol>
+        <p class="text-[11px] text-emerald-700 font-semibold pt-1">
+          ⚡ আমাদের নতুন ইঞ্জিন সাথে সাথে ইনস্টাগ্রামের আসল হাই-রেজোলিউশন আনক্রপড মিডিয়া বের করে কোনো ক্রপ ছাড়া গ্যালারিতে দিয়ে দেবে!
+        </p>
+      </div>
+
+      ${username.toLowerCase() === 'priyanka_biswas666' ? `
+        <div class="pt-2 flex items-center justify-between flex-wrap gap-2">
+          <span class="text-[11px] text-[#8c4f75] font-semibold">প্রিয়াঙ্কার ফটোশুট পোস্ট দিয়ে এখনই টেস্ট করতে চান?</span>
+          <button type="button" onclick="document.getElementById('insta-grab-url-input').value='https://www.instagram.com/p/DcjX9lvEwfT/'; window.executeInstagramGrab();" class="px-4 py-2 rounded-xl bg-pink-100 hover:bg-pink-200 text-[#db2777] font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer">
+            <i class="fa-solid fa-bolt text-[11px]"></i> প্রিয়াঙ্কার ২০টি আনক্রপড ফটো ও ৪K রিলস লোড করুন
+          </button>
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  container.classList.remove('hidden');
+}
 
 function renderInstaExtractedMedia(items, caption, profileMeta = null) {
   const container = document.getElementById('insta-results-container');
