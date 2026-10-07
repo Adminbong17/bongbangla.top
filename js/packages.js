@@ -105,13 +105,19 @@ const DEFAULT_CUSTOMIZER_RATES = {
   }
 };
 
+let inMemoryRates = null;
+let inMemoryPackages = null;
+
 function getStoredCustomizerRates() {
+  if (inMemoryRates && typeof inMemoryRates === 'object') {
+    return inMemoryRates;
+  }
   try {
     const raw = localStorage.getItem('bongbangla_customizer_rates');
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === 'object') {
-        return {
+        inMemoryRates = {
           reelRate: typeof parsed.reelRate === 'number' ? parsed.reelRate : DEFAULT_CUSTOMIZER_RATES.reelRate,
           bulkDiscountPercent: typeof parsed.bulkDiscountPercent === 'number' ? parsed.bulkDiscountPercent : DEFAULT_CUSTOMIZER_RATES.bulkDiscountPercent,
           bulkDiscountMinReels: typeof parsed.bulkDiscountMinReels === 'number' ? parsed.bulkDiscountMinReels : DEFAULT_CUSTOMIZER_RATES.bulkDiscountMinReels,
@@ -128,25 +134,31 @@ function getStoredCustomizerRates() {
             ...(parsed.addons || {})
           }
         };
+        return inMemoryRates;
       }
     }
   } catch (e) {
     console.warn('Error reading customizer rates:', e);
   }
-  return DEFAULT_CUSTOMIZER_RATES;
+  inMemoryRates = JSON.parse(JSON.stringify(DEFAULT_CUSTOMIZER_RATES));
+  return inMemoryRates;
 }
 
 function saveStoredCustomizerRates(rates) {
+  if (rates && typeof rates === 'object') {
+    inMemoryRates = rates;
+  }
   try {
     localStorage.setItem('bongbangla_customizer_rates', JSON.stringify(rates));
   } catch (e) {
     console.error('Error saving customizer rates:', e);
   }
   if (typeof window !== 'undefined' && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.saveCustomizerRates === 'function') {
-    window.BongBanglaSupabase.saveCustomizerRates(rates).catch(err => {
+    return window.BongBanglaSupabase.saveCustomizerRates(rates).catch(err => {
       console.warn('Supabase saveCustomizerRates notice:', err);
     });
   }
+  return Promise.resolve(false);
 }
 
 // Fallback reference for legacy code
@@ -160,35 +172,50 @@ function toBnNum(num) {
 }
 
 function getStoredPackages() {
+  if (inMemoryPackages && Array.isArray(inMemoryPackages) && inMemoryPackages.length > 0) {
+    return inMemoryPackages;
+  }
   try {
     const raw = localStorage.getItem('bongbangla_packages');
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        inMemoryPackages = parsed;
+        return inMemoryPackages;
       }
     }
   } catch (e) {
     console.warn('Error reading packages:', e);
   }
-  return DEFAULT_PACKAGES;
+  inMemoryPackages = JSON.parse(JSON.stringify(DEFAULT_PACKAGES));
+  return inMemoryPackages;
 }
 
 function saveStoredPackages(packages) {
+  if (Array.isArray(packages) && packages.length > 0) {
+    inMemoryPackages = packages;
+  }
   try {
     localStorage.setItem('bongbangla_packages', JSON.stringify(packages));
   } catch (e) {
     console.error('Error saving packages:', e);
   }
   if (typeof window !== 'undefined' && window.BongBanglaSupabase && typeof window.BongBanglaSupabase.savePackages === 'function') {
-    window.BongBanglaSupabase.savePackages(packages).catch(err => {
+    return window.BongBanglaSupabase.savePackages(packages).catch(err => {
       console.warn('Supabase savePackages notice:', err);
     });
   }
+  return Promise.resolve(false);
 }
 
-async function syncCloudPackagesAndRates() {
-  if (typeof window === 'undefined' || !window.BongBanglaSupabase) return;
+async function syncCloudPackagesAndRates(retryCount = 0) {
+  if (typeof window === 'undefined') return;
+  if (!window.BongBanglaSupabase) {
+    if (retryCount < 5) {
+      setTimeout(() => syncCloudPackagesAndRates(retryCount + 1), 500);
+    }
+    return;
+  }
   try {
     const [cloudPkgs, cloudRates] = await Promise.allSettled([
       typeof window.BongBanglaSupabase.fetchPackages === 'function' ? window.BongBanglaSupabase.fetchPackages() : Promise.resolve(null),
@@ -196,18 +223,43 @@ async function syncCloudPackagesAndRates() {
     ]);
 
     let changed = false;
-    if (cloudPkgs.status === 'fulfilled' && Array.isArray(cloudPkgs.value) && cloudPkgs.value.length > 0) {
-      changed = true;
+    if (cloudPkgs.status === 'fulfilled') {
+      if (Array.isArray(cloudPkgs.value) && cloudPkgs.value.length > 0) {
+        inMemoryPackages = cloudPkgs.value;
+        try { localStorage.setItem('bongbangla_packages', JSON.stringify(cloudPkgs.value)); } catch(e) {}
+        changed = true;
+      } else if (cloudPkgs.value === null) {
+        // Auto-seed to Supabase if missing
+        if (typeof window.BongBanglaSupabase.savePackages === 'function') {
+          window.BongBanglaSupabase.savePackages(DEFAULT_PACKAGES).catch(() => {});
+        }
+      }
     }
-    if (cloudRates.status === 'fulfilled' && cloudRates.value && typeof cloudRates.value === 'object') {
-      CUSTOMIZER_RATES = getStoredCustomizerRates();
-      changed = true;
+
+    if (cloudRates.status === 'fulfilled') {
+      if (cloudRates.value && typeof cloudRates.value === 'object') {
+        inMemoryRates = cloudRates.value;
+        try { localStorage.setItem('bongbangla_customizer_rates', JSON.stringify(cloudRates.value)); } catch(e) {}
+        CUSTOMIZER_RATES = inMemoryRates;
+        changed = true;
+      } else if (cloudRates.value === null) {
+        // Auto-seed to Supabase if missing
+        if (typeof window.BongBanglaSupabase.saveCustomizerRates === 'function') {
+          window.BongBanglaSupabase.saveCustomizerRates(DEFAULT_CUSTOMIZER_RATES).catch(() => {});
+        }
+      }
     }
 
     if (changed) {
       console.log('⚡ Synced packages & customizer rates from Supabase Cloud');
       renderReadyPackages();
       updateCustomizerUI();
+      if (typeof window.renderAdminPackages === 'function') {
+        try { window.renderAdminPackages(); } catch(e) {}
+      }
+      if (typeof window.renderAdminCustomizerRates === 'function') {
+        try { window.renderAdminCustomizerRates(); } catch(e) {}
+      }
     }
   } catch (err) {
     console.warn('Cloud pricing sync notice:', err);
@@ -276,7 +328,8 @@ function renderReadyPackages() {
   container.innerHTML = packages.map(pkg => {
     const isFeatured = !!pkg.isFeatured;
     const badgeText = pkg.badge || (isFeatured ? 'জনপ্রিয় চয়েস' : 'প্যাকেজ');
-    const priceDisplay = pkg.price.startsWith('৳') ? pkg.price : `৳ ${pkg.price}`;
+    const rawPrice = pkg.price != null ? String(pkg.price).trim() : '০';
+    const priceDisplay = rawPrice.startsWith('৳') ? rawPrice : `৳ ${rawPrice}`;
 
     const cardClasses = isFeatured
       ? 'glass-panel p-6 sm:p-8 rounded-3xl border-2 border-[#ED96D7] relative flex flex-col justify-between shadow-2xl shadow-[#ED96D7]/35 bg-gradient-to-b from-white via-[#fff8fa] to-[#fce7f3] hover:scale-[1.02] transition-all'
@@ -701,16 +754,17 @@ window.BongBanglaPackages = {
 };
 
 if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      if (document.getElementById('pricing')) {
-        initCustomPackageBuilder();
-      }
-    });
-  } else {
+  const initFn = () => {
     if (document.getElementById('pricing')) {
       initCustomPackageBuilder();
+    } else {
+      syncCloudPackagesAndRates();
     }
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFn);
+  } else {
+    initFn();
   }
 }
 

@@ -4258,12 +4258,18 @@ function getAdminPackages() {
   }
   try {
     const raw = localStorage.getItem('bongbangla_packages');
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
   } catch (e) {}
+  if (window.BongBanglaPackages && Array.isArray(window.BongBanglaPackages.DEFAULT_PACKAGES)) {
+    return window.BongBanglaPackages.DEFAULT_PACKAGES;
+  }
   return [];
 }
 
-function saveAdminPackages(packages) {
+async function saveAdminPackages(packages) {
   if (window.BongBanglaPackages && typeof window.BongBanglaPackages.saveStoredPackages === 'function') {
     window.BongBanglaPackages.saveStoredPackages(packages);
   } else {
@@ -4272,7 +4278,11 @@ function saveAdminPackages(packages) {
     } catch (e) {}
   }
   if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.savePackages === 'function') {
-    window.BongBanglaSupabase.savePackages(packages).catch(err => console.warn('Supabase savePackages notice:', err));
+    try {
+      await window.BongBanglaSupabase.savePackages(packages);
+    } catch (err) {
+      console.warn('Supabase savePackages notice:', err);
+    }
   }
 }
 
@@ -4301,7 +4311,8 @@ function renderAdminPackages() {
   grid.innerHTML = packages.map(pkg => {
     const isFeatured = !!pkg.isFeatured;
     const badgeText = pkg.badge || (isFeatured ? 'জনপ্রিয় চয়েস' : '');
-    const priceDisplay = pkg.price.startsWith('৳') ? pkg.price : `৳ ${pkg.price}`;
+    const rawPrice = pkg.price != null ? String(pkg.price).trim() : '০';
+    const priceDisplay = rawPrice.startsWith('৳') ? rawPrice : `৳ ${rawPrice}`;
 
     const featuresHtml = (pkg.features || []).map(f => `
       <li class="flex items-start gap-2">
@@ -4462,7 +4473,7 @@ window.closePackageModal = function() {
   if (modal) modal.classList.add('hidden');
 };
 
-window.savePackageFromModal = function(e) {
+window.savePackageFromModal = async function(e) {
   if (e) {
     e.preventDefault();
     e.stopPropagation();
@@ -4517,7 +4528,7 @@ window.savePackageFromModal = function(e) {
     packages.push(packageObj);
   }
 
-  saveAdminPackages(packages);
+  await saveAdminPackages(packages);
   closePackageModal();
   renderAdminPackages();
 
@@ -4525,14 +4536,14 @@ window.savePackageFromModal = function(e) {
     window.BongBanglaPackages.renderReadyPackages();
   }
 
-  showAdminToast('প্যাকেজ তথ্য সফলভাবে সেভ করা হয়েছে!', 'success');
+  showAdminToast('প্যাকেজ তথ্য সফলভাবে ক্লাউড ও ওয়েবসাইটে সেভ করা হয়েছে!', 'success');
   return false;
 };
 
-window.deleteAdminPackage = function(id) {
+window.deleteAdminPackage = async function(id) {
   if (!confirm('আপনি কি এই প্যাকেজটি মুছে ফেলতে চান?')) return;
   let packages = getAdminPackages().filter(p => p.id !== id);
-  saveAdminPackages(packages);
+  await saveAdminPackages(packages);
   renderAdminPackages();
   if (window.BongBanglaPackages && typeof window.BongBanglaPackages.renderReadyPackages === 'function') {
     window.BongBanglaPackages.renderReadyPackages();
@@ -4540,10 +4551,10 @@ window.deleteAdminPackage = function(id) {
   showAdminToast('প্যাকেজটি সফলভাবে মুছে ফেলা হয়েছে!', 'info');
 };
 
-window.resetAdminPackagesToDefault = function() {
+window.resetAdminPackagesToDefault = async function() {
   if (!confirm('আপনি কি সব কাস্টম প্যাকেজ মুছে BongBangla-র ৩টি মূল ডিফল্ট প্যাকেজ রিস্টোর করতে চান?')) return;
   const def = (window.BongBanglaPackages && window.BongBanglaPackages.DEFAULT_PACKAGES) ? window.BongBanglaPackages.DEFAULT_PACKAGES : [];
-  saveAdminPackages(def);
+  await saveAdminPackages(def);
   renderAdminPackages();
   if (window.BongBanglaPackages && typeof window.BongBanglaPackages.renderReadyPackages === 'function') {
     window.BongBanglaPackages.renderReadyPackages();
@@ -4627,7 +4638,7 @@ function renderAdminCustomizerRates() {
   }
 }
 
-function saveAdminCustomizerRates(e) {
+async function saveAdminCustomizerRates(e) {
   if (e) {
     e.preventDefault();
     e.stopPropagation();
@@ -4695,7 +4706,11 @@ function saveAdminCustomizerRates(e) {
     } catch (e) {}
   }
   if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.saveCustomizerRates === 'function') {
-    window.BongBanglaSupabase.saveCustomizerRates(updatedRates).catch(err => console.warn('Supabase saveCustomizerRates notice:', err));
+    try {
+      await window.BongBanglaSupabase.saveCustomizerRates(updatedRates);
+    } catch (err) {
+      console.warn('Supabase saveCustomizerRates notice:', err);
+    }
   }
 
   renderAdminCustomizerRates();

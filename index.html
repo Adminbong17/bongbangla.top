@@ -946,7 +946,98 @@
       <!-- 1. Ready-Made Bundles View -->
       <div id="pricing-ready-view" class="transition-all duration-300">
         <div id="pricing-cards-container" class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-          <!-- Dynamically populated by js/packages.js with fallback packages -->
+          <!-- Card 1: Starter -->
+          <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-[#ED96D7]/30 flex flex-col justify-between hover:border-[#db2777] transition-all bg-white shadow-sm hover:shadow-xl hover:scale-[1.01]">
+            <div>
+              <span class="text-xs font-bold text-[#db2777] uppercase tracking-widest font-bangla">স্টার্টার প্যাক</span>
+              <h3 class="font-bangla font-extrabold text-xl sm:text-2xl text-[#2b0e23] mt-1">ভাইরাল রিলস ও সোশ্যাল বাজ</h3>
+              <p class="text-[#8c4f75] text-xs mt-2 font-bangla font-medium leading-relaxed">নতুন পণ্য লঞ্চ, এফ-কমার্স ড্রপ ও দৈনিক সোশ্যাল মিডিয়া কন্টেন্টের জন্য পারফেক্ট।</p>
+              <div class="mt-5 mb-5">
+                <span class="font-heading font-extrabold text-2xl sm:text-3xl text-[#2b0e23]">৳ ২৫,০০০</span>
+                <span class="text-[#8c4f75] text-xs font-bangla font-semibold"> / ফুল ক্যাম্পেইন</span>
+              </div>
+              <ul class="space-y-2.5 text-xs text-[#572449] border-t border-[#ED96D7]/20 pt-5 font-bangla font-medium">
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-emerald-600 text-xs mt-0.5 shrink-0"></i><span>৬টি হাই-কনভার্টিং ভাইরাল রিলস (৯:১৬)</span></li>
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-emerald-600 text-xs mt-0.5 shrink-0"></i><span>১ জন মডেল অন্তর্ভুক্ত</span></li>
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-emerald-600 text-xs mt-0.5 shrink-0"></i><span>ট্রেন্ডিং মিউজিক ও ডায়নামিক ক্যাপশন</span></li>
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-emerald-600 text-xs mt-0.5 shrink-0"></i><span>১০টি হাই-রেজ্যুলেশন স্টিল ফটো</span></li>
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-emerald-600 text-xs mt-0.5 shrink-0"></i><span>৪ কর্মদিবসের মধ্যে ডেলিভারি</span></li>
+              </ul>
+            </div>
+            <div class="pt-6 space-y-2.5">
+              <button type="button" class="open-booking-modal w-full btn-secondary-glass py-3.5 rounded-xl font-bangla text-xs font-bold tracking-wider shadow-sm flex items-center justify-center gap-1.5 transition-all" onclick="selectPackageForBooking('ভাইরাল রিলস ও সোশ্যাল বাজ', '৳ ২৫,০০০')">
+                <i class="fa-solid fa-calendar-check text-xs"></i>
+                <span>এই প্যাকেজটি সিলেক্ট করুন</span>
+              </button>
+              <button type="button" class="w-full py-2.5 rounded-xl bg-white hover:bg-[#fff0f6] text-[#db2777] hover:text-[#be185d] border border-[#ED96D7]/50 hover:border-[#db2777] text-xs font-bold font-bangla shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer" onclick="customizePackagePreset('pkg-starter')">
+                <i class="fa-solid fa-sliders text-xs"></i>
+                <span>নিজের মতো কাস্টমাইজ করুন</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 2: Growth (Featured) -->
+          <div class="glass-panel p-6 sm:p-8 rounded-3xl border-2 border-[#ED96D7] relative flex flex-col justify-between shadow-2xl shadow-[#ED96D7]/35 bg-gradient-to-b from-white via-[#fff8fa] to-[#fce7f3] hover:scale-[1.02] transition-all">
+            <div>
+              <div class="absolute -top-3.5 left-1/2 transform -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white text-[10px] font-extrabold uppercase tracking-widest shadow-md font-bangla whitespace-nowrap">
+                ব্র্যান্ডের সর্বাধিক জনপ্রিয়
+              </div>
+              <h3 class="font-bangla font-extrabold text-xl sm:text-2xl text-[#2b0e23] mt-3 sm:mt-1">সিনেমা TVC + ফেসবুক বুস্টিং</h3>
+              <p class="text-[#8c4f75] text-xs mt-2 font-bangla font-medium leading-relaxed">৪K সিনেমা অ্যাড ফিল্ম প্রোডাকশন এবং সেলস দ্বিগুণ করার জন্য মেটা অ্যাডস ম্যানেজমেন্ট।</p>
+              <div class="mt-5 mb-5">
+                <span class="font-heading font-extrabold text-2xl sm:text-3xl text-[#2b0e23] text-[#db2777] royal-text-glow">৳ ৫৫,০০০</span>
+                <span class="text-[#8c4f75] text-xs font-bangla font-semibold"> / ফুল ক্যাম্পেইন</span>
+              </div>
+              <ul class="space-y-2.5 text-xs text-[#572449] border-t border-[#ED96D7]/20 pt-5 font-bangla font-medium">
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-[#db2777] text-xs mt-0.5 shrink-0"></i><span>১টি মেইন ৪K সিনেমা কমার্শিয়াল অ্যাড (৬০ সেকেন্ড)</span></li>
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-[#db2777] text-xs mt-0.5 shrink-0"></i><span>৪টি কাটডাউন শর্ট হুক ভিডিও (অ্যাডের জন্য)</span></li>
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-[#db2777] text-xs mt-0.5 shrink-0"></i><span>২ জন প্রফেশনাল মডেল (নারী ও পুরুষ)</span></li>
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-[#db2777] text-xs mt-0.5 shrink-0"></i><span>স্টুডিও লোকেশন ও সিনেমাটিক লাইটিং রিগ</span></li>
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-[#db2777] text-xs mt-0.5 shrink-0"></i><span>মেকআপ ও হেয়ার আর্টিস্ট অন-সেট</span></li>
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-[#db2777] text-xs mt-0.5 shrink-0"></i><span>১ মাস মেটা অ্যাড ক্যাম্পেইন সেটআপ ও অপটিমাইজেশন</span></li>
+              </ul>
+            </div>
+            <div class="pt-6 space-y-2.5">
+              <button type="button" class="open-booking-modal w-full btn-primary-glow py-3.5 rounded-xl font-bangla text-xs font-bold tracking-wider shadow-sm flex items-center justify-center gap-1.5 transition-all" onclick="selectPackageForBooking('সিনেমা TVC + ফেসবুক বুস্টিং', '৳ ৫৫,০০০')">
+                <i class="fa-solid fa-calendar-check text-xs"></i>
+                <span>এই প্যাকেজটি সিলেক্ট করুন</span>
+              </button>
+              <button type="button" class="w-full py-2.5 rounded-xl bg-white hover:bg-[#fff0f6] text-[#db2777] hover:text-[#be185d] border border-[#ED96D7]/50 hover:border-[#db2777] text-xs font-bold font-bangla shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer" onclick="customizePackagePreset('pkg-growth')">
+                <i class="fa-solid fa-sliders text-xs"></i>
+                <span>নিজের মতো কাস্টমাইজ করুন</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 3: Enterprise -->
+          <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-[#ED96D7]/30 flex flex-col justify-between hover:border-[#db2777] transition-all bg-white shadow-sm hover:shadow-xl hover:scale-[1.01]">
+            <div>
+              <span class="text-xs font-bold text-[#db2777] uppercase tracking-widest font-bangla">৩৬০° এন্টারপ্রাইজ</span>
+              <h3 class="font-bangla font-extrabold text-xl sm:text-2xl text-[#2b0e23] mt-1">পূর্ণাঙ্গ ব্র্যান্ড মিডিয়া সল্যুশন</h3>
+              <p class="text-[#8c4f75] text-xs mt-2 font-bangla font-medium leading-relaxed">অ্যাড ফিল্ম, শাড়ি/বোল্ড শ্যুট, ই-কমার্স ওয়েবসাইট এবং সেলস স্কেলিং রিটেইনার।</p>
+              <div class="mt-5 mb-5">
+                <span class="font-heading font-extrabold text-2xl sm:text-3xl text-[#2b0e23]">৳ ৯৫,০০০</span>
+                <span class="text-[#8c4f75] text-xs font-bangla font-semibold"> / কমপ্লিট সল্যুশন</span>
+              </div>
+              <ul class="space-y-2.5 text-xs text-[#572449] border-t border-[#ED96D7]/20 pt-5 font-bangla font-medium">
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-emerald-600 text-xs mt-0.5 shrink-0"></i><span>একাধিক ৪K সিনেমা কমার্শিয়াল অ্যাড</span></li>
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-emerald-600 text-xs mt-0.5 shrink-0"></i><span>ঐতিহ্যবাহী ও বোল্ড ক্যাটালগ শ্যুট (৩০+ রিটাচড ফটো)</span></li>
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-emerald-600 text-xs mt-0.5 shrink-0"></i><span>১২টি ভাইরাল প্রোডাক্ট রিলস ও শর্ট ভিডিও</span></li>
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-emerald-600 text-xs mt-0.5 shrink-0"></i><span>কাস্টম ব্র্যান্ড ওয়েবসাইট (বিকাশ/নগদ পেমেন্ট সহ)</span></li>
+                <li class="flex items-start gap-2.5"><i class="fa-solid fa-check text-emerald-600 text-xs mt-0.5 shrink-0"></i><span>ডেডিকেটেড ক্রিয়েটিভ ডিরেক্টর সাপোর্ট</span></li>
+              </ul>
+            </div>
+            <div class="pt-6 space-y-2.5">
+              <button type="button" class="open-booking-modal w-full btn-secondary-glass py-3.5 rounded-xl font-bangla text-xs font-bold tracking-wider shadow-sm flex items-center justify-center gap-1.5 transition-all" onclick="selectPackageForBooking('পূর্ণাঙ্গ ব্র্যান্ড মিডিয়া সল্যুশন', '৳ ৯৫,০০০')">
+                <i class="fa-solid fa-calendar-check text-xs"></i>
+                <span>এই প্যাকেজটি সিলেক্ট করুন</span>
+              </button>
+              <button type="button" class="w-full py-2.5 rounded-xl bg-white hover:bg-[#fff0f6] text-[#db2777] hover:text-[#be185d] border border-[#ED96D7]/50 hover:border-[#db2777] text-xs font-bold font-bangla shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer" onclick="customizePackagePreset('pkg-enterprise')">
+                <i class="fa-solid fa-sliders text-xs"></i>
+                <span>নিজের মতো কাস্টমাইজ করুন</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1752,14 +1843,14 @@
   </div>
 
   <!-- Vault Media CDN, Supabase Local Bundle & CDN Fallback, and Main JavaScript Files -->
-  <script src="js/supabase.min.js?v=20261006_v2"></script>
+  <script src="js/supabase.min.js?v=20261007_v1"></script>
   <script>if (!window.supabase) document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>');</script>
-  <script src="js/vault-config.js?v=20261006_v2"></script>
-  <script src="js/supabase-config.js?v=20261006_v2"></script>
-  <script src="js/supabase-client.js?v=20261006_v4"></script>
-  <script src="js/reels.js?v=20261006_v4"></script>
-  <script src="js/packages.js?v=20261006_v4"></script>
-  <script src="js/main.js?v=20261006_v4"></script>
+  <script src="js/vault-config.js?v=20261007_v1"></script>
+  <script src="js/supabase-config.js?v=20261007_v1"></script>
+  <script src="js/supabase-client.js?v=20261007_v1"></script>
+  <script src="js/reels.js?v=20261007_v1"></script>
+  <script src="js/packages.js?v=20261007_v1"></script>
+  <script src="js/main.js?v=20261007_v1"></script>
 </body>
 </html>
 

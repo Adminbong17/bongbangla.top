@@ -877,6 +877,11 @@
       } catch(e) {}
       return cloud;
     }
+    if (typeof window !== 'undefined' && window.BongBanglaPackages && Array.isArray(window.BongBanglaPackages.DEFAULT_PACKAGES)) {
+      const def = window.BongBanglaPackages.DEFAULT_PACKAGES;
+      savePackages(def).catch(() => {});
+      return def;
+    }
     return null;
   }
 
@@ -894,6 +899,11 @@
         localStorage.setItem('bongbangla_customizer_rates', JSON.stringify(cloud));
       } catch(e) {}
       return cloud;
+    }
+    if (typeof window !== 'undefined' && window.BongBanglaPackages && window.BongBanglaPackages.DEFAULT_CUSTOMIZER_RATES) {
+      const def = window.BongBanglaPackages.DEFAULT_CUSTOMIZER_RATES;
+      saveCustomizerRates(def).catch(() => {});
+      return def;
     }
     return null;
   }
