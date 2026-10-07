@@ -382,12 +382,13 @@ async function initReelsPage(options = {}) {
               <i class="fa-solid fa-circle-play"></i>
               <span>রিলসটি প্লে করুন</span>
             </button>
-            <a href="https://wa.me/8801700000000?text=${encodeURIComponent('নমস্কার BongBangla! আমি ' + title + ' (' + clientName + ') এর মতো রিলস শুট করাতে আগ্রহী। বাজেট জানতে চাই।')}" 
-               target="_blank" 
-               class="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 text-xs font-bold border border-emerald-300 flex items-center justify-center transition-all shadow-sm"
+            <button type="button" 
+               onclick="event.stopPropagation(); if (typeof window.openBookingForReel === 'function') { window.openBookingForReel('${encodeURIComponent(title)}', '${encodeURIComponent(clientName)}'); } else { const mBtn=document.querySelector('.open-booking-modal'); if(mBtn) mBtn.click(); else window.location.href='index.html#booking'; }"
+               class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#db2777] to-[#ED96D7] hover:opacity-95 text-white text-xs font-bold font-bangla flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
                title="এইরকম রিলস বুক করুন">
-              <i class="fa-brands fa-whatsapp text-sm"></i>
-            </a>
+              <i class="fa-solid fa-calendar-check text-xs"></i>
+              <span>বুকিং</span>
+            </button>
           </div>
 
         </div>
@@ -561,13 +562,10 @@ function openReelVideoModal(videoUrl, title, client, categoryOrList) {
           <div class="flex-shrink-0 p-3.5 sm:p-4 bg-[#fff8fa] border-t border-[#ED96D7]/30 text-left space-y-2 relative z-20">
             <h4 id="modal-reel-title" class="font-bangla font-bold text-xs sm:text-sm text-[#2b0e23] line-clamp-1"></h4>
             <div class="flex items-center gap-2">
-              <button id="modal-reel-book-btn" type="button" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white font-bangla font-bold text-xs shadow-md hover:opacity-95 flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer">
+              <button id="modal-reel-book-btn" type="button" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#ED96D7] to-[#db2777] text-white font-bangla font-bold text-xs shadow-md hover:opacity-95 flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer">
                 <i class="fa-solid fa-calendar-check"></i>
                 <span>এইরকম শুটিং বুক করুন</span>
               </button>
-              <a id="modal-reel-whatsapp-btn" href="#" target="_blank" class="px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center transition-all shadow-md active:scale-[0.98]" title="WhatsApp-এ মেসেজ দিন">
-                <i class="fa-brands fa-whatsapp text-sm"></i>
-              </a>
             </div>
           </div>
         </div>
@@ -698,7 +696,6 @@ function updateReelModalContent(reel, index, total) {
   const titleElem = modal.querySelector('#modal-reel-title');
   const clientElem = modal.querySelector('#modal-reel-client');
   const counterElem = modal.querySelector('#modal-reel-counter');
-  const waBtn = modal.querySelector('#modal-reel-whatsapp-btn');
 
   const title = reel.title || '৪K কমার্শিয়াল রিলস';
   const client = reel.client || 'BongBangla Production';
@@ -715,9 +712,6 @@ function updateReelModalContent(reel, index, total) {
     videoElem.src = resolvedVideoUrl;
     videoElem.load();
     videoElem.play().catch(() => {});
-  }
-  if (waBtn) {
-    waBtn.href = `https://wa.me/8801700000000?text=${encodeURIComponent('নমস্কার BongBangla! আমি ' + title + ' (' + client + ') ভিডিওটি দেখেছি এবং এইরকম রিল শ্যুট করাতে চাই।')}`;
   }
 
   const catHelper = window.BongBanglaCategorySystem || BongBanglaCategorySystem;

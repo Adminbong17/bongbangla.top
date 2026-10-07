@@ -1,7 +1,7 @@
 /**
  * BongBangla Media & Creative Lab
  * Packages & Pricing Manager + Interactive Custom Package Builder
- * Supports Dynamic Admin Pricing, Live Package Customizer, and Instant Booking/WhatsApp sync
+ * Supports Dynamic Admin Pricing, Live Package Customizer, and Instant Booking & Admin Panel Lead Sync
  */
 
 const DEFAULT_PACKAGES = [
@@ -607,27 +607,6 @@ function updateCustomizerUI() {
     } else {
       addonsElem.textContent = 'কোনো অ্যাড-অনস নেওয়া হয়নি';
     }
-  }
-
-  // 6. Update WhatsApp link
-  const waBtn = document.getElementById('customizer-whatsapp-btn');
-  if (waBtn) {
-    const addonsListStr = calc.selectedAddonDetails.map(a => `• ${a.name} (+৳ ${toBnNum(a.price)})`).join('\n') || 'কোনোটি না';
-    const waMessage = 
-`নমস্কার BongBangla Media!
-আমি ওয়েবসাইট থেকে একটি কাস্টম প্যাকেজ কনফিগার করেছি:
-
-📌 সার্ভিস: ${calc.serviceName} (বেস: ৳ ${toBnNum(calc.serviceBase)})
-🎬 রিলস সংখ্যা: ${calc.reelsCount} টি (৳ ${toBnNum(calc.reelsPrice)})
-👥 মডেল: ${calc.modelName} ${calc.modelPrice > 0 ? `(৳ ${toBnNum(calc.modelPrice)})` : ''}
-✨ অ্যাড-অনস:
-${addonsListStr}
-
-💰 মোট আনুমানিক বাজেট: ৳ ${toBnNum(calc.totalPrice)} BDT
-
-এই কাস্টম প্যাকেজের জন্য বিস্তারিত আলোচনা ও শুটিং স্লট বুক করতে চাই।`;
-
-    waBtn.href = `https://wa.me/8801700000000?text=${encodeURIComponent(waMessage)}`;
   }
 }
 

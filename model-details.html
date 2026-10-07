@@ -94,10 +94,9 @@
             <span>কাস্টিং বুক করুন</span>
           </button>
 
-          <a id="header-whatsapp-btn" href="https://wa.me/8801700000000" target="_blank" class="p-2 sm:px-3.5 sm:py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all" title="WhatsApp-এ যোগাযোগ করুন">
-            <i class="fa-brands fa-whatsapp text-base"></i>
-            <span class="hidden md:inline font-bangla">WhatsApp</span>
-          </a>
+          <button class="open-booking-modal sm:hidden p-2 rounded-xl bg-gradient-to-r from-[#db2777] to-[#ED96D7] text-white font-bold text-xs flex items-center justify-center shadow-sm" title="কাস্টিং বুক করুন">
+            <i class="fa-solid fa-calendar-check text-sm"></i>
+          </button>
 
           <button id="mobile-menu-btn" class="md:hidden p-2 rounded-xl bg-white border border-[#ED96D7]/40 text-[#2b0e23] hover:text-[#db2777]">
             <i class="fa-solid fa-bars-staggered text-lg"></i>
@@ -212,9 +211,9 @@
                 <span id="model-gallery-count-badge" class="px-2 py-0.5 rounded-full bg-white text-[#db2777] text-[10px] font-bold shadow-xs">০+</span>
               </a>
 
-              <a id="model-whatsapp-cta-btn" href="#" target="_blank" class="w-full py-3 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs">
-                <i class="fa-brands fa-whatsapp text-lg text-emerald-600"></i>
-                <span>WhatsApp-এ সরাসরি আলোচনা</span>
+              <a href="#direct-model-booking-section" class="w-full py-3 rounded-2xl bg-white hover:bg-pink-50 text-[#db2777] border border-[#db2777]/30 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs">
+                <i class="fa-solid fa-file-signature text-base text-[#db2777]"></i>
+                <span>কাস্টিং ফর্ম পূরণ করুন</span>
               </a>
 
               <div class="pt-2 text-center text-[11px] text-[#8c4f75] flex items-center justify-center gap-3">
@@ -450,10 +449,10 @@
                 <p class="text-xs text-[#8c4f75] mt-0.5">নিচের ফর্মটি পূরণ করুন — আমাদের কাস্টিং টিম ১ ঘণ্টার মধ্যে শিডিউল ও পেমেন্ট বিবরণ নিয়ে যোগাযোগ করবে।</p>
               </div>
 
-              <a id="section-whatsapp-cta-btn" href="#" target="_blank" class="px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bangla font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md shrink-0">
-                <i class="fa-brands fa-whatsapp text-base"></i>
-                <span>সরাসরি WhatsApp-এ বুক করুন</span>
-              </a>
+              <div class="px-4 py-2.5 rounded-2xl bg-pink-50 border border-pink-200 text-[#db2777] font-bangla font-semibold text-xs flex items-center gap-2 shrink-0">
+                <i class="fa-solid fa-bolt text-[#db2777]"></i>
+                <span>দ্রুত কাস্টিং কনফার্মেশন</span>
+              </div>
             </div>
 
             <form id="direct-model-booking-form" class="space-y-4 text-xs font-bangla bg-white p-5 sm:p-6 rounded-2xl border border-[#ED96D7]/40 shadow-xs">
@@ -470,7 +469,7 @@
                   <input type="text" name="brand" required placeholder="উদাঃ আর্ট অ্যান্ড ফ্যাশন বিডি" class="w-full bg-[#fff8fa] border border-[#ED96D7]/40 rounded-xl px-3.5 py-2.5 text-[#2b0e23] focus:bg-white focus:border-[#db2777] focus:outline-none">
                 </div>
                 <div>
-                  <label class="block text-[#572449] font-bold mb-1">WhatsApp / ফোন নম্বর *</label>
+                  <label class="block text-[#572449] font-bold mb-1">ফোন নম্বর *</label>
                   <input type="tel" name="phone" required placeholder="উদাঃ 017XXXXXXXX" class="w-full bg-[#fff8fa] border border-[#ED96D7]/40 rounded-xl px-3.5 py-2.5 text-[#2b0e23] focus:bg-white focus:border-[#db2777] focus:outline-none">
                 </div>
               </div>
@@ -589,7 +588,7 @@
           <h4 class="font-bold text-[#2b0e23] text-sm mb-3">যোগাযোগ</h4>
           <ul class="space-y-2 text-xs text-[#572449]">
             <li><i class="fa-solid fa-phone text-[#db2777] mr-1.5"></i> +880 1700-000000</li>
-            <li><i class="fa-brands fa-whatsapp text-emerald-600 mr-1.5"></i> +880 1700-000000</li>
+            <li><i class="fa-solid fa-headset text-[#db2777] mr-1.5"></i> হটলাইন সাপোর্ট (10 AM - 8 PM)</li>
             <li><i class="fa-solid fa-envelope text-[#db2777] mr-1.5"></i> hello@bongbangla.top</li>
             <li><i class="fa-solid fa-location-dot text-[#db2777] mr-1.5"></i> বনানী, ঢাকা, বাংলাদেশ</li>
           </ul>
@@ -637,10 +636,10 @@
         <button type="button" id="slider-audio-btn" onclick="toggleSliderAudio()" class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/15 hover:bg-[#db2777] text-white flex items-center justify-center text-sm transition-all shadow-md border border-white/20 cursor-pointer hidden" title="সাউন্ড চালু/বন্ধ করুন">
           <i id="slider-audio-icon" class="fa-solid fa-volume-xmark"></i>
         </button>
-        <a id="slider-whatsapp-btn" href="https://wa.me/8801700000000" target="_blank" class="px-3.5 py-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition-all font-bangla">
-          <i class="fa-brands fa-whatsapp text-sm"></i>
+        <button type="button" onclick="closeGallerySliderModal(); const bModal = document.getElementById('booking-modal'); if (bModal) bModal.classList.remove('hidden');" class="px-3.5 py-2 rounded-full bg-gradient-to-r from-[#db2777] to-[#ED96D7] text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition-all font-bangla hover:opacity-95 cursor-pointer">
+          <i class="fa-solid fa-calendar-check text-sm"></i>
           <span class="hidden sm:inline">এই শ্যুটটি বুক করুন</span>
-        </a>
+        </button>
         <button type="button" onclick="closeGallerySliderModal()" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/15 hover:bg-[#db2777] text-white flex items-center justify-center text-lg sm:text-xl transition-all shadow-lg hover:scale-105 active:scale-95 border border-white/20 cursor-pointer" title="বন্ধ করুন (Esc)">
           <i class="fa-solid fa-xmark"></i>
         </button>
@@ -707,7 +706,7 @@
           <input type="text" name="brand" required placeholder="উদাঃ জামদানি হাউস" class="w-full bg-[#fff8fa] border border-[#ED96D7]/40 rounded-xl px-3.5 py-2 text-[#2b0e23] focus:border-[#db2777] focus:outline-none">
         </div>
         <div>
-          <label class="block font-bold text-[#572449] mb-1">ফোন / WhatsApp নম্বর *</label>
+          <label class="block font-bold text-[#572449] mb-1">ফোন নম্বর *</label>
           <input type="tel" name="phone" required placeholder="উদাঃ 017XXXXXXXX" class="w-full bg-[#fff8fa] border border-[#ED96D7]/40 rounded-xl px-3.5 py-2 text-[#2b0e23] focus:border-[#db2777] focus:outline-none">
         </div>
         <button type="submit" id="booking-submit-btn" class="w-full py-3 rounded-xl btn-primary-glow font-bold text-xs shadow-md">
@@ -1032,13 +1031,6 @@
       if (formModelId) formModelId.value = model.id;
       if (formModelName) formModelName.value = model.name;
 
-      // WhatsApp links
-      const waMsg = encodeURIComponent(`নমস্কার/সালাম BongBangla! আমি মডেল "${model.name}" (ID: ${model.id})-কে আমাদের পরবর্তী ব্র্যান্ড শ্যুটের জন্য বুক করতে চাই।`);
-      const waBtn = document.getElementById('model-whatsapp-cta-btn');
-      const headerWaBtn = document.getElementById('header-whatsapp-btn');
-      if (waBtn) waBtn.href = `https://wa.me/8801700000000?text=${waMsg}`;
-      if (headerWaBtn) headerWaBtn.href = `https://wa.me/8801700000000?text=${waMsg}`;
-
       // Handle Direct Form Submission
       const directForm = document.getElementById('direct-model-booking-form');
       if (directForm && !directForm.dataset.initialized) {
@@ -1086,7 +1078,7 @@
             alert(`ধন্যবাদ ${leadData.name}! মডেল "${model.name}"-এর জন্য আপনার কাস্টিং রিকোয়েস্ট সফলভাবে জমা হয়েছে। আমাদের টিম দ্রুত আপনার সাথে যোগাযোগ করবে।`);
             directForm.reset();
           } catch(err) {
-            alert('সাবমিট করতে সমস্যা হয়েছে। অনুগ্রহ করে WhatsApp বাটনে ক্লিক করে সরাসরি যোগাযোগ করুন।');
+            alert('সাবমিট করতে সাময়িক সমস্যা হয়েছে। অনুগ্রহ করে পুনরায় চেষ্টা করুন অথবা আমাদের হটলাইনে কল করুন।');
           } finally {
             if (submitBtn) {
               submitBtn.disabled = false;
@@ -1145,7 +1137,7 @@
             const modal = document.getElementById('booking-modal');
             if (modal) modal.classList.add('hidden');
           } catch(err) {
-            alert('সাবমিট করতে সমস্যা হয়েছে। অনুগ্রহ করে WhatsApp বাটনে ক্লিক করে সরাসরি যোগাযোগ করুন।');
+            alert('সাবমিট করতে সাময়িক সমস্যা হয়েছে। অনুগ্রহ করে পুনরায় চেষ্টা করুন অথবা আমাদের হটলাইনে কল করুন।');
           } finally {
             if (submitBtn) {
               submitBtn.disabled = false;
@@ -1984,21 +1976,15 @@
         }
       }
 
-      // Audio & WhatsApp Header Actions
+      // Audio Header Actions
       const audioBtn = document.getElementById('slider-audio-btn');
       const audioIcon = document.getElementById('slider-audio-icon');
-      const waBtn = document.getElementById('slider-whatsapp-btn');
 
       if (audioBtn) {
         audioBtn.classList.toggle('hidden', !isVideo);
       }
       if (audioIcon && vidEl) {
         audioIcon.className = vidEl.muted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high text-emerald-400';
-      }
-      if (waBtn) {
-        const activeName = window.currentActiveModel ? window.currentActiveModel.name : 'মডেল';
-        const itemTitle = item.title || (isVideo ? 'ভিডিও রিলস' : 'ফটো পোর্টফোলিও');
-        waBtn.href = `https://wa.me/8801700000000?text=${encodeURIComponent('নমস্কার BongBangla! আমি ' + activeName + '-এর ' + itemTitle + ' দেখে এই ধরনের শুটের জন্য বুকিং করতে চাই।')}`;
       }
 
       // Render Thumbnail Strip (Only show when there is more than 1 item)

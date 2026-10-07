@@ -25,13 +25,13 @@
    - Previews commercial, editorial, beauty, and athletic model profiles with height and experience metrics.
 6. **Interactive Project Cost & Timeline Calculator**:
    - Clients can choose their desired services, extra models, currency (`BDT`, `USD`, `INR`), and add-ons (Drone, MUA, studio rental).
-   - Generates instant quote and 1-click formatted inquiry directly to **WhatsApp**.
+    - Generates instant quote and 1-click booking inquiry directly to the **Admin Panel**.
 7. **Pre-Built Transparent Pricing Packages**:
    - *Starter Pack* (Reels & Social Buzz)
    - *Brand Growth Suite* (Cinema TVC + Meta Ads) - Highlighted tier
    - *Complete 360° Brand Empire*
 8. **Client Testimonials & FAQ Accordion**.
-9. **Direct Contact Section & Booking Modal** with WhatsApp lead integration.
+9. **Direct Contact Section & Booking Modal** with Supabase Cloud & Admin Panel lead management.
 
 ---
 
@@ -51,11 +51,10 @@ Then open `http://localhost:3000` in your browser.
 
 ---
 
-## ⚙️ How to Customize Contact & WhatsApp Details
+## ⚙️ How to Customize Contact Details
 
-### 1. Update WhatsApp Number
-Search for `8801700000000` in [`index.html`](file:///d:/bongbeauty/index.html) and [`js/main.js`](file:///d:/bongbeauty/js/main.js):
-- Change `8801700000000` to your actual WhatsApp phone number with country code (e.g. `8801XXXXXXXXX` for Bangladesh or `91XXXXXXXXXX` for India).
+### 1. Inquiries & Admin Lead Routing
+All client inquiries and bookings from the website automatically sync to Supabase and appear in real-time in the [`admin.html`](file:///d:/bongbeauty/admin.html) dashboard.
 
 ### 2. Update Email & Address
 In [`index.html`](file:///d:/bongbeauty/index.html):

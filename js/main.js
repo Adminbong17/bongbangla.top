@@ -401,12 +401,11 @@ function renderFrontendPortfolio(filter = 'all', preloadedReels = null) {
             <i class="fa-solid fa-circle-play text-[11px]"></i>
             <span>রিলসটি প্লে করুন</span>
           </button>
-          <a href="https://wa.me/8801700000000?text=${encodeURIComponent('নমস্কার BongBangla! আমি ' + title + ' (' + client + ') এর মতো ভিডিও শ্যুট করাতে আগ্রহী। বাজেট জানতে চাই।')}" 
-             target="_blank" onclick="event.stopPropagation()"
-             class="w-9 h-9 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center transition-all shadow-xs shrink-0"
-             title="WhatsApp-এ বাজেট আলোচনা">
-            <i class="fa-brands fa-whatsapp text-base"></i>
-          </a>
+          <button type="button" onclick="event.stopPropagation(); if(typeof window.openBookingForReel==='function'){window.openBookingForReel('${encodeURIComponent(title)}', '${encodeURIComponent(client)}');}else{const mBtn=document.querySelector('.open-booking-modal'); if(mBtn) mBtn.click();}" 
+             class="w-9 h-9 rounded-xl bg-gradient-to-r from-[#db2777] to-[#ED96D7] hover:opacity-95 text-white flex items-center justify-center transition-all shadow-xs shrink-0 cursor-pointer"
+             title="বাজেট আলোচনা ও বুকিং">
+            <i class="fa-solid fa-calendar-check text-sm"></i>
+          </button>
         </div>
       </div>
     `;
@@ -788,9 +787,7 @@ function initEstimator() {
   const currencySelect = document.getElementById('estimator-currency');
   
   const estimatedPriceEl = document.getElementById('estimated-price-display');
-  const estimatedDaysEl = document.getElementById('estimated-days-display');
-  const estimatedSummaryEl = document.getElementById('estimator-selected-summary');
-  const whatsappQuoteBtn = document.getElementById('whatsapp-quote-btn');
+  const quoteBookingBtn = document.getElementById('book-quote-btn');
 
   // Rates in BDT base
   const rates = {
@@ -871,13 +868,36 @@ function initEstimator() {
       estimatedSummaryEl.innerHTML = `<span class="text-[#f59e0b] font-bold">প্যাকেজে অন্তর্ভুক্ত:</span> ` + selectedNames.join(' • ');
     }
 
-    // Update WhatsApp link
-    if (whatsappQuoteBtn) {
-      const phone = '8801700000000';
-      const text = encodeURIComponent(
-        `নমস্কার/সালাম BongBangla টিম!\n\nআমি bongbangla.top ওয়েবসাইট থেকে একটি প্রজেক্টের বাজেট এস্টিমেট করেছি:\n- সার্ভিসসমূহ: ${selectedNames.join(', ')}\n- আনুমানিক বাজেট: ${currencyInfo.symbol} ${finalAmount.toLocaleString()} (${curr})\n- ডেলিভারি সময়কাল: ~${maxDays} দিন\n\nআমাদের ব্র্যান্ডের শুটিং শিডিউল ও বুকিং কনফার্ম করতে চাই।`
-      );
-      whatsappQuoteBtn.href = `https://wa.me/${phone}?text=${text}`;
+    // Update Booking Quote Button (saves directly to Admin Panel via Booking Modal)
+    if (quoteBookingBtn) {
+      quoteBookingBtn.onclick = function(e) {
+        e.preventDefault();
+        const bookingModal = document.getElementById('booking-modal');
+        if (bookingModal) {
+          bookingModal.classList.remove('hidden');
+          document.body.classList.add('overflow-hidden');
+
+          const notesEl = bookingModal.querySelector('textarea[name="notes"]');
+          if (notesEl) {
+            notesEl.value = `বাজেট এস্টিমেট বুকিং:\n- সার্ভিসসমূহ: ${selectedNames.length ? selectedNames.join(', ') : 'সাধারণ ইনকোয়ারি'}\n- আনুমানিক বাজেট: ${currencyInfo.symbol} ${finalAmount.toLocaleString()} (${curr})\n- সম্ভাব্য সময়কাল: ~${maxDays} দিন`;
+          }
+
+          const serviceSelect = document.getElementById('modal-service-select');
+          if (serviceSelect && selectedNames.length > 0) {
+            // Pick appropriate matching service if exists
+            if (selectedNames[0].includes('সিনেমা') || selectedNames[0].includes('Cinema')) {
+              serviceSelect.value = 'সিনেমা অ্যাড ফিল্ম (মডেলসহ)';
+            } else if (selectedNames[0].includes('রিলস') || selectedNames[0].includes('Reel')) {
+              serviceSelect.value = 'ভাইরাল প্রোডাক্ট রিলস প্যাক';
+            } else if (selectedNames[0].includes('শাড়ি') || selectedNames[0].includes('Fashion')) {
+              serviceSelect.value = 'শাড়ি, জামদানি ও বোল্ড শ্যুট';
+            }
+          }
+
+          const nameInput = bookingModal.querySelector('input[name="name"]');
+          if (nameInput) setTimeout(() => nameInput.focus(), 150);
+        }
+      };
     }
   }
 
@@ -1071,23 +1091,15 @@ function handleFormSubmit(form, isModal) {
     }
   }
 
-  // Direct WhatsApp dispatch option
-  const agencyPhone = '8801700000000';
-  const message = encodeURIComponent(
-    `🔥 নতুন শুটিং ইনকোয়ারি (BongBangla Website)\n\nক্লায়েন্ট: ${name}\nব্র্যান্ড: ${brand}\nমোবাইল/WhatsApp: ${phone}\nসার্ভিস: ${service}\nবাজেট: ${budget}\nপ্রজেক্ট বিবরণ: ${notes}`
-  );
-  
-  showToast(`ধন্যবাদ ${name}! আপনার ইনকোয়ারি সেভ হয়েছে এবং ক্রিয়েটিভ ডিরেক্টরের সাথে WhatsApp কানেক্ট হচ্ছে...`);
+  // Confirmation Toast & Form Reset (Direct Admin/Supabase Lead Sync)
+  showToast(`ধন্যবাদ ${name}! আপনার ইনকোয়ারি সফলভাবে জমা হয়েছে। আমাদের টিম খুব শীঘ্রই আপনার সাথে যোগাযোগ করবে।`);
 
-  setTimeout(() => {
-    try {
-      window.open(`https://wa.me/${agencyPhone}?text=${message}`, '_blank');
-    } catch(e) {}
-    form.reset();
-    if (isModal) {
+  form.reset();
+  if (isModal) {
+    setTimeout(() => {
       closeBookingModal();
-    }
-  }, 1200);
+    }, 1200);
+  }
 }
 
 /* ==========================================================================
