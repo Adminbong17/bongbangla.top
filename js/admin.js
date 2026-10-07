@@ -3477,6 +3477,30 @@ function extractInstagramMediaFromHtml(html, textFallback = '') {
     return cleaned;
   }
 
+  function isCroppedUrl(u) {
+    if (!u || typeof u !== 'string') return false;
+    return /[\/_]c\d+\.|\bs\d+x\d+\b|stp=c\d+\.|\/c\d+\.|\/s640x640\/|\/p640x640\/|_s640x640_|_s320x320_|_s150x150_/i.test(u);
+  }
+
+  function getBestPhotoUrl(node) {
+    if (!node || typeof node !== 'object') return '';
+    // 1. Check display_resources (highest resolution uncropped from GraphQL)
+    if (Array.isArray(node.display_resources) && node.display_resources.length > 0) {
+      const sorted = [...node.display_resources].sort((a, b) => (b.config_width || 0) - (a.config_width || 0));
+      const uncropped = sorted.find(r => r && r.src && !isCroppedUrl(r.src));
+      if (uncropped && uncropped.src) return uncropped.src;
+      if (sorted[0] && sorted[0].src) return sorted[0].src;
+    }
+    // 2. Check image_versions2 candidates (highest resolution uncropped from ScheduledServerJS/API)
+    if (node.image_versions2 && Array.isArray(node.image_versions2.candidates) && node.image_versions2.candidates.length > 0) {
+      const sorted = [...node.image_versions2.candidates].sort((a, b) => (b.width || 0) - (a.width || 0));
+      const uncropped = sorted.find(c => c && c.url && !isCroppedUrl(c.url));
+      if (uncropped && uncropped.url) return uncropped.url;
+      if (sorted[0] && sorted[0].url) return sorted[0].url;
+    }
+    return node.display_url || '';
+  }
+
   function addMedia(type, url, thumbnail, title) {
     if (!url || typeof url !== 'string') return;
     const cleanUrl = url.replace(/\\u0026/g, '&').replace(/\\\//g, '/').replace(/&amp;/g, '&');
@@ -3546,21 +3570,29 @@ function extractInstagramMediaFromHtml(html, textFallback = '') {
 
           // Extract Carousel Children
           if (sc.edge_sidecar_to_children && sc.edge_sidecar_to_children.edges && Array.isArray(sc.edge_sidecar_to_children.edges)) {
-            sc.edge_sidecar_to_children.edges.forEach(edge => {
+            sc.edge_sidecar_to_children.edges.forEach((edge, idx) => {
               const n = edge.node;
               if (!n) return;
               if (n.is_video && n.video_url) {
-                addMedia('video', n.video_url, n.display_url, n.accessibility_caption || 'Instagram Reel');
-              } else if (n.display_url) {
-                addMedia('photo', n.display_url, n.display_url, n.accessibility_caption || 'Instagram Photo');
+                const thumb = getBestPhotoUrl(n) || n.display_url;
+                addMedia('video', n.video_url, thumb, n.accessibility_caption || `Instagram Reel #${idx + 1}`);
+              } else {
+                const bestImg = getBestPhotoUrl(n) || n.display_url;
+                if (bestImg) {
+                  addMedia('photo', bestImg, bestImg, n.accessibility_caption || `Instagram Photo #${idx + 1}`);
+                }
               }
             });
           } else {
             // Single photo or reel
             if (sc.is_video && sc.video_url) {
-              addMedia('video', sc.video_url, sc.display_url, sc.accessibility_caption || 'Instagram Reel');
-            } else if (sc.display_url) {
-              addMedia('photo', sc.display_url, sc.display_url, sc.accessibility_caption || 'Instagram Photo');
+              const thumb = getBestPhotoUrl(sc) || sc.display_url;
+              addMedia('video', sc.video_url, thumb, sc.accessibility_caption || 'Instagram Reel');
+            } else {
+              const bestImg = getBestPhotoUrl(sc) || sc.display_url;
+              if (bestImg) {
+                addMedia('photo', bestImg, bestImg, sc.accessibility_caption || 'Instagram Photo');
+              }
             }
           }
         }
@@ -3593,20 +3625,21 @@ function extractInstagramMediaFromHtml(html, textFallback = '') {
             if (obj.video_versions && Array.isArray(obj.video_versions) && obj.video_versions.length > 0) {
               const bestVideo = obj.video_versions[0];
               if (bestVideo && bestVideo.url) {
-                let thumb = '';
-                if (obj.image_versions2 && obj.image_versions2.candidates && obj.image_versions2.candidates[0]) {
-                  thumb = obj.image_versions2.candidates[0].url;
-                }
+                const thumb = getBestPhotoUrl(obj) || (obj.image_versions2 && obj.image_versions2.candidates && obj.image_versions2.candidates[0] ? obj.image_versions2.candidates[0].url : '');
                 addMedia('video', bestVideo.url, thumb, obj.accessibility_caption || 'Instagram Reel');
               }
             }
 
             // Check for Photo
-            if (obj.image_versions2 && obj.image_versions2.candidates && Array.isArray(obj.image_versions2.candidates) && obj.image_versions2.candidates.length > 0) {
+            if (
+              (obj.image_versions2 && obj.image_versions2.candidates && Array.isArray(obj.image_versions2.candidates) && obj.image_versions2.candidates.length > 0) ||
+              (obj.display_resources && obj.display_resources.length > 0) ||
+              obj.display_url
+            ) {
               if (!obj.video_versions || obj.video_versions.length === 0) {
-                const bestImg = obj.image_versions2.candidates[0];
-                if (bestImg && bestImg.url) {
-                  addMedia('photo', bestImg.url, bestImg.url, obj.accessibility_caption || 'Instagram Photo');
+                const bestImg = getBestPhotoUrl(obj);
+                if (bestImg) {
+                  addMedia('photo', bestImg, bestImg, obj.accessibility_caption || 'Instagram Photo');
                 }
               }
             }
@@ -3626,8 +3659,24 @@ function extractInstagramMediaFromHtml(html, textFallback = '') {
       const combined = html + '\n' + textFallback;
       const cdnRegex = /https:[\\\/]+[a-z0-9.-]*scontent[a-z0-9.-]*\.cdninstagram\.com[\\\/]v[\\\/]t51\.[0-9-]+[\\\/][^"'\s\)]+/gi;
       const cdnMatches = combined.match(cdnRegex) || [];
+
+      // Group matches by file/post identifier (e.g. "713783312_18357439807245832")
+      const groups = new Map();
       for (const m of cdnMatches) {
-        addMedia('photo', m, m, 'Instagram Photo');
+        const cu = m.replace(/\\u0026/g, '&').replace(/\\\//g, '/').replace(/&amp;/g, '&');
+        if (!cu || cu.includes('s150x150') || cu.includes('s100x100') || cu.includes('rsrc.php')) continue;
+        const idMatch = cu.match(/t51\.[0-9-]+\/([0-9_]+)/);
+        const key = idMatch ? idMatch[1] : cu;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(cu);
+      }
+
+      for (const [key, urls] of groups.entries()) {
+        const uncropped = urls.find(u => !isCroppedUrl(u));
+        const best = uncropped || urls.find(u => u.includes('p1080x1080') || u.includes('s1080x1080')) || urls[0];
+        if (best) {
+          addMedia('photo', best, best, 'Instagram Photo');
+        }
       }
 
       const videoRegex = /(https?:\/\/[^\s\)\"\']+\.mp4[^\s\)\"\']*)/gi;

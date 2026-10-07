@@ -1206,8 +1206,8 @@
             return nameTokens.some(token => rTitle.includes(token) || rClient.includes(token));
           });
 
-          // If no specific reel matches by name, provide top trending reels as featured collaboration reels
-          const reelsToAdd = matchedReels.length > 0 ? matchedReels : allReels.slice(0, 2);
+          // Only add reels that actually belong to / match this specific model!
+          const reelsToAdd = matchedReels;
 
           reelsToAdd.forEach(r => {
             const vUrl = r.video_url || r.videoUrl;
