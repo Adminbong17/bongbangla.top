@@ -6,20 +6,20 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  cleanupMockData();
-  initLogoSwitcher();
-  initNavbar();
-  initPortfolioFilter();
-  initLightbox();
-  initEstimator();
-  initFaqAccordion();
-  initModals();
-  initContactForm();
+  try { cleanupMockData(); } catch(e) { console.warn('cleanupMockData error:', e); }
+  try { initLogoSwitcher(); } catch(e) { console.warn('initLogoSwitcher error:', e); }
+  try { initNavbar(); } catch(e) { console.warn('initNavbar error:', e); }
+  try { initPortfolioFilter(); } catch(e) { console.warn('initPortfolioFilter error:', e); }
+  try { initLightbox(); } catch(e) { console.warn('initLightbox error:', e); }
+  try { initEstimator(); } catch(e) { console.warn('initEstimator error:', e); }
+  try { initFaqAccordion(); } catch(e) { console.warn('initFaqAccordion error:', e); }
+  try { initModals(); } catch(e) { console.warn('initModals error:', e); }
+  try { initContactForm(); } catch(e) { console.warn('initContactForm error:', e); }
 
   // Show cached data immediately (for returning visitors)
-  renderFrontendHeroSlides();
-  renderFrontendPortfolio('all');
-  renderFrontendModels();
+  try { renderFrontendHeroSlides(); } catch(e) { console.warn('renderFrontendHeroSlides error:', e); }
+  try { renderFrontendPortfolio('all'); } catch(e) { console.warn('renderFrontendPortfolio error:', e); }
+  try { renderFrontendModels(); } catch(e) { console.warn('renderFrontendModels error:', e); }
 
   // Always fetch fresh data from Supabase cloud (works on any device)
   if (window.BongBanglaSupabase) {
@@ -38,9 +38,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             window._cachedCloudReels = cloudReels;
             const activeFilter = document.querySelector('.filter-btn.bg-gradient-to-r');
             renderFrontendPortfolio(activeFilter ? activeFilter.getAttribute('data-filter') : 'all', cloudReels);
+          } else {
+            renderFrontendPortfolio('all', []);
           }
         } catch(e) {
           console.warn('Supabase reels fetch error:', e);
+          renderFrontendPortfolio('all', []);
         }
       })();
 
@@ -50,9 +53,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           const cloudModels = await window.BongBanglaSupabase.fetchModels();
           if (Array.isArray(cloudModels) && cloudModels.length > 0) {
             renderFrontendModels(cloudModels);
+          } else {
+            renderFrontendModels([]);
           }
         } catch(e) {
           console.warn('Supabase models fetch error:', e);
+          renderFrontendModels([]);
         }
       })();
 
@@ -88,7 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (typeof window.BongBanglaSupabase.subscribeToModels === 'function') {
       window.BongBanglaSupabase.subscribeToModels(() => {
         window.BongBanglaSupabase.fetchModels().then(models => {
-          if (Array.isArray(models) && models.length > 0) renderFrontendModels(models);
+          if (Array.isArray(models)) renderFrontendModels(models);
         });
       });
     }
@@ -127,7 +133,7 @@ function initLogoSwitcher() {
   setBrandLogoLang(savedLang);
 }
 
-window.setBrandLogoLang = function(lang) {
+function setBrandLogoLang(lang) {
   const mainLogo = document.getElementById('main-brand-logo');
   const footerLogo = document.getElementById('footer-brand-logo');
   const btnBn = document.getElementById('logo-btn-bn');
@@ -147,7 +153,8 @@ window.setBrandLogoLang = function(lang) {
     }
   }
   localStorage.setItem('bongbangla_logo_lang', lang);
-};
+}
+window.setBrandLogoLang = setBrandLogoLang;
 
 /* ==========================================================================
    1. Navbar & Mobile Menu Handling
@@ -338,7 +345,7 @@ function renderFrontendPortfolio(filter = 'all', preloadedReels = null) {
   container.style.animation = `portfolioContinuousMarquee ${animDuration}s linear infinite`;
 
   // Reset scroll to left when filtered
-  if (viewport) {
+  if (viewport && typeof viewport.scrollTo === 'function') {
     viewport.scrollTo({ left: 0, behavior: 'smooth' });
   }
 
@@ -423,12 +430,16 @@ function initPortfolioMotionControls() {
 
   if (!viewport || !track) return;
 
-  if (prevBtn && !prevBtn.dataset.initialized) {
-    prevBtn.dataset.initialized = 'true';
+  if (prevBtn && !prevBtn.dataset?.initialized) {
+    if (prevBtn.dataset) prevBtn.dataset.initialized = 'true';
     prevBtn.addEventListener('click', () => {
       track.classList.add('is-paused');
       if (statusText) statusText.textContent = 'স্ক্রোল করা হচ্ছে';
-      viewport.scrollBy({ left: -310, behavior: 'smooth' });
+      if (viewport && typeof viewport.scrollBy === 'function') {
+        viewport.scrollBy({ left: -310, behavior: 'smooth' });
+      } else if (viewport) {
+        viewport.scrollLeft -= 310;
+      }
       setTimeout(() => {
         track.classList.remove('is-paused');
         if (statusText) statusText.textContent = 'অটো-স্লাইড হচ্ছে';
@@ -436,12 +447,16 @@ function initPortfolioMotionControls() {
     });
   }
 
-  if (nextBtn && !nextBtn.dataset.initialized) {
-    nextBtn.dataset.initialized = 'true';
+  if (nextBtn && !nextBtn.dataset?.initialized) {
+    if (nextBtn.dataset) nextBtn.dataset.initialized = 'true';
     nextBtn.addEventListener('click', () => {
       track.classList.add('is-paused');
       if (statusText) statusText.textContent = 'স্ক্রোল করা হচ্ছে';
-      viewport.scrollBy({ left: 310, behavior: 'smooth' });
+      if (viewport && typeof viewport.scrollBy === 'function') {
+        viewport.scrollBy({ left: 310, behavior: 'smooth' });
+      } else if (viewport) {
+        viewport.scrollLeft += 310;
+      }
       setTimeout(() => {
         track.classList.remove('is-paused');
         if (statusText) statusText.textContent = 'অটো-স্লাইড হচ্ছে';
@@ -449,8 +464,8 @@ function initPortfolioMotionControls() {
     });
   }
 
-  if (!viewport.dataset.hoverInitialized) {
-    viewport.dataset.hoverInitialized = 'true';
+  if (viewport && !viewport.dataset?.hoverInitialized) {
+    if (viewport.dataset) viewport.dataset.hoverInitialized = 'true';
     viewport.addEventListener('mouseenter', () => {
       if (statusText) statusText.textContent = 'পজ করা হয়েছে (হভার)';
     });
@@ -466,20 +481,25 @@ function renderFrontendModels(directData) {
 
   let models = [];
   // If direct cloud data passed, use it; otherwise fall back to memory cache or localStorage
-  if (Array.isArray(directData) && directData.length > 0) {
-    models = directData.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
+  if (Array.isArray(directData)) {
+    models = directData.filter(m => m && !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
   } else if (window._cachedCloudModels && Array.isArray(window._cachedCloudModels) && window._cachedCloudModels.length > 0) {
-    models = window._cachedCloudModels.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
+    models = window._cachedCloudModels.filter(m => m && !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
   } else {
     try {
       const raw = localStorage.getItem('bongbangla_models');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
-          models = parsed.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
+          models = parsed.filter(m => m && !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104'].includes(m.id));
         }
       }
     } catch(e) {}
+  }
+
+  // If called initially before cloud fetch arrives and local storage is empty, keep loading indicator
+  if (directData === undefined && (!Array.isArray(models) || models.length === 0)) {
+    return;
   }
 
   if (!Array.isArray(models) || models.length === 0) {
@@ -519,7 +539,7 @@ function renderFrontendModels(directData) {
   const defaultModelFallback = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
 
   container.innerHTML = displayModels.map(m => {
-    const rawImg = m.image || defaultModelFallback;
+    const rawImg = m.image || m.image_url || defaultModelFallback;
     const modelImg = window.BongBanglaVault ? window.BongBanglaVault.formatMediaUrl(rawImg, 'models') : rawImg;
     const detailsUrl = `model-details.html?id=${encodeURIComponent(m.id)}#model-gallery-section`;
 
@@ -611,20 +631,28 @@ function initModelsMotionControls() {
 
   if (!viewport || !track) return;
 
-  if (prevBtn && !prevBtn.dataset.initialized) {
-    prevBtn.dataset.initialized = 'true';
+  if (prevBtn && !prevBtn.dataset?.initialized) {
+    if (prevBtn.dataset) prevBtn.dataset.initialized = 'true';
     prevBtn.addEventListener('click', () => {
       track.classList.add('is-paused');
-      viewport.scrollBy({ left: -310, behavior: 'smooth' });
+      if (viewport && typeof viewport.scrollBy === 'function') {
+        viewport.scrollBy({ left: -310, behavior: 'smooth' });
+      } else if (viewport) {
+        viewport.scrollLeft -= 310;
+      }
       setTimeout(() => track.classList.remove('is-paused'), 3000);
     });
   }
 
-  if (nextBtn && !nextBtn.dataset.initialized) {
-    nextBtn.dataset.initialized = 'true';
+  if (nextBtn && !nextBtn.dataset?.initialized) {
+    if (nextBtn.dataset) nextBtn.dataset.initialized = 'true';
     nextBtn.addEventListener('click', () => {
       track.classList.add('is-paused');
-      viewport.scrollBy({ left: 310, behavior: 'smooth' });
+      if (viewport && typeof viewport.scrollBy === 'function') {
+        viewport.scrollBy({ left: 310, behavior: 'smooth' });
+      } else if (viewport) {
+        viewport.scrollLeft += 310;
+      }
       setTimeout(() => track.classList.remove('is-paused'), 3000);
     });
   }
@@ -787,7 +815,13 @@ function initEstimator() {
   const currencySelect = document.getElementById('estimator-currency');
   
   const estimatedPriceEl = document.getElementById('estimated-price-display');
+  const estimatedDaysEl = document.getElementById('estimated-days-display');
+  const estimatedSummaryEl = document.getElementById('estimator-selected-summary');
   const quoteBookingBtn = document.getElementById('book-quote-btn');
+
+  if (!serviceCheckboxes.length && !estimatedPriceEl) {
+    return;
+  }
 
   // Rates in BDT base
   const rates = {
@@ -859,13 +893,13 @@ function initEstimator() {
 
     // Update UI
     if (totalBDT === 0) {
-      estimatedPriceEl.textContent = 'প্যাকেজ বাছাই করুন';
-      estimatedDaysEl.textContent = '-- কার্যদিবস';
-      estimatedSummaryEl.textContent = 'বামপাশের সার্ভিসগুলো থেকে নির্বাচন করুন তাৎক্ষণিক খরচ ও সময়কাল দেখতে।';
+      if (estimatedPriceEl) estimatedPriceEl.textContent = 'প্যাকেজ বাছাই করুন';
+      if (estimatedDaysEl) estimatedDaysEl.textContent = '-- কার্যদিবস';
+      if (estimatedSummaryEl) estimatedSummaryEl.textContent = 'বামপাশের সার্ভিসগুলো থেকে নির্বাচন করুন তাৎক্ষণিক খরচ ও সময়কাল দেখতে।';
     } else {
-      estimatedPriceEl.textContent = `${currencyInfo.symbol} ${finalAmount.toLocaleString()}`;
-      estimatedDaysEl.textContent = `~ ${maxDays} কর্মদিবস ডেলিভারি`;
-      estimatedSummaryEl.innerHTML = `<span class="text-[#f59e0b] font-bold">প্যাকেজে অন্তর্ভুক্ত:</span> ` + selectedNames.join(' • ');
+      if (estimatedPriceEl) estimatedPriceEl.textContent = `${currencyInfo.symbol} ${finalAmount.toLocaleString()}`;
+      if (estimatedDaysEl) estimatedDaysEl.textContent = `~ ${maxDays} কর্মদিবস ডেলিভারি`;
+      if (estimatedSummaryEl) estimatedSummaryEl.innerHTML = `<span class="text-[#f59e0b] font-bold">প্যাকেজে অন্তর্ভুক্ত:</span> ` + selectedNames.join(' • ');
     }
 
     // Update Booking Quote Button (saves directly to Admin Panel via Booking Modal)
