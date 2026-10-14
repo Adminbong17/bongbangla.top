@@ -1223,6 +1223,48 @@
                 </span>
               </div>
             </div>
+
+            <!-- Collapsible Instagram Session Key / Advanced Settings -->
+            <div class="pt-3 border-t border-[#ED96D7]/20">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <button type="button" onclick="window.toggleInstaSettingsPanel()" class="text-xs font-bold text-[#8c4f75] hover:text-[#db2777] flex items-center gap-1.5 transition-all cursor-pointer">
+                  <i class="fa-solid fa-gear text-[11px]"></i>
+                  <span>অ্যাডভান্সড সেটিংস: ইনস্টাগ্রাম সেশন কি (লগইন ওয়াল বাইপাস — ঐচ্ছিক)</span>
+                  <i id="insta-settings-chevron" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200"></i>
+                </button>
+                <span id="insta-session-status-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                  পাবলিক মোড (সেশন নেই)
+                </span>
+              </div>
+
+              <div id="insta-settings-panel" class="hidden mt-3 p-4 rounded-2xl bg-gradient-to-br from-pink-50/70 via-white to-purple-50/70 border border-[#ED96D7]/40 space-y-3">
+                <div class="text-[11px] text-[#572449] leading-relaxed">
+                  <span class="font-bold text-[#2b0e23]">কেন এটি প্রয়োজন হতে পারে?</span> কিছু ক্রিয়েটর তাদের পোস্টে থার্ড-পার্টি এমবেড বন্ধ রাখে অথবা কপিরাইট মিউজিক ব্যবহার করায় ইনস্টাগ্রাম আন-অথেন্টিকেটেড রিকোয়েস্টে পুরো ক্যারোসেলের বদলে শুধু ১টি ক্রপড ছবি ফেরত দেয়। এখানে আপনার ইনস্টাগ্রাম ব্রাউজার থেকে <code class="bg-pink-100 text-pink-800 px-1 py-0.5 rounded font-mono text-[10px]">sessionid</code> কুকি দিলে যেকোনো রেস্ট্রিক্টেড পোস্টের সব ছবি ও ভিডিও আনক্রপড আনলক হবে।
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-2 items-center">
+                  <div class="relative flex-1 w-full">
+                    <input type="password" id="insta-session-input" placeholder="ইনস্টাগ্রাম sessionid কুকি পেস্ট করুন (উদাঃ 123456789%3Abc...)" class="w-full bg-white border border-[#ED96D7]/50 rounded-xl px-3.5 py-2 text-xs font-mono text-[#2b0e23] focus:outline-none focus:border-[#db2777]">
+                    <button type="button" onclick="window.toggleSessionMask()" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 text-xs">
+                      <i id="insta-session-eye" class="fa-regular fa-eye"></i>
+                    </button>
+                  </div>
+                  <div class="flex gap-2 w-full sm:w-auto">
+                    <button type="button" onclick="window.saveInstaSessionCookie()" class="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-[#db2777] hover:bg-[#be185d] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5">
+                      <i class="fa-solid fa-floppy-disk"></i> সেভ করুন
+                    </button>
+                    <button type="button" onclick="window.clearInstaSessionCookie()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 text-xs font-bold transition-all" title="মুছে ফেলুন">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="text-[10px] text-slate-500 flex items-center gap-1.5">
+                  <i class="fa-solid fa-shield-halved text-emerald-600"></i>
+                  <span>এটি সম্পূর্ণ আপনার ব্রাউজারের LocalStorage-এ নিরাপদে সংরক্ষিত থাকে।</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Loading State Card -->

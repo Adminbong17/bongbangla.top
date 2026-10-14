@@ -106,6 +106,11 @@ window.switchSection = function(sectionId, btnElement) {
     }
   }
 
+  if (sectionId === 'section-insta-grabber') {
+    try { if (typeof populateInstaModelSelect === 'function') populateInstaModelSelect(); } catch(e) {}
+    try { if (typeof updateInstaSessionStatus === 'function') updateInstaSessionStatus(); } catch(e) {}
+  }
+
   // Update active state in sidebar
   document.querySelectorAll('.admin-nav-item').forEach(btn => {
     btn.classList.remove('bg-gradient-to-r', 'from-[#db2777]', 'to-[#be185d]', 'text-white', 'font-bold', 'shadow-md');
@@ -3384,6 +3389,7 @@ let currentInstaExtractedMedia = [];
 function initInstaGrabber() {
   populateInstaModelSelect();
   setupInstaDropzone();
+  updateInstaSessionStatus();
 }
 
 function populateInstaModelSelect() {
@@ -3458,9 +3464,88 @@ window.clearInstaUrl = function() {
 window.openCurrentInFastDL = function() {
   const input = document.getElementById('insta-grab-url-input');
   const val = input ? input.value.trim() : '';
-  const fastDlUrl = val ? 'https://fastdl.app/' : 'https://fastdl.app/';
-  window.open(fastDlUrl, '_blank');
+  if (val && navigator.clipboard) {
+    navigator.clipboard.writeText(val).catch(() => {});
+    showAdminToast('লিংক ক্লিপবোর্ডে কপি করা হয়েছে! FastDL-এ পেস্ট করুন।', 'info');
+  }
+  window.open('https://fastdl.app/en', '_blank');
 };
+
+window.toggleInstaSettingsPanel = function(forceOpen = null) {
+  const panel = document.getElementById('insta-settings-panel');
+  const chevron = document.getElementById('insta-settings-chevron');
+  if (!panel) return;
+  const isHidden = panel.classList.contains('hidden');
+  const shouldOpen = forceOpen !== null ? forceOpen : isHidden;
+  if (shouldOpen) {
+    panel.classList.remove('hidden');
+    if (chevron) chevron.style.transform = 'rotate(180deg)';
+    const input = document.getElementById('insta-session-input');
+    if (input) {
+      input.value = (localStorage.getItem('bongbangla_ig_session') || '').trim();
+      input.focus();
+    }
+  } else {
+    panel.classList.add('hidden');
+    if (chevron) chevron.style.transform = 'rotate(0deg)';
+  }
+};
+
+window.saveInstaSessionCookie = function() {
+  const input = document.getElementById('insta-session-input');
+  const val = input ? input.value.trim().replace(/^sessionid=/i, '') : '';
+  if (!val) {
+    alert('অনুগ্রহ করে একটি ভ্যালিড sessionid লিখুন অথবা পেস্ট করুন!');
+    return;
+  }
+  localStorage.setItem('bongbangla_ig_session', val);
+  updateInstaSessionStatus();
+  showAdminToast('ইনস্টাগ্রাম সেশন কি সফলভাবে সংরক্ষিত হয়েছে!', 'success');
+};
+
+window.clearInstaSessionCookie = function() {
+  localStorage.removeItem('bongbangla_ig_session');
+  const input = document.getElementById('insta-session-input');
+  if (input) input.value = '';
+  updateInstaSessionStatus();
+  showAdminToast('ইনস্টাগ্রাম সেশন কি মুছে ফেলা হয়েছে।', 'info');
+};
+
+window.toggleSessionMask = function() {
+  const input = document.getElementById('insta-session-input');
+  const eye = document.getElementById('insta-session-eye');
+  if (!input || !eye) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    eye.className = 'fa-regular fa-eye-slash';
+  } else {
+    input.type = 'password';
+    eye.className = 'fa-regular fa-eye';
+  }
+};
+
+function updateInstaSessionStatus() {
+  const session = (localStorage.getItem('bongbangla_ig_session') || '').trim();
+  const badge = document.getElementById('insta-session-status-badge');
+  const input = document.getElementById('insta-session-input');
+  if (input && !input.value && session) {
+    input.value = session;
+  }
+  if (!badge) return;
+  if (session) {
+    badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-300';
+    badge.innerHTML = '<i class="fa-solid fa-lock text-emerald-600 mr-1"></i>সেশন কানেক্টেড';
+  } else {
+    badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600';
+    badge.textContent = 'পাবলিক মোড (সেশন নেই)';
+  }
+}
+window.updateInstaSessionStatus = updateInstaSessionStatus;
+
+function isCroppedMediaUrl(u) {
+  if (!u || typeof u !== 'string') return false;
+  return /[\/_]c\d+\.|\bs\d+x\d+\b|stp=c\d+\.|\/c\d+\.|\/s640x640\/|\/p640x640\/|_s640x640_|_s320x320_|_s150x150_/i.test(u);
+}
 
 function extractInstagramMediaFromHtml(html, textFallback = '') {
   const extracted = [];
@@ -3776,17 +3861,36 @@ window.executeInstagramGrab = async function() {
       `https://bongbangla.top/api/instagram-grab?${queryParam}`
     ];
 
+    const igSession = (localStorage.getItem('bongbangla_ig_session') || '').trim();
+    const reqHeaders = {
+      'Accept': 'application/json',
+      ...(igSession ? { 'X-IG-Session': igSession } : {})
+    };
+
+    let grabMeta = {
+      isCroppedOnly: false,
+      hasEmbedRestriction: false,
+      shortcode: shortcode,
+      warning: null
+    };
+
     for (const ep of apiEndpoints) {
       try {
         const apiRes = await fetch(ep, {
           signal: AbortSignal.timeout(15000),
-          headers: { 'Accept': 'application/json' }
+          headers: reqHeaders
         });
         if (apiRes.ok) {
           const json = await apiRes.json();
           if (json.success && Array.isArray(json.mediaList) && json.mediaList.length > 0) {
             extracted = json.mediaList;
             caption = json.caption || '';
+            grabMeta = {
+              isCroppedOnly: Boolean(json.isCroppedOnly),
+              hasEmbedRestriction: Boolean(json.hasEmbedRestriction),
+              shortcode: shortcode,
+              warning: json.warning
+            };
             if (json.isProfile) {
               profileMeta = {
                 isProfile: true,
@@ -3931,8 +4035,12 @@ window.executeInstagramGrab = async function() {
     }
 
     currentInstaExtractedMedia = extracted;
-    renderInstaExtractedMedia(extracted, caption, profileMeta);
-    showAdminToast(`${extracted.length} টি ফুল-রেজুলেশন মিডিয়া পাওয়া গেছে!`, 'success');
+    renderInstaExtractedMedia(extracted, caption, profileMeta, grabMeta);
+    if (grabMeta && grabMeta.isCroppedOnly) {
+      showAdminToast('সতর্কতা: পোস্টটিতে এমবেড রেস্ট্রিকশন থাকায় ১টি ক্রপড প্রিভিউ এসেছে', 'warning');
+    } else {
+      showAdminToast(`${extracted.length} টি ফুল-রেজুলেশন মিডিয়া পাওয়া গেছে!`, 'success');
+    }
   } catch(e) {
     console.error('executeInstagramGrab error:', e);
     alert('মিডিয়া আনতে গিয়ে সমস্যা হয়েছে: ' + (e.message || ''));
@@ -4017,7 +4125,7 @@ function renderProfileGuidanceCard(username, model) {
   container.classList.remove('hidden');
 }
 
-function renderInstaExtractedMedia(items, caption, profileMeta = null) {
+function renderInstaExtractedMedia(items, caption, profileMeta = null, grabMeta = null) {
   const container = document.getElementById('insta-results-container');
   const grid = document.getElementById('insta-media-grid');
   const countEl = document.getElementById('insta-results-count');
@@ -4028,9 +4136,9 @@ function renderInstaExtractedMedia(items, caption, profileMeta = null) {
   if (countEl) countEl.textContent = `${items.length} টি মিডিয়া পাওয়া গেছে`;
   if (captionEl) captionEl.textContent = caption ? `বিবরণ: ${caption}` : '';
 
-  let profileBannerHtml = '';
+  let bannerHtml = '';
   if (profileMeta && profileMeta.isProfile) {
-    profileBannerHtml = `
+    bannerHtml += `
       <div class="col-span-full p-4.5 rounded-3xl bg-gradient-to-r from-pink-50 via-[#fff8fa] to-pink-50 border border-[#ED96D7]/50 text-xs text-[#572449] space-y-2.5 shadow-xs">
         <div class="flex items-center justify-between flex-wrap gap-2">
           <div class="flex items-center gap-2 text-[#db2777] font-bold text-sm">
@@ -4050,8 +4158,78 @@ function renderInstaExtractedMedia(items, caption, profileMeta = null) {
     `;
   }
 
-  grid.innerHTML = profileBannerHtml + items.map((item, idx) => {
+  if (grabMeta && (grabMeta.isCroppedOnly || grabMeta.hasEmbedRestriction)) {
+    const sc = grabMeta.shortcode || '';
+    const igPostUrl = sc ? `https://www.instagram.com/p/${sc}/` : '';
+    bannerHtml += `
+      <div class="col-span-full p-5 rounded-3xl bg-gradient-to-r from-amber-50 via-orange-50 to-pink-50 border-2 border-amber-300 text-xs text-amber-950 space-y-3.5 shadow-sm">
+        <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-amber-200/80">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center text-base shadow-xs shrink-0">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </span>
+            <div>
+              <div class="font-extrabold text-sm text-amber-950">ইনস্টাগ্রাম এমবেড রেস্ট্রিকশন শনাক্ত হয়েছে</div>
+              <div class="text-[11px] text-amber-800 font-semibold">পোস্টের ক্রিয়েটর পাবলিক এমবেড বন্ধ রাখায় ১টি ক্রপড প্রিভিউ (640×640) এসেছে</div>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-amber-200 text-amber-900 font-bold text-[10px] uppercase font-mono">
+            Embed Restricted
+          </span>
+        </div>
+
+        <p class="text-[11px] leading-relaxed text-amber-900">
+          এই পোস্টটির ক্রিয়েটর থার্ড-পার্টি এমবেড বন্ধ রাখায় অথবা ব্যাকগ্রাউন্ড মিউজিক রেস্ট্রিকশনের কারণে ইনস্টাগ্রাম আন-অথেন্টিকেটেড রিকোয়েস্টে পুরো ক্যারোসেলের বদলে শুধু ১টি ক্রপড ছবি ফেরত দিয়েছে। আপনি নিচের যেকোনো অপশন দিয়ে সব আনক্রপড ফটো সংগ্রহ করতে পারেন:
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
+          <!-- FastDL 1-click button -->
+          <a href="https://fastdl.app/en" target="_blank" rel="noopener noreferrer" onclick="if(navigator.clipboard && '${igPostUrl}') navigator.clipboard.writeText('${igPostUrl}'); showAdminToast('লিংক ক্লিপবোর্ডে কপি করা হয়েছে! FastDL-এ পেস্ট করুন', 'info');" class="p-3 rounded-2xl bg-white border border-amber-300 hover:border-amber-500 shadow-xs hover:shadow-md transition-all flex items-center gap-2.5 group">
+            <div class="w-8 h-8 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs group-hover:bg-orange-500 group-hover:text-white transition-all shrink-0">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <div class="text-left">
+              <div class="font-bold text-xs text-[#2b0e23] group-hover:text-orange-600">FastDL-এ আনক্রপড আনুন</div>
+              <div class="text-[10px] text-slate-500">১-ক্লিকে কপি ও FastDL ওপেন</div>
+            </div>
+          </a>
+
+          <!-- SnapInsta direct button -->
+          <a href="https://snapinsta.app/" target="_blank" rel="noopener noreferrer" onclick="if(navigator.clipboard && '${igPostUrl}') navigator.clipboard.writeText('${igPostUrl}'); showAdminToast('লিংক ক্লিপবোর্ডে কপি করা হয়েছে! SnapInsta-তে পেস্ট করুন', 'info');" class="p-3 rounded-2xl bg-white border border-pink-300 hover:border-pink-500 shadow-xs hover:shadow-md transition-all flex items-center gap-2.5 group">
+            <div class="w-8 h-8 rounded-xl bg-pink-100 text-[#db2777] flex items-center justify-center font-bold text-xs group-hover:bg-[#db2777] group-hover:text-white transition-all shrink-0">
+              <i class="fa-brands fa-instagram"></i>
+            </div>
+            <div class="text-left">
+              <div class="font-bold text-xs text-[#2b0e23] group-hover:text-[#db2777]">SnapInsta ডাউনলোডার</div>
+              <div class="text-[10px] text-slate-500">হাই-স্পিড ক্যারোসেল এক্সট্র্যাক্টর</div>
+            </div>
+          </a>
+
+          <!-- Session Key Config button -->
+          <button type="button" onclick="window.toggleInstaSettingsPanel(true)" class="p-3 rounded-2xl bg-white border border-purple-300 hover:border-purple-500 shadow-xs hover:shadow-md transition-all flex items-center gap-2.5 group text-left cursor-pointer">
+            <div class="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs group-hover:bg-purple-600 group-hover:text-white transition-all shrink-0">
+              <i class="fa-solid fa-key"></i>
+            </div>
+            <div>
+              <div class="font-bold text-xs text-[#2b0e23] group-hover:text-purple-600">ইনস্টাগ্রাম সেশন কি যুক্ত করুন</div>
+              <div class="text-[10px] text-slate-500">লগইন ওয়াল সরাসরি বাইপাস করতে</div>
+            </div>
+          </button>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-white/80 border border-amber-200 text-[11px] text-[#2b0e23] flex items-center justify-between flex-wrap gap-2">
+          <span>💡 <strong>টিপস:</strong> ডাউনলোড করা ফাইলগুলো নিচের ড্রপজোনে টেনে আনুন — সাথে সাথে Media Vault CDN-এ আপলোড হয়ে মডেলের গ্যালারিতে যোগ হয়ে যাবে!</span>
+          <button type="button" onclick="document.getElementById('insta-manual-file-input').click()" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs flex items-center gap-1 cursor-pointer">
+            <i class="fa-solid fa-cloud-arrow-up"></i> ফাইল ড্রপজোন খুলুন
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  grid.innerHTML = bannerHtml + items.map((item, idx) => {
     const isVideo = item.type === 'video';
+    const isCropped = Boolean(item.isCroppedPreview) || isCroppedMediaUrl(item.url);
     return `
       <div class="glass-panel rounded-2xl border border-[#ED96D7]/40 overflow-hidden bg-white shadow-xs hover:shadow-md transition-all flex flex-col group relative">
         
@@ -4064,9 +4242,15 @@ function renderInstaExtractedMedia(items, caption, profileMeta = null) {
             <span class="px-2 py-0.5 rounded-md bg-black/50 backdrop-blur-md text-white font-extrabold text-[10px] uppercase tracking-wide">
               ${isVideo ? '<i class="fa-solid fa-video text-rose-400 mr-1"></i>REEL' : '<i class="fa-solid fa-image text-pink-300 mr-1"></i>PHOTO'}
             </span>
-            <span class="px-1.5 py-0.5 rounded-md bg-emerald-600/90 backdrop-blur-md text-white font-bold text-[10px]">
-              UNCROPPED
-            </span>
+            ${isCropped ? `
+              <span class="px-1.5 py-0.5 rounded-md bg-amber-500/95 backdrop-blur-md text-white font-bold text-[10px] flex items-center shadow-xs" title="ইনস্টাগ্রাম রেস্ট্রিকশনের কারণে শুধুমাত্র ক্রপড প্রিভিউ পাওয়া গেছে">
+                <i class="fa-solid fa-crop mr-1"></i>CROPPED (640×640)
+              </span>
+            ` : `
+              <span class="px-1.5 py-0.5 rounded-md bg-emerald-600/90 backdrop-blur-md text-white font-bold text-[10px] flex items-center shadow-xs">
+                <i class="fa-solid fa-check mr-1"></i>UNCROPPED
+              </span>
+            `}
           </div>
         </div>
 

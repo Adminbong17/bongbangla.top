@@ -58,6 +58,10 @@ function getBestPhotoUrl(node) {
 }
 
 function extractMediaFromHtml(html) {
+  if (!html || typeof html !== 'string' || html.includes('httpErrorPage')) {
+    return { mediaList: [], caption: '' };
+  }
+
   const extracted = [];
   const seenUrls = new Set();
   let caption = '';
@@ -298,7 +302,114 @@ function extractMediaFromHtml(html) {
   return { mediaList: extracted, caption };
 }
 
-async function fetchInstagramPost(shortcode) {
+async function fetchWithSessionGraphQL(shortcode, sessionToken) {
+  if (!sessionToken || typeof sessionToken !== 'string') return null;
+  const cleanSession = sessionToken.trim().replace(/^sessionid=/i, '');
+  if (!cleanSession) return null;
+
+  const docIds = ['9510064595728286', '10015901848480474', '8845758582119845'];
+  const variables = JSON.stringify({
+    shortcode: shortcode,
+    fetch_tagged_user_count: null,
+    hoisted_comment_id: null,
+    hoisted_reply_id: null
+  });
+
+  for (const docId of docIds) {
+    try {
+      const body = new URLSearchParams({
+        variables: variables,
+        doc_id: docId
+      });
+
+      const res = await fetch('https://www.instagram.com/graphql/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-IG-App-ID': '936619743392459',
+          'Cookie': `sessionid=${cleanSession};`,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Origin': 'https://www.instagram.com',
+          'Referer': `https://www.instagram.com/p/${shortcode}/`
+        },
+        body: body.toString(),
+        signal: AbortSignal.timeout(10000)
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        const media = json?.data?.xdt_shortcode_media;
+        if (media) {
+          const extracted = [];
+          const seen = new Set();
+          let caption = '';
+          if (media.edge_media_to_caption && media.edge_media_to_caption.edges && media.edge_media_to_caption.edges[0]) {
+            caption = cleanCaption(media.edge_media_to_caption.edges[0].node.text || '');
+          }
+
+          function addGqlMedia(type, url, thumb, title) {
+            const cu = cleanUrl(url);
+            if (!cu || seen.has(cu)) return;
+            seen.add(cu);
+            extracted.push({
+              type: type,
+              url: cu,
+              thumbnail: thumb ? cleanUrl(thumb) : cu,
+              title: title,
+              isCroppedPreview: isCroppedUrl(cu)
+            });
+          }
+
+          if (media.edge_sidecar_to_children && Array.isArray(media.edge_sidecar_to_children.edges)) {
+            media.edge_sidecar_to_children.edges.forEach((edge, idx) => {
+              const n = edge.node;
+              if (!n) return;
+              if (n.is_video && n.video_url) {
+                const thumb = getBestPhotoUrl(n) || n.display_url;
+                addGqlMedia('video', n.video_url, thumb, `Instagram Reel #${idx + 1}`);
+              } else {
+                const bestImg = getBestPhotoUrl(n) || n.display_url;
+                if (bestImg) {
+                  addGqlMedia('photo', bestImg, bestImg, `Instagram Photo #${idx + 1}`);
+                }
+              }
+            });
+          } else if (media.is_video && media.video_url) {
+            const thumb = getBestPhotoUrl(media) || media.display_url;
+            addGqlMedia('video', media.video_url, thumb, 'Instagram Reel');
+          } else {
+            const bestImg = getBestPhotoUrl(media) || media.display_url;
+            if (bestImg) {
+              addGqlMedia('photo', bestImg, bestImg, 'Instagram Photo');
+            }
+          }
+
+          if (extracted.length > 0) {
+            return { mediaList: extracted, caption: caption };
+          }
+        }
+      }
+    } catch (e) {
+      console.warn(`[instagram-grab] GQL doc_id ${docId} attempt failed:`, e.message);
+    }
+  }
+
+  return null;
+}
+
+async function fetchInstagramPost(shortcode, sessionToken = '') {
+  // 0. Primary check: If session token provided, try GraphQL query first
+  if (sessionToken) {
+    try {
+      const gqlResult = await fetchWithSessionGraphQL(shortcode, sessionToken);
+      if (gqlResult && gqlResult.mediaList && gqlResult.mediaList.length > 0) {
+        return gqlResult;
+      }
+    } catch (gqlErr) {
+      console.warn('[instagram-grab] Session GraphQL query failed:', gqlErr.message);
+    }
+  }
+
   const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
   
   // Headers that cause Instagram embed to return clean ServerJS with s.handle
@@ -369,11 +480,13 @@ async function fetchInstagramPost(shortcode) {
       const oembedData = await oembedRes.json();
       fallbackCaption = oembedData.title || '';
       if (oembedData.thumbnail_url) {
+        const isCropped = isCroppedUrl(oembedData.thumbnail_url);
         fallbackMedia.push({
           type: 'photo',
           url: oembedData.thumbnail_url,
           thumbnail: oembedData.thumbnail_url,
-          title: oembedData.title || 'Instagram Media'
+          title: isCropped ? 'Instagram Photo (Cropped Preview)' : (oembedData.title || 'Instagram Media'),
+          isCroppedPreview: isCropped
         });
       }
     }
@@ -396,14 +509,17 @@ async function fetchInstagramPost(shortcode) {
             type: 'video',
             url: microJson.data.video.url,
             thumbnail: microJson.data.image ? microJson.data.image.url : '',
-            title: 'Instagram Reel'
+            title: 'Instagram Reel',
+            isCroppedPreview: false
           }];
         } else if (microJson.data.image && microJson.data.image.url && fallbackMedia.length === 0) {
+          const isCropped = isCroppedUrl(microJson.data.image.url);
           fallbackMedia = [{
             type: 'photo',
             url: microJson.data.image.url,
             thumbnail: microJson.data.image.url,
-            title: 'Instagram Photo'
+            title: isCropped ? 'Instagram Photo (Cropped Preview)' : 'Instagram Photo',
+            isCroppedPreview: isCropped
           }];
         }
       }
@@ -595,24 +711,34 @@ async function handler(req, res) {
     }
   }
 
+  const sessionToken = req.headers['x-ig-session'] || query.session_id || process.env.INSTAGRAM_SESSION_ID || '';
+
   try {
-    const data = await fetchInstagramPost(shortcode);
+    const data = await fetchInstagramPost(shortcode, sessionToken);
     const mediaList = data.mediaList || [];
     const caption = data.caption || '';
 
     if (mediaList.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'পোস্টটি থেকে কোনো মিডিয়া পাওয়া যায়নি। পোস্টটি প্রাইভেট হতে পারে।'
+        error: 'পোস্টটি থেকে কোনো মিডিয়া পাওয়া যায়নি। পোস্টটি প্রাইভেট হতে পারে অথবা ইনস্টাগ্রামে এমবেড ব্লক করা রয়েছে।'
       });
     }
+
+    const isCroppedOnly = mediaList.length === 1 && (Boolean(mediaList[0].isCroppedPreview) || isCroppedUrl(mediaList[0].url));
+    const hasCarouselIndicators = /⏭|carousel|slide|photoshoot/i.test(caption);
 
     return res.status(200).json({
       success: true,
       shortcode: shortcode,
       count: mediaList.length,
       caption: caption,
-      mediaList: mediaList
+      mediaList: mediaList,
+      isCroppedOnly: isCroppedOnly,
+      hasEmbedRestriction: isCroppedOnly || (hasCarouselIndicators && mediaList.length === 1),
+      warning: isCroppedOnly
+        ? 'ইনস্টাগ্রাম এমবেড রেস্ট্রিকশন থাকায় শুধুমাত্র ১টি ক্রপড (640×640) প্রিভিউ পাওয়া গেছে।'
+        : null
     });
   } catch (error) {
     console.error('[instagram-grab] Error:', error);
