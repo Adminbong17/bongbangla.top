@@ -302,11 +302,152 @@ function extractMediaFromHtml(html) {
   return { mediaList: extracted, caption };
 }
 
-async function fetchWithSessionGraphQL(shortcode, sessionToken) {
+function shortcodeToMediaId(code) {
+  try {
+    let id = BigInt(0);
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    for (let i = 0; i < code.length; i++) {
+      const c = code[i];
+      const val = BigInt(alphabet.indexOf(c));
+      if (val < 0n) return '';
+      id = id * 64n + val;
+    }
+    return id.toString();
+  } catch (e) {
+    return '';
+  }
+}
+
+function extractFromMediaInfoItem(item) {
+  if (!item || typeof item !== 'object') return null;
+  const extracted = [];
+  const seen = new Set();
+  let caption = cleanCaption(item?.caption?.text || item?.edge_media_to_caption?.edges?.[0]?.node?.text || '');
+
+  function addMedia(type, url, thumb, title) {
+    const cu = cleanUrl(url);
+    if (!cu || seen.has(cu)) return;
+    seen.add(cu);
+    extracted.push({
+      type: type,
+      url: cu,
+      thumbnail: thumb ? cleanUrl(thumb) : cu,
+      title: title,
+      isCroppedPreview: isCroppedUrl(cu)
+    });
+  }
+
+  function getBestFromCandidates(candidates) {
+    if (!Array.isArray(candidates) || candidates.length === 0) return '';
+    const sorted = [...candidates].sort((a, b) => (b.width || 0) - (a.width || 0));
+    const uncropped = sorted.find(c => c && c.url && !isCroppedUrl(c.url));
+    return uncropped?.url || sorted[0]?.url || '';
+  }
+
+  function getBestFromVideos(videos) {
+    if (!Array.isArray(videos) || videos.length === 0) return '';
+    const sorted = [...videos].sort((a, b) => (b.width || 0) - (a.width || 0));
+    return sorted[0]?.url || '';
+  }
+
+  if (Array.isArray(item.carousel_media) && item.carousel_media.length > 0) {
+    item.carousel_media.forEach((sub, idx) => {
+      const isVid = sub.media_type === 2 || (Array.isArray(sub.video_versions) && sub.video_versions.length > 0);
+      if (isVid) {
+        const vidUrl = getBestFromVideos(sub.video_versions);
+        const thumbUrl = getBestFromCandidates(sub.image_versions2?.candidates);
+        if (vidUrl) addMedia('video', vidUrl, thumbUrl, `Instagram Reel #${idx + 1}`);
+      } else {
+        const imgUrl = getBestFromCandidates(sub.image_versions2?.candidates);
+        if (imgUrl) addMedia('photo', imgUrl, imgUrl, `Instagram Photo #${idx + 1}`);
+      }
+    });
+  } else {
+    const isVid = item.media_type === 2 || (Array.isArray(item.video_versions) && item.video_versions.length > 0);
+    if (isVid) {
+      const vidUrl = getBestFromVideos(item.video_versions);
+      const thumbUrl = getBestFromCandidates(item.image_versions2?.candidates);
+      if (vidUrl) addMedia('video', vidUrl, thumbUrl, 'Instagram Reel');
+    } else {
+      const imgUrl = getBestFromCandidates(item.image_versions2?.candidates);
+      if (imgUrl) addMedia('photo', imgUrl, imgUrl, 'Instagram Photo');
+    }
+  }
+
+  return extracted.length > 0 ? { mediaList: extracted, caption } : null;
+}
+
+async function fetchWithSession(shortcode, sessionToken) {
   if (!sessionToken || typeof sessionToken !== 'string') return null;
-  const cleanSession = sessionToken.trim().replace(/^sessionid=/i, '');
+  let cleanSession = sessionToken.trim().replace(/^sessionid=/i, '').replace(/^['"]|['"]$/g, '').replace(/;.*$/, '');
   if (!cleanSession) return null;
 
+  let dsUserId = '';
+  try {
+    const decoded = decodeURIComponent(cleanSession);
+    const parts = decoded.split(':');
+    if (parts.length > 1 && /^\d+$/.test(parts[0])) {
+      dsUserId = parts[0];
+    }
+  } catch (e) {}
+
+  const cookieStr = [
+    `sessionid=${cleanSession};`,
+    dsUserId ? `ds_user_id=${dsUserId};` : '',
+    `csrftoken=missing;`
+  ].filter(Boolean).join(' ');
+
+  const commonHeaders = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'X-IG-App-ID': '936619743392459',
+    'Cookie': cookieStr,
+    'Accept': '*/*',
+    'Origin': 'https://www.instagram.com',
+    'Referer': `https://www.instagram.com/p/${shortcode}/`
+  };
+
+  // Strategy 1: Direct Mobile Media Info Endpoint (/api/v1/media/<mediaId>/info/)
+  const mediaId = shortcodeToMediaId(shortcode);
+  if (mediaId) {
+    try {
+      const infoRes = await fetch(`https://www.instagram.com/api/v1/media/${mediaId}/info/`, {
+        headers: commonHeaders,
+        signal: AbortSignal.timeout(10000)
+      });
+      if (infoRes.ok) {
+        const infoJson = await infoRes.json();
+        const item = infoJson?.items?.[0];
+        if (item) {
+          const parsed = extractFromMediaInfoItem(item);
+          if (parsed && parsed.mediaList.length > 0) {
+            return parsed;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[instagram-grab] media info endpoint attempt failed:', err.message);
+    }
+  }
+
+  // Strategy 2: Web Post with __a=1 & __d=dis
+  try {
+    const a1Res = await fetch(`https://www.instagram.com/p/${shortcode}/?__a=1&__d=dis`, {
+      headers: commonHeaders,
+      signal: AbortSignal.timeout(10000)
+    });
+    if (a1Res.ok) {
+      const a1Json = await a1Res.json();
+      const item = a1Json?.items?.[0];
+      if (item) {
+        const parsed = extractFromMediaInfoItem(item);
+        if (parsed && parsed.mediaList.length > 0) return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn('[instagram-grab] __a=1 endpoint attempt failed:', err.message);
+  }
+
+  // Strategy 3: GraphQL queries with internal doc_ids
   const docIds = ['9510064595728286', '10015901848480474', '8845758582119845'];
   const variables = JSON.stringify({
     shortcode: shortcode,
@@ -325,12 +466,8 @@ async function fetchWithSessionGraphQL(shortcode, sessionToken) {
       const res = await fetch('https://www.instagram.com/graphql/query', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'X-IG-App-ID': '936619743392459',
-          'Cookie': `sessionid=${cleanSession};`,
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Origin': 'https://www.instagram.com',
-          'Referer': `https://www.instagram.com/p/${shortcode}/`
+          ...commonHeaders,
+          'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: body.toString(),
         signal: AbortSignal.timeout(10000)
@@ -398,15 +535,15 @@ async function fetchWithSessionGraphQL(shortcode, sessionToken) {
 }
 
 async function fetchInstagramPost(shortcode, sessionToken = '') {
-  // 0. Primary check: If session token provided, try GraphQL query first
+  // 0. Primary check: If session token provided, try authenticated session extraction
   if (sessionToken) {
     try {
-      const gqlResult = await fetchWithSessionGraphQL(shortcode, sessionToken);
-      if (gqlResult && gqlResult.mediaList && gqlResult.mediaList.length > 0) {
-        return gqlResult;
+      const sessionResult = await fetchWithSession(shortcode, sessionToken);
+      if (sessionResult && sessionResult.mediaList && sessionResult.mediaList.length > 0) {
+        return sessionResult;
       }
-    } catch (gqlErr) {
-      console.warn('[instagram-grab] Session GraphQL query failed:', gqlErr.message);
+    } catch (sessionErr) {
+      console.warn('[instagram-grab] Session extraction query failed:', sessionErr.message);
     }
   }
 
@@ -609,7 +746,7 @@ async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    '*, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, X-IG-Session, Authorization'
   );
 
   if (req.method === 'OPTIONS') {

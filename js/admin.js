@@ -3852,16 +3852,17 @@ window.executeInstagramGrab = async function() {
     // 1. PRIMARY ENGINE: High-Speed Serverless API (/api/instagram-grab)
     // Extracts ALL carousel photos & 4K video reels with zero browser CORS restrictions
     setGrabStatus(profileUsername ? 'প্রোফাইল থেকে তথ্য ও ছবি আনা হচ্ছে...' : 'সার্ভার ইঞ্জিন থেকে সব মিডিয়া আনা হচ্ছে...');
-    const queryParam = shortcode
+    const igSession = (localStorage.getItem('bongbangla_ig_session') || '').trim();
+    const sessionParam = igSession ? `&session_id=${encodeURIComponent(igSession)}` : '';
+    const queryParam = (shortcode
       ? `shortcode=${encodeURIComponent(shortcode)}`
-      : `username=${encodeURIComponent(profileUsername)}&url=${encodeURIComponent(rawUrl)}`;
+      : `username=${encodeURIComponent(profileUsername)}&url=${encodeURIComponent(rawUrl)}`) + sessionParam;
 
     const apiEndpoints = [
       `/api/instagram-grab?${queryParam}`,
       `https://bongbangla.top/api/instagram-grab?${queryParam}`
     ];
 
-    const igSession = (localStorage.getItem('bongbangla_ig_session') || '').trim();
     const reqHeaders = {
       'Accept': 'application/json',
       ...(igSession ? { 'X-IG-Session': igSession } : {})
@@ -3874,14 +3875,16 @@ window.executeInstagramGrab = async function() {
       warning: null
     };
 
+    let lastApiError = '';
     for (const ep of apiEndpoints) {
       try {
         const apiRes = await fetch(ep, {
           signal: AbortSignal.timeout(15000),
           headers: reqHeaders
         });
-        if (apiRes.ok) {
-          const json = await apiRes.json();
+        const json = await apiRes.json().catch(() => null);
+        if (json) {
+          if (json.error) lastApiError = json.error;
           if (json.success && Array.isArray(json.mediaList) && json.mediaList.length > 0) {
             extracted = json.mediaList;
             caption = json.caption || '';
@@ -4030,7 +4033,7 @@ window.executeInstagramGrab = async function() {
         return;
       }
 
-      alert('ইনস্টাগ্রাম থেকে মিডিয়া এক্সট্র্যাক্ট করা সম্ভব হয়নি। পোস্ট বা প্রোফাইলটি প্রাইভেট হতে পারে অথবা ইনস্টাগ্রামের সার্ভার সাময়িক ব্যস্ত রয়েছে。\n\nআপনি নিচে থাকা "FastDL-এ পোস্টটি খুলুন" বাটনে ক্লিক করে সহজে ডাউনলোড করে নিচের ড্রপজোনে ড্র্যাগ করতে পারেন।');
+      renderRestrictedGuidanceCard(rawUrl, shortcode, lastApiError);
       return;
     }
 
@@ -4043,7 +4046,7 @@ window.executeInstagramGrab = async function() {
     }
   } catch(e) {
     console.error('executeInstagramGrab error:', e);
-    alert('মিডিয়া আনতে গিয়ে সমস্যা হয়েছে: ' + (e.message || ''));
+    renderRestrictedGuidanceCard(rawUrl, shortcode, e.message);
   } finally {
     if (loading) loading.classList.add('hidden');
     if (execBtn) {
@@ -4052,6 +4055,112 @@ window.executeInstagramGrab = async function() {
     }
   }
 };
+
+function renderRestrictedGuidanceCard(rawUrl, shortcode, apiError = '') {
+  const container = document.getElementById('insta-results-container');
+  const grid = document.getElementById('insta-media-grid');
+  const countEl = document.getElementById('insta-results-count');
+  const captionEl = document.getElementById('insta-results-caption');
+  const importAllBtn = document.getElementById('insta-import-all-btn');
+
+  if (!container || !grid) return;
+
+  const sc = shortcode || '';
+  const postUrl = sc ? `https://www.instagram.com/p/${sc}/` : rawUrl;
+  const hasSession = Boolean((localStorage.getItem('bongbangla_ig_session') || '').trim());
+
+  if (countEl) countEl.textContent = 'ইনস্টাগ্রাম রেস্ট্রিকশন শনাক্ত';
+  if (captionEl) captionEl.textContent = 'পাবলিক এমবেড লক করা রয়েছে';
+  if (importAllBtn) {
+    importAllBtn.disabled = true;
+    importAllBtn.style.opacity = '0.5';
+  }
+
+  grid.innerHTML = `
+    <div class="col-span-full p-6 rounded-3xl bg-gradient-to-br from-amber-50 via-white to-pink-50 border-2 border-amber-300 text-xs text-[#572449] space-y-5 shadow-sm">
+      <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-amber-200">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 text-white flex items-center justify-center text-2xl shadow-xs">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div>
+            <div class="font-extrabold text-base text-[#2b0e23]">ইনস্টাগ্রাম পোস্টটি রেস্ট্রিক্টেড / সুরক্ষিত</div>
+            <div class="text-[11px] text-amber-700 font-semibold">পোস্টের ক্রিয়েটর পাবলিক শেয়ারিং লিমিট করায় ইনস্টাগ্রাম সার্ভার সরাসরি ডাটা ব্লক করেছে</div>
+          </div>
+        </div>
+        <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-800 font-bold text-[10px] uppercase font-mono border border-amber-300">
+          Embed & API Protected
+        </span>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-[#78350f] space-y-1.5 leading-relaxed text-[11px]">
+        <div class="font-bold flex items-center gap-1.5 text-amber-900">
+          <i class="fa-solid fa-circle-info text-amber-600"></i>
+          <span>কেন সরাসরি মিডিয়া এল না?</span>
+        </div>
+        <p>
+          ইনস্টাগ্রামে কিছু পোস্টে কপিরাইট ব্যাকগ্রাউন্ড মিউজিক বা ক্রিয়েটরের প্রাইভেসি সেটিংসের কারণে মেটা (Meta) তাদের সার্ভারে পাবলিক অ্যাক্সেস বন্ধ রাখে।${hasSession ? ' আপনার দেওয়া সেশন কি-টির মেয়াদ শেষ হয়ে থাকতে পারে অথবা নতুন করে আপডেট করতে হতে পারে।' : ' আপনার কোনো সেশন কি সেভ করা না থাকায় এটি আনলক করা যায়নি।'}
+        </p>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="space-y-2">
+        <div class="font-bold text-xs text-[#2b0e23] flex items-center gap-1.5">
+          <i class="fa-solid fa-wand-magic-sparkles text-[#db2777]"></i>
+          <span>এখনই আনক্রপড আসল ছবি পাওয়ার সহজ উপায়:</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <!-- FastDL Button -->
+          <a href="https://fastdl.app/en" target="_blank" rel="noopener noreferrer" onclick="if(navigator.clipboard && '${postUrl}') navigator.clipboard.writeText('${postUrl}'); showAdminToast('লিংক ক্লিপবোর্ডে কপি করা হয়েছে! FastDL-এ পেস্ট করুন', 'info');" class="p-4 rounded-2xl bg-white border border-amber-300 hover:border-amber-500 shadow-xs hover:shadow-md transition-all flex items-center gap-3 group">
+            <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm group-hover:bg-orange-500 group-hover:text-white transition-all shrink-0">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <div class="text-left">
+              <div class="font-bold text-xs text-[#2b0e23] group-hover:text-orange-600">FastDL-এ ১-ক্লিকে খুলুন</div>
+              <div class="text-[10px] text-slate-500">লিংক অটো-কপি হয়ে যাবে</div>
+            </div>
+          </a>
+
+          <!-- SnapInsta Button -->
+          <a href="https://snapinsta.app/" target="_blank" rel="noopener noreferrer" onclick="if(navigator.clipboard && '${postUrl}') navigator.clipboard.writeText('${postUrl}'); showAdminToast('লিংক ক্লিপবোর্ডে কপি করা হয়েছে! SnapInsta-তে পেস্ট করুন', 'info');" class="p-4 rounded-2xl bg-white border border-pink-300 hover:border-pink-500 shadow-xs hover:shadow-md transition-all flex items-center gap-3 group">
+            <div class="w-10 h-10 rounded-xl bg-pink-100 text-[#db2777] flex items-center justify-center font-bold text-sm group-hover:bg-[#db2777] group-hover:text-white transition-all shrink-0">
+              <i class="fa-brands fa-instagram"></i>
+            </div>
+            <div class="text-left">
+              <div class="font-bold text-xs text-[#2b0e23] group-hover:text-[#db2777]">SnapInsta ডাউনলোডার</div>
+              <div class="text-[10px] text-slate-500">ক্যারোসেল ও ৪K রিলস</div>
+            </div>
+          </a>
+
+          <!-- Session Key Recheck Button -->
+          <button type="button" onclick="window.toggleInstaSettingsPanel(true)" class="p-4 rounded-2xl bg-white border border-purple-300 hover:border-purple-500 shadow-xs hover:shadow-md transition-all flex items-center gap-3 group text-left cursor-pointer">
+            <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm group-hover:bg-purple-600 group-hover:text-white transition-all shrink-0">
+              <i class="fa-solid fa-key"></i>
+            </div>
+            <div>
+              <div class="font-bold text-xs text-[#2b0e23] group-hover:text-purple-600">সেশন কি চেক/আপডেট</div>
+              <div class="text-[10px] text-slate-500">${hasSession ? 'নতুন সেশন কি দিন' : 'সেশন কি যোগ করুন'}</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dropzone shortcut -->
+      <div class="p-4 rounded-2xl bg-gradient-to-r from-pink-50 to-purple-50 border border-[#ED96D7]/40 flex items-center justify-between flex-wrap gap-3">
+        <div class="space-y-0.5">
+          <div class="font-bold text-xs text-[#2b0e23]">ফাইল ডাউনলোড করেছেন?</div>
+          <div class="text-[11px] text-[#8c4f75]">ডাউনলোড করা ছবি বা ভিডিওগুলো নিচের ড্রপজোনে টেনে আনুন — সাথে সাথে Media Vault CDN-এ আপলোড হয়ে মডেলের গ্যালারিতে যোগ হয়ে যাবে!</div>
+        </div>
+        <button type="button" onclick="document.getElementById('insta-manual-file-input').click()" class="px-4 py-2 rounded-xl bg-[#db2777] hover:bg-[#be185d] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer">
+          <i class="fa-solid fa-cloud-arrow-up"></i> ফাইল আপলোড করুন
+        </button>
+      </div>
+    </div>
+  `;
+
+  container.classList.remove('hidden');
+}
 
 function renderProfileGuidanceCard(username, model) {
   const container = document.getElementById('insta-results-container');
