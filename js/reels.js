@@ -211,6 +211,10 @@ function getReels(category = 'all') {
     }
   }
 
+  if ((!Array.isArray(reels) || reels.length === 0) && window.BongBanglaSeedData && Array.isArray(window.BongBanglaSeedData.reels)) {
+    reels = window.BongBanglaSeedData.reels;
+  }
+
   if (!Array.isArray(reels) || reels.length === 0) {
     if (Array.isArray(DEFAULT_SHOWCASE_REELS) && DEFAULT_SHOWCASE_REELS.length > 0) {
       reels = DEFAULT_SHOWCASE_REELS;
@@ -267,19 +271,14 @@ async function initReelsPage(options = {}) {
 
   let currentPage = 1;
 
-  async function render() {
+  async function render(freshReels = null) {
     const container = document.getElementById(containerId);
     const pagination = document.getElementById(paginationId);
     const countBadge = document.getElementById(countBadgeId);
 
     if (!container) return;
 
-    let allCategoryReels = [];
-    if (window.BongBanglaSupabase && window.BongBanglaSupabase.isConfigured()) {
-      allCategoryReels = await window.BongBanglaSupabase.fetchReels(category);
-    } else {
-      allCategoryReels = getReels(category);
-    }
+    let allCategoryReels = Array.isArray(freshReels) ? freshReels : getReels(category);
 
     if (allCategoryReels.length === 0 && Array.isArray(DEFAULT_SHOWCASE_REELS) && DEFAULT_SHOWCASE_REELS.length > 0) {
       const catHelper = window.BongBanglaCategorySystem || BongBanglaCategorySystem;
@@ -287,6 +286,19 @@ async function initReelsPage(options = {}) {
       if (showcaseMatches.length > 0) {
         allCategoryReels = showcaseMatches;
       }
+    }
+
+    // Non-blocking background revalidation from Supabase Cloud
+    if (!freshReels && window.BongBanglaSupabase && window.BongBanglaSupabase.isConfigured() && !window._reelsRevalidating) {
+      window._reelsRevalidating = true;
+      window.BongBanglaSupabase.fetchReels(category).then(remoteReels => {
+        window._reelsRevalidating = false;
+        if (Array.isArray(remoteReels) && remoteReels.length > 0) {
+          if (JSON.stringify(remoteReels) !== JSON.stringify(allCategoryReels)) {
+            render(remoteReels);
+          }
+        }
+      }).catch(() => { window._reelsRevalidating = false; });
     }
 
     const totalItems = allCategoryReels.length;

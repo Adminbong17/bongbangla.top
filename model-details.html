@@ -6,28 +6,16 @@
   <title id="page-title">মডেল প্রোফাইল ও বিস্তারিত বিবরণ | BongBangla Media</title>
   <meta name="description" id="page-desc" content="BongBangla Media-র প্রফেশনাল মডেল কাস্টিং রোস্টার। হাই-ফ্যাশন, শাড়ি, ব্রাইডাল এবং কমার্শিয়াল শ্যুটের জন্য মডেল বুক করুন।">
 
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+  <!-- Preconnect & Performance Hints for Ultra-Fast Resource Delivery -->
+  <link rel="preconnect" href="https://sfnyuzemaqplpdeedsgg.supabase.co" crossorigin>
+  <link rel="preconnect" href="https://api.bongbangla.top" crossorigin>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="shortcut icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="favicon.png">
-
-  <!-- Cache Bust & Unregister Stale Service Workers -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(regs) {
-        for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
-      }).catch(function(){});
-    }
-    if ('caches' in window) {
-      caches.keys().then(function(names) {
-        for (var j = 0; j < names.length; j++) { caches.delete(names[j]); }
-      }).catch(function(){});
-    }
-  </script>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -787,6 +775,7 @@
   <script src="js/vault-config.js?v=20261005_v2"></script>
   <script src="js/supabase-config.js?v=20261005_v2"></script>
   <script src="js/supabase-client.js?v=20261005_v2"></script>
+  <script src="js/seed-data.js?v=20261007_v2"></script>
   <script>
     // Model Details Dynamic Page Logic
     document.addEventListener('DOMContentLoaded', async () => {
@@ -835,7 +824,11 @@
         return;
       }
 
-      // Fetch or read models
+      const loadingEl = document.getElementById('model-loading-state');
+      const notFoundEl = document.getElementById('model-not-found-state');
+      const contentEl = document.getElementById('model-profile-content');
+
+      // Fast read models from local cache or instant seed data
       let models = [];
       try {
         const raw = localStorage.getItem('bongbangla_models');
@@ -847,74 +840,54 @@
         }
       } catch(e) {}
 
+      if (models.length === 0 && window.BongBanglaSeedData && Array.isArray(window.BongBanglaSeedData.models)) {
+        models = window.BongBanglaSeedData.models.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104', 'M-1791099527539'].includes(m.id));
+      }
+
+      // Step 1: Instant zero-latency render if available locally or from seed
+      let initialModel = null;
+      if (models && models.length > 0) {
+        if (modelId) {
+          initialModel = models.find(m => m.id === modelId || (m.name && m.name.toLowerCase() === modelId.toLowerCase()));
+        } else {
+          initialModel = models[0];
+        }
+        if (initialModel) {
+          if (loadingEl) loadingEl.classList.add('hidden');
+          renderModelDetail(initialModel, models);
+        }
+      }
+
+      // Step 2: Background revalidation from Supabase Cloud (SWR)
       if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.fetchModels === 'function') {
-        try {
-          const remoteModels = await window.BongBanglaSupabase.fetchModels();
+        window.BongBanglaSupabase.fetchModels().then(remoteModels => {
           if (Array.isArray(remoteModels)) {
             const filteredRemote = remoteModels.filter(m => !['M-1', 'M-2', 'M-3', 'M-4', 'M-101', 'M-102', 'M-103', 'M-104', 'M-1791099527539'].includes(m.id));
             if (filteredRemote.length > 0) {
               models = filteredRemote;
+              const refreshed = modelId 
+                ? models.find(m => m.id === modelId || (m.name && m.name.toLowerCase() === modelId.toLowerCase()))
+                : models[0];
+              if (refreshed) {
+                if (loadingEl) loadingEl.classList.add('hidden');
+                if (notFoundEl) notFoundEl.classList.add('hidden');
+                renderModelDetail(refreshed, models);
+              } else if (!initialModel) {
+                if (loadingEl) loadingEl.classList.add('hidden');
+                if (notFoundEl) notFoundEl.classList.remove('hidden');
+              }
             }
           }
-        } catch(e) {}
-      }
-
-      const loadingEl = document.getElementById('model-loading-state');
-      const notFoundEl = document.getElementById('model-not-found-state');
-      const contentEl = document.getElementById('model-profile-content');
-
-      if (loadingEl) loadingEl.classList.add('hidden');
-
-      if (!models || models.length === 0) {
-        if (notFoundEl) notFoundEl.classList.remove('hidden');
-        return;
-      }
-
-      let model = null;
-      if (modelId) {
-        model = models.find(m => m.id === modelId || m.name.toLowerCase() === modelId.toLowerCase());
-      } else {
-        model = models[0];
-      }
-
-      if (!model && modelId && window.BongBanglaSupabase) {
-        try {
-          const client = window.BongBanglaSupabase.getClient();
-          if (client) {
-            const { data } = await client.from('models').select('*').eq('id', modelId);
-            if (data && data[0]) {
-              const d = data[0];
-              model = {
-                id: d.id,
-                name: d.name,
-                category: d.category,
-                height: d.height,
-                shoots: d.shoots,
-                image: d.image_url || d.image,
-                available: d.available !== false,
-                age: d.age || '',
-                measurements: d.measurements || '',
-                skinTone: d.skin_tone || '',
-                eyeColor: d.eye_color || '',
-                hairColor: d.hair_color || '',
-                location: d.location || 'ঢাকা, বাংলাদেশ',
-                experience: d.experience || '',
-                instagram: d.instagram || '',
-                specialties: d.specialties || '',
-                bio: d.bio || '',
-                gallery: d.gallery || []
-              };
-            }
+        }).catch(() => {
+          if (!initialModel && (!models || models.length === 0)) {
+            if (loadingEl) loadingEl.classList.add('hidden');
+            if (notFoundEl) notFoundEl.classList.remove('hidden');
           }
-        } catch(e) {}
-      }
-
-      if (!model) {
+        });
+      } else if (!initialModel) {
+        if (loadingEl) loadingEl.classList.add('hidden');
         if (notFoundEl) notFoundEl.classList.remove('hidden');
-        return;
       }
-
-      await renderModelDetail(model, models);
     });
 
     async function renderModelDetail(model, allModels) {

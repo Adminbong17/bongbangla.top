@@ -16,66 +16,72 @@ document.addEventListener('DOMContentLoaded', async () => {
   try { initModals(); } catch(e) { console.warn('initModals error:', e); }
   try { initContactForm(); } catch(e) { console.warn('initContactForm error:', e); }
 
-  // Show cached data immediately (for returning visitors)
+  // 1. Instant Seed Pre-population for 0ms First-Paint
+  if (window.BongBanglaSeedData) {
+    if ((!window._cachedCloudModels || window._cachedCloudModels.length === 0) && Array.isArray(window.BongBanglaSeedData.models)) {
+      window._cachedCloudModels = window.BongBanglaSeedData.models;
+    }
+    if ((!window._cachedCloudReels || window._cachedCloudReels.length === 0) && Array.isArray(window.BongBanglaSeedData.reels)) {
+      window._cachedCloudReels = window.BongBanglaSeedData.reels;
+    }
+    if ((!window._cachedCloudHeroSlides || window._cachedCloudHeroSlides.length === 0) && Array.isArray(window.BongBanglaSeedData.hero)) {
+      window._cachedCloudHeroSlides = window.BongBanglaSeedData.hero;
+    }
+  }
+
+  function isDataDifferent(a, b) {
+    try {
+      if (!a || !b) return true;
+      if (a.length !== b.length) return true;
+      return JSON.stringify(a) !== JSON.stringify(b);
+    } catch(e) {
+      return true;
+    }
+  }
+
+  // 2. Immediate zero-latency render (from localStorage or Instant Seed)
   try { renderFrontendHeroSlides(); } catch(e) { console.warn('renderFrontendHeroSlides error:', e); }
   try { renderFrontendPortfolio('all'); } catch(e) { console.warn('renderFrontendPortfolio error:', e); }
   try { renderFrontendModels(); } catch(e) { console.warn('renderFrontendModels error:', e); }
 
-  // Always fetch fresh data from Supabase cloud (works on any device)
+  // 3. Parallel Background SWR Revalidation from Supabase Cloud (never blocks UI)
   if (window.BongBanglaSupabase) {
-    (async () => {
-      try {
-        if (typeof window.BongBanglaSupabase.ensureClient === 'function') {
-          await window.BongBanglaSupabase.ensureClient();
-        }
-      } catch(e) {}
-
-      // 1. Fetch reels immediately and render portfolio marquee
-      (async () => {
-        try {
-          const cloudReels = await window.BongBanglaSupabase.fetchReels('all');
-          if (Array.isArray(cloudReels) && cloudReels.length > 0) {
+    // 3a. Revalidate Reels in background
+    if (typeof window.BongBanglaSupabase.fetchReels === 'function') {
+      window.BongBanglaSupabase.fetchReels('all').then(cloudReels => {
+        if (Array.isArray(cloudReels) && cloudReels.length > 0) {
+          if (isDataDifferent(cloudReels, window._cachedCloudReels)) {
             window._cachedCloudReels = cloudReels;
             const activeFilter = document.querySelector('.filter-btn.bg-gradient-to-r');
             renderFrontendPortfolio(activeFilter ? activeFilter.getAttribute('data-filter') : 'all', cloudReels);
-          } else {
-            renderFrontendPortfolio('all', []);
           }
-        } catch(e) {
-          console.warn('Supabase reels fetch error:', e);
-          renderFrontendPortfolio('all', []);
         }
-      })();
+      }).catch(() => {});
+    }
 
-      // 2. Fetch models immediately and render models marquee
-      (async () => {
-        try {
-          const cloudModels = await window.BongBanglaSupabase.fetchModels();
-          if (Array.isArray(cloudModels) && cloudModels.length > 0) {
+    // 3b. Revalidate Models in background
+    if (typeof window.BongBanglaSupabase.fetchModels === 'function') {
+      window.BongBanglaSupabase.fetchModels().then(cloudModels => {
+        if (Array.isArray(cloudModels) && cloudModels.length > 0) {
+          if (isDataDifferent(cloudModels, window._cachedCloudModels)) {
+            window._cachedCloudModels = cloudModels;
             renderFrontendModels(cloudModels);
-          } else {
-            renderFrontendModels([]);
           }
-        } catch(e) {
-          console.warn('Supabase models fetch error:', e);
-          renderFrontendModels([]);
         }
-      })();
+      }).catch(() => {});
+    }
 
-      // 3. Fetch hero slides immediately and render hero
-      (async () => {
-        try {
-          if (typeof window.BongBanglaSupabase.fetchHeroSlides === 'function') {
-            const cloudSlides = await window.BongBanglaSupabase.fetchHeroSlides();
-            if (Array.isArray(cloudSlides) && cloudSlides.length > 0) {
-              renderFrontendHeroSlides(cloudSlides);
-            }
+    // 3c. Revalidate Hero Slides in background
+    if (typeof window.BongBanglaSupabase.fetchHeroSlides === 'function') {
+      window.BongBanglaSupabase.fetchHeroSlides().then(cloudSlides => {
+        if (Array.isArray(cloudSlides) && cloudSlides.length > 0) {
+          if (isDataDifferent(cloudSlides, window._cachedCloudHeroSlides)) {
+            window._cachedCloudHeroSlides = cloudSlides;
+            renderFrontendHeroSlides(cloudSlides);
           }
-        } catch(e) {
-          console.warn('Supabase hero slides fetch error:', e);
         }
-      })();
-    })();
+      }).catch(() => {});
+    }
 
     // Real-time subscriptions for live updates
     if (typeof window.BongBanglaSupabase.subscribeToReels === 'function') {
