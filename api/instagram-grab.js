@@ -848,7 +848,27 @@ async function handler(req, res) {
     }
   }
 
-  const sessionToken = req.headers['x-ig-session'] || query.session_id || process.env.INSTAGRAM_SESSION_ID || '';
+  let sessionToken = req.headers['x-ig-session'] || query.session_id || query.sessionId || process.env.INSTAGRAM_SESSION_ID || '';
+
+  // Cloud Auto-Sync Fallback: If not passed in request, retrieve active session from Supabase cloud KV store
+  if (!sessionToken) {
+    try {
+      const sbUrl = process.env.SUPABASE_URL || 'https://sfnyuzemaqplpdeedsgg.supabase.co';
+      const sbKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmbnl1emVtYXFwbHBkZWVkc2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMzE3ODEsImV4cCI6MjEwNjYwNzc4MX0.z3YtkhMBSQnMMdCWWCRrFAYn2Yv4bAQcyZ3NGFZOlyw';
+      const sbRes = await fetch(`${sbUrl}/rest/v1/reviews?id=eq.setting_instagram_session&select=comment`, {
+        headers: { 'apikey': sbKey, 'Authorization': `Bearer ${sbKey}` },
+        signal: AbortSignal.timeout(3000)
+      });
+      if (sbRes.ok) {
+        const rows = await sbRes.json();
+        if (rows && rows[0] && rows[0].comment) {
+          sessionToken = rows[0].comment.trim();
+        }
+      }
+    } catch (sbErr) {
+      console.warn('[instagram-grab] Supabase cloud session query notice:', sbErr.message);
+    }
+  }
 
   try {
     const data = await fetchInstagramPost(shortcode, sessionToken);
