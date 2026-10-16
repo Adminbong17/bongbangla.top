@@ -3500,17 +3500,7 @@ window.saveInstaSessionCookie = async function() {
   }
   localStorage.setItem('bongbangla_ig_session', val);
   updateInstaSessionStatus();
-
-  // Cloud Auto-Sync to Supabase
-  if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.saveSiteSetting === 'function') {
-    window.BongBanglaSupabase.saveSiteSetting('instagram_session', val).then((ok) => {
-      if (ok) {
-        showAdminToast('সেশন কি সফলভাবে ক্লাউডে সিঙ্ক হয়েছে (সব ডিভাইসে চালু)!', 'success');
-      }
-    }).catch(() => {});
-  } else {
-    showAdminToast('ইনস্টাগ্রাম সেশন কি সফলভাবে সংরক্ষিত হয়েছে!', 'success');
-  }
+  showAdminToast('ইনস্টাগ্রাম সেশন কি আপনার লোকাল ব্রাউজারে সুরক্ষিতভাবে সংরক্ষিত হয়েছে!', 'success');
 };
 
 window.clearInstaSessionCookie = async function() {
@@ -3518,11 +3508,7 @@ window.clearInstaSessionCookie = async function() {
   const input = document.getElementById('insta-session-input');
   if (input) input.value = '';
   updateInstaSessionStatus();
-
-  if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.saveSiteSetting === 'function') {
-    window.BongBanglaSupabase.saveSiteSetting('instagram_session', '').catch(() => {});
-  }
-  showAdminToast('ইনস্টাগ্রাম সেশন কি মুছে ফেলা হয়েছে।', 'info');
+  showAdminToast('ইনস্টাগ্রাম সেশন কি লোকাল ব্রাউজার থেকে মুছে ফেলা হয়েছে।', 'info');
 };
 
 window.toggleSessionMask = function() {
@@ -3543,40 +3529,17 @@ function updateInstaSessionStatus() {
   const badge = document.getElementById('insta-session-status-badge');
   const input = document.getElementById('insta-session-input');
 
-  const renderBadge = (hasSess, isCloud = false) => {
-    if (!badge) return;
-    if (hasSess) {
-      badge.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-300 flex items-center gap-1 shadow-2xs';
-      badge.innerHTML = `<i class="fa-solid fa-cloud text-emerald-600"></i> ${isCloud ? 'ক্লাউড সিঙ্ক কানেক্টেড' : 'সেশন কানেক্টেড'}`;
-    } else {
-      badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600';
-      badge.textContent = 'পাবলিক মোড (সেশন নেই)';
-    }
-  };
+  if (!badge) return;
+  if (localSession) {
+    badge.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-300 flex items-center gap-1 shadow-2xs';
+    badge.innerHTML = `<i class="fa-solid fa-lock text-emerald-600"></i> লোকাল সেশন কানেক্টেড`;
+  } else {
+    badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600';
+    badge.textContent = 'পাবলিক মোড (সেশন নেই)';
+  }
 
   if (input && !input.value && localSession) {
     input.value = localSession;
-  }
-  renderBadge(Boolean(localSession), false);
-
-  // Auto-sync from Supabase cloud on all devices (mobile, pc, tablet)
-  if (window.BongBanglaSupabase && typeof window.BongBanglaSupabase.fetchSiteSetting === 'function') {
-    window.BongBanglaSupabase.fetchSiteSetting('instagram_session').then(cloudToken => {
-      if (cloudToken && typeof cloudToken === 'string' && cloudToken.trim()) {
-        const cleanCloud = cloudToken.trim();
-        if (cleanCloud !== localSession) {
-          localStorage.setItem('bongbangla_ig_session', cleanCloud);
-          if (input) input.value = cleanCloud;
-          renderBadge(true, true);
-          console.log('☁️ Instagram Session auto-synced across devices via Supabase.');
-        } else {
-          renderBadge(true, true);
-        }
-      } else if (localSession) {
-        // If local has session but cloud doesn't, automatically backup to cloud
-        window.BongBanglaSupabase.saveSiteSetting('instagram_session', localSession).catch(() => {});
-      }
-    }).catch(() => {});
   }
 }
 window.updateInstaSessionStatus = updateInstaSessionStatus;
