@@ -191,10 +191,6 @@
         <a href="#portfolio" class="whitespace-nowrap hover:text-[#db2777] transition-colors py-1">কাজের পোর্টফোলিও</a>
         <a href="#models" class="whitespace-nowrap hover:text-[#db2777] transition-colors py-1">মডেল রোস্টার</a>
         <a href="#process" class="whitespace-nowrap hover:text-[#db2777] transition-colors py-1">আমাদের শুটিং পদ্ধতি</a>
-        <a href="#estimator" class="whitespace-nowrap hover:text-[#db2777] transition-colors flex items-center gap-1.5 py-1">
-          <span>বাজেট ক্যালকুলেটর</span>
-          <span class="bg-[#ED96D7]/25 text-[#be185d] text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full font-bold border border-[#ED96D7]/50 shadow-[0_0_8px_rgba(237,150,215,0.3)]">নতুন</span>
-        </a>
         <a href="#pricing" class="whitespace-nowrap hover:text-[#db2777] transition-colors py-1">প্যাকেজ ও রেট</a>
         <a href="#faq" class="whitespace-nowrap hover:text-[#db2777] transition-colors py-1">প্রশ্নোত্তর</a>
       </nav>
@@ -207,7 +203,6 @@
       <a href="#portfolio" class="mobile-nav-link block text-sm font-semibold text-[#2b0e23] hover:text-[#db2777]">পোর্টফোলিও ও ভিডিও কাজ</a>
       <a href="#models" class="mobile-nav-link block text-sm font-semibold text-[#2b0e23] hover:text-[#db2777]">মডেল ও আর্টিস্ট ডিরেক্টরি</a>
       <a href="#process" class="mobile-nav-link block text-sm font-semibold text-[#2b0e23] hover:text-[#db2777]">আমাদের ৪-ধাপের শুটিং প্রসেস</a>
-      <a href="#estimator" class="mobile-nav-link block text-sm font-bold text-[#db2777]">ইন্টারেক্টিভ বাজেট ক্যালকুলেটর</a>
       <a href="#pricing" class="mobile-nav-link block text-sm font-semibold text-[#2b0e23] hover:text-[#db2777]">প্যাকেজ ও প্রাইসিং</a>
       <a href="#faq" class="mobile-nav-link block text-sm font-semibold text-[#2b0e23] hover:text-[#db2777]">সাধারণ জিজ্ঞাসা (FAQ)</a>
       <a href="admin.html" class="mobile-nav-link block text-sm font-bold text-[#be185d] border-t border-[#ED96D7]/20 pt-2.5">
@@ -707,192 +702,6 @@
     </div>
   </section>
 
-  <!-- ========================================================================
-       Interactive Package & Cost Estimator (Direct Supabase & Admin Panel Sync)
-       ======================================================================== -->
-  <section id="estimator" class="py-10 md:py-14 relative overflow-hidden bg-jamdani-pattern">
-    <div class="ambient-glow glow-pink-primary w-[600px] h-[600px] bottom-0 left-10"></div>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      
-      <div class="text-center max-w-3xl mx-auto mb-8 sm:mb-10 space-y-2.5">
-        <span class="badge-tag px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest inline-block">
-          স্বচ্ছ বাজেট হিসাব
-        </span>
-        <h2 class="font-heading font-extrabold text-3xl sm:text-4xl lg:text-5xl text-[#2b0e23]">
-          ইন্টারেক্টিভ <span class="text-gradient-pink">প্রজেক্ট বাজেট ও সময়কাল</span> ক্যালকুলেটর
-        </h2>
-        <p class="text-[#8c4f75] text-sm sm:text-base font-bangla font-medium">
-          আপনার পছন্দমতো সার্ভিস নির্বাচন করে তাৎক্ষণিক প্রজেক্টের বাজেট দেখুন। এরপর সরাসরি ১-ক্লিকে বুকিং ফর্ম পূরণ করে অ্যাডমিন টিমের সাথে প্রজেক্ট শুরু করুন।
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        <!-- Left: Configuration Inputs -->
-        <div class="lg:col-span-7 glass-panel p-6 sm:p-8 rounded-3xl border border-[#ED96D7]/40 space-y-8 bg-white shadow-md">
-          
-          <!-- Step A: Select Services Needed -->
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="font-bangla font-bold text-base text-[#2b0e23] flex items-center gap-2">
-                <span class="w-6 h-6 rounded-full bg-[#ED96D7] text-white text-xs flex items-center justify-center font-extrabold shadow-sm">১</span>
-                প্রয়োজনীয় সার্ভিস নির্বাচন করুন:
-              </h3>
-              <span class="text-xs text-[#db2777] font-bold">একাধিক সিলেক্ট করা যাবে</span>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <label class="flex items-start gap-3 p-3.5 rounded-2xl bg-[#fdf2f8] border border-[#ED96D7]/30 hover:border-[#db2777] cursor-pointer transition-colors shadow-sm">
-                <input type="checkbox" value="ad-video" class="estimator-service mt-1 rounded text-[#db2777] focus:ring-0" checked>
-                <div>
-                  <div class="font-bold text-[#2b0e23] text-sm font-bangla">সিনেমা অ্যাড ফিল্ম (মডেলসহ)</div>
-                  <div class="text-[#8c4f75] text-[11px] font-medium">৪K কমার্শিয়াল ফিল্ম, প্রফেশনাল মডেল ও ডিরেকশন</div>
-                </div>
-              </label>
-
-              <label class="flex items-start gap-3 p-3.5 rounded-2xl bg-[#fdf2f8] border border-[#ED96D7]/30 hover:border-[#db2777] cursor-pointer transition-colors shadow-sm">
-                <input type="checkbox" value="product-reels" class="estimator-service mt-1 rounded text-[#db2777] focus:ring-0" checked>
-                <div>
-                  <div class="font-bold text-[#2b0e23] text-sm font-bangla">ভাইরাল প্রোডাক্ট রিলস (৮টি রিলস প্যাক)</div>
-                  <div class="text-[#8c4f75] text-[11px] font-medium">ইনস্টাগ্রাম ও ফেসবুকের জন্য হাই-হুক শর্ট ভিডিও</div>
-                </div>
-              </label>
-
-              <label class="flex items-start gap-3 p-3.5 rounded-2xl bg-[#fdf2f8] border border-[#ED96D7]/30 hover:border-[#db2777] cursor-pointer transition-colors shadow-sm">
-                <input type="checkbox" value="bold-shoot" class="estimator-service mt-1 rounded text-[#db2777] focus:ring-0">
-                <div>
-                  <div class="font-bold text-[#2b0e23] text-sm font-bangla">শাড়ি, ফ্যাশন ও বোল্ড শ্যুট</div>
-                  <div class="text-[#8c4f75] text-[11px] font-medium">ঐতিহ্যবাহী জামদানি বা আধুনিক বোল্ড ক্যাটালগ ফটোসেশন</div>
-                </div>
-              </label>
-
-              <label class="flex items-start gap-3 p-3.5 rounded-2xl bg-[#fdf2f8] border border-[#ED96D7]/30 hover:border-[#db2777] cursor-pointer transition-colors shadow-sm">
-                <input type="checkbox" value="facebook-ads" class="estimator-service mt-1 rounded text-[#db2777] focus:ring-0">
-                <div>
-                  <div class="font-bold text-[#2b0e23] text-sm font-bangla">ফেসবুক মার্কেটিং ও সেলস বুস্টিং</div>
-                  <div class="text-[#8c4f75] text-[11px] font-medium">অডিয়েন্স রিসার্চ, মেটা পিক্সেল ও ক্যাম্পেইন ম্যানেজমেন্ট</div>
-                </div>
-              </label>
-
-              <label class="flex items-start gap-3 p-3.5 rounded-2xl bg-[#fdf2f8] border border-[#ED96D7]/30 hover:border-[#db2777] cursor-pointer transition-colors shadow-sm">
-                <input type="checkbox" value="brand-website" class="estimator-service mt-1 rounded text-[#db2777] focus:ring-0">
-                <div>
-                  <div class="font-bold text-[#2b0e23] text-sm font-bangla">ব্র্যান্ড ওয়েবসাইট ও ল্যান্ডিং পেজ</div>
-                  <div class="text-[#8c4f75] text-[11px] font-medium">বিকাশ/নগদ পেমেন্ট ও ১-ক্লিক অর্ডার ফানেলসহ</div>
-                </div>
-              </label>
-
-              <label class="flex items-start gap-3 p-3.5 rounded-2xl bg-[#fdf2f8] border border-[#ED96D7]/30 hover:border-[#db2777] cursor-pointer transition-colors shadow-sm">
-                <input type="checkbox" value="model-portfolio" class="estimator-service mt-1 rounded text-[#db2777] focus:ring-0">
-                <div>
-                  <div class="font-bold text-[#2b0e23] text-sm font-bangla">মডেল পোর্টফোলিও ও লুকবুক</div>
-                  <div class="text-[#8c4f75] text-[11px] font-medium">কাস্টিংয়ের জন্য স্ট্যান্ডার্ড কম্পোজিট কার্ড শ্যুট</div>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <!-- Step B: Model Count & Currency -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-[#ED96D7]/20">
-            <div>
-              <label class="block text-xs font-bold text-[#2b0e23] mb-2 font-bangla">মডেলের সংখ্যা:</label>
-              <select id="estimator-models" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-4 py-2.5 text-xs text-[#2b0e23] font-medium focus:outline-none focus:border-[#db2777] cursor-pointer">
-                <option value="1">১ জন প্রফেশনাল মডেল (অন্তর্ভুক্ত)</option>
-                <option value="2">২ জন মডেল (জুটি বা পেয়ার শ্যুট)</option>
-                <option value="3">৩ জন মডেল (ফুল কালেকশন কাস্ট)</option>
-                <option value="4">৪+ জন মডেল (লার্জ ক্যাম্পেইন)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-[#2b0e23] mb-2 font-bangla">কারেন্সি প্রদর্শন:</label>
-              <select id="estimator-currency" class="w-full bg-white border border-[#ED96D7]/40 rounded-xl px-4 py-2.5 text-xs text-[#2b0e23] font-medium focus:outline-none focus:border-[#db2777] cursor-pointer">
-                <option value="BDT">BDT (৳ বাংলাদেশী টাকা)</option>
-                <option value="USD">USD ($ মার্কিন ডলার)</option>
-                <option value="INR">INR (₹ ভারতীয় রুপি)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Step C: Optional Add-ons -->
-          <div class="pt-4 border-t border-[#ED96D7]/20">
-            <h4 class="font-bangla font-bold text-sm text-[#2b0e23] mb-3 flex items-center gap-2">
-              <span class="w-5 h-5 rounded-full bg-[#db2777] text-white text-[10px] flex items-center justify-center font-bold shadow-sm">২</span>
-              ঐচ্ছিক প্রিমিয়াম আপগ্রেড:
-            </h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <label class="flex items-center gap-2.5 p-3 rounded-xl bg-[#fdf2f8] border border-[#ED96D7]/30 hover:border-[#db2777] cursor-pointer">
-                <input type="checkbox" value="hair-makeup" class="estimator-addon rounded text-[#db2777]">
-                <span class="text-[#572449] font-bangla font-medium">টপ ব্রাইডাল/ফ্যাশন MUA ও হেয়ার আর্টিস্ট</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-3 rounded-xl bg-[#fdf2f8] border border-[#ED96D7]/30 hover:border-[#db2777] cursor-pointer">
-                <input type="checkbox" value="drone-cinema" class="estimator-addon rounded text-[#db2777]">
-                <span class="text-[#572449] font-bangla font-medium">৪K ড্রোন এরিয়াল সিনেমাটোগ্রাফি</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-3 rounded-xl bg-[#fdf2f8] border border-[#ED96D7]/30 hover:border-[#db2777] cursor-pointer">
-                <input type="checkbox" value="prime-location" class="estimator-addon rounded text-[#db2777]">
-                <span class="text-[#572449] font-bangla font-medium">ঐতিহ্যবাহী জমিদার বাড়ি বা স্টুডিও বুকিং</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-3 rounded-xl bg-[#fdf2f8] border border-[#ED96D7]/30 hover:border-[#db2777] cursor-pointer">
-                <input type="checkbox" value="expedited-edit" class="estimator-addon rounded text-[#db2777]">
-                <span class="text-[#572449] font-bangla font-medium">৪৮-ঘন্টার মধ্যে আর্জেন্ট ডেলিভারি</span>
-              </label>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Right: Real-Time Live Quote Summary Card -->
-        <div class="lg:col-span-5 sticky top-28">
-          <div class="glass-panel p-8 rounded-3xl border-2 border-[#ED96D7] shadow-2xl relative overflow-hidden bg-gradient-to-b from-white to-[#fff0f6] shadow-[0_15px_40px_rgba(237,150,215,0.3)]">
-            
-            <div class="flex items-center justify-between border-b border-[#ED96D7]/30 pb-4 mb-6">
-              <div>
-                <span class="text-[10px] uppercase font-bold text-[#db2777] tracking-wider">কাস্টম প্রজেক্ট এস্টিমেট</span>
-                <h3 class="font-bangla font-extrabold text-xl text-[#2b0e23]">আপনার প্রজেক্ট বাজেট</h3>
-              </div>
-              <span class="px-3 py-1 rounded-full bg-[#ED96D7]/25 text-[#be185d] text-xs font-bold border border-[#ED96D7]/50 shadow-sm">
-                স্বচ্ছ রেট
-              </span>
-            </div>
-
-            <!-- Estimated Price -->
-            <div class="mb-6">
-              <span class="text-xs text-[#8c4f75] font-semibold font-bangla">আনুমানিক প্যাকেজ মূল্য</span>
-              <div id="estimated-price-display" class="font-heading font-extrabold text-4xl sm:text-5xl text-[#db2777] mt-1 royal-text-glow">
-                ৳ ৫৭,০০০
-              </div>
-              <div class="flex items-center gap-2 mt-2 text-xs text-emerald-700 font-bold font-bangla">
-                <i class="fa-solid fa-clock"></i>
-                <span id="estimated-days-display">~ ৫ কার্যদিবসের মধ্যে ডেলিভারি</span>
-              </div>
-            </div>
-
-            <!-- Dynamic Services Included Text -->
-            <div class="bg-white p-4 rounded-2xl border border-[#ED96D7]/30 mb-6 text-xs text-[#572449] space-y-2 shadow-inner">
-              <div id="estimator-selected-summary" class="leading-relaxed font-bangla font-medium">
-                বাছাইকৃত সেবা লোড হচ্ছে...
-              </div>
-            </div>
-
-            <!-- Booking Direct Dispatch Button -->
-            <button type="button" id="book-quote-btn" class="w-full py-4 rounded-xl btn-primary-glow font-bangla font-bold text-sm tracking-wide flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer">
-              <i class="fa-solid fa-paper-plane text-base"></i>
-              <span>এই এস্টিমেটে প্রজেক্ট বুকিং দিন</span>
-            </button>
-
-            <div class="mt-4 text-center">
-              <button class="open-booking-modal text-xs text-[#db2777] hover:text-[#9d174d] underline font-bangla font-semibold">
-                সরাসরি স্টুডিওতে মিটিং করতে চান? এখানে ক্লিক করুন।
-              </button>
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-  </section>
 
   <!-- ========================================================================
        Standard Pre-Packaged Bundles (Pricing Cards)
@@ -1685,7 +1494,6 @@
             <li><a href="#portfolio" class="hover:text-[#db2777] transition-colors">কাজের ভিডিও ও পোর্টফোলিও</a></li>
             <li><a href="#models" class="hover:text-[#db2777] transition-colors">মডেল কাস্টিং ডিরেক্টরি</a></li>
             <li><a href="#process" class="hover:text-[#db2777] transition-colors">শ্যুটিংয়ের প্রসেস</a></li>
-            <li><a href="#estimator" class="hover:text-[#db2777] transition-colors">বাজেট ক্যালকুলেটর</a></li>
             <li><a href="#pricing" class="hover:text-[#db2777] transition-colors">প্যাকেজ ও রেট</a></li>
             <li><a href="admin.html" class="text-[#db2777] hover:text-[#9d174d] transition-colors font-bold"><i class="fa-solid fa-lock mr-1"></i> অ্যাডমিন লগইন</a></li>
           </ul>
