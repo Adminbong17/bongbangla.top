@@ -398,15 +398,41 @@ async function fetchWithSession(shortcode, sessionToken) {
   ].filter(Boolean).join(' ');
 
   const commonHeaders = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
     'X-IG-App-ID': '936619743392459',
+    'X-Requested-With': 'XMLHttpRequest',
     'Cookie': cookieStr,
     'Accept': '*/*',
+    'Accept-Language': 'en-US,en;q=0.9',
     'Origin': 'https://www.instagram.com',
-    'Referer': `https://www.instagram.com/p/${shortcode}/`
+    'Referer': `https://www.instagram.com/p/${shortcode}/`,
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-origin',
+    'DNT': '1'
   };
 
-  // Strategy 1: Direct Mobile Media Info Endpoint (/api/v1/media/<mediaId>/info/)
+  // Strategy 1A: Web Info Endpoint (newer, preferred with session)
+  try {
+    const webInfoRes = await fetch(`https://www.instagram.com/api/v1/media/${shortcode}/web_info/`, {
+      headers: commonHeaders,
+      signal: AbortSignal.timeout(10000)
+    });
+    if (webInfoRes.ok) {
+      const webInfoJson = await webInfoRes.json();
+      const item = webInfoJson?.items?.[0];
+      if (item) {
+        const parsed = extractFromMediaInfoItem(item);
+        if (parsed && parsed.mediaList.length > 0) {
+          return parsed;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[instagram-grab] web_info endpoint attempt failed:', err.message);
+  }
+
+  // Strategy 1B: Direct Mobile Media Info Endpoint (/api/v1/media/<mediaId>/info/)
   const mediaId = shortcodeToMediaId(shortcode);
   if (mediaId) {
     try {
@@ -437,18 +463,58 @@ async function fetchWithSession(shortcode, sessionToken) {
     });
     if (a1Res.ok) {
       const a1Json = await a1Res.json();
+      // Try items array (mobile-style response)
       const item = a1Json?.items?.[0];
       if (item) {
         const parsed = extractFromMediaInfoItem(item);
         if (parsed && parsed.mediaList.length > 0) return parsed;
+      }
+      // Try graphql response format
+      const gqlMedia = a1Json?.graphql?.shortcode_media;
+      if (gqlMedia) {
+        const extracted = [];
+        const seen = new Set();
+        let cap = '';
+        if (gqlMedia.edge_media_to_caption?.edges?.[0]?.node?.text) {
+          cap = cleanCaption(gqlMedia.edge_media_to_caption.edges[0].node.text);
+        }
+        function addA1Media(type, url, thumb, title) {
+          const cu = cleanUrl(url);
+          if (!cu || seen.has(cu)) return;
+          seen.add(cu);
+          extracted.push({ type, url: cu, thumbnail: thumb ? cleanUrl(thumb) : cu, title, isCroppedPreview: isCroppedUrl(cu) });
+        }
+        if (gqlMedia.edge_sidecar_to_children?.edges) {
+          gqlMedia.edge_sidecar_to_children.edges.forEach((edge, idx) => {
+            const n = edge.node;
+            if (!n) return;
+            if (n.is_video && n.video_url) {
+              addA1Media('video', n.video_url, getBestPhotoUrl(n) || n.display_url, `Instagram Reel #${idx + 1}`);
+            } else {
+              const best = getBestPhotoUrl(n) || n.display_url;
+              if (best) addA1Media('photo', best, best, `Instagram Photo #${idx + 1}`);
+            }
+          });
+        } else if (gqlMedia.is_video && gqlMedia.video_url) {
+          addA1Media('video', gqlMedia.video_url, getBestPhotoUrl(gqlMedia) || gqlMedia.display_url, 'Instagram Reel');
+        } else {
+          const best = getBestPhotoUrl(gqlMedia) || gqlMedia.display_url;
+          if (best) addA1Media('photo', best, best, 'Instagram Photo');
+        }
+        if (extracted.length > 0) return { mediaList: extracted, caption: cap };
       }
     }
   } catch (err) {
     console.warn('[instagram-grab] __a=1 endpoint attempt failed:', err.message);
   }
 
-  // Strategy 3: GraphQL queries with internal doc_ids
-  const docIds = ['9510064595728286', '10015901848480474', '8845758582119845'];
+  // Strategy 3: GraphQL queries with internal doc_ids (rotated periodically by Instagram)
+  const docIds = [
+    '8845758582119845',   // PolarisPostActionLoadPostQueryQuery
+    '27128499623469141',  // PolarisPostRootQuery (newer variant)
+    '9510064595728286',   // Legacy but sometimes works
+    '10015901848480474',  // Legacy fallback
+  ];
   const variables = JSON.stringify({
     shortcode: shortcode,
     fetch_tagged_user_count: null,
@@ -460,14 +526,18 @@ async function fetchWithSession(shortcode, sessionToken) {
     try {
       const body = new URLSearchParams({
         variables: variables,
-        doc_id: docId
+        doc_id: docId,
+        fb_api_caller_class: 'RelayModern',
+        fb_api_req_friendly_name: 'PolarisPostActionLoadPostQueryQuery',
+        server_timestamps: 'true'
       });
 
       const res = await fetch('https://www.instagram.com/graphql/query', {
         method: 'POST',
         headers: {
           ...commonHeaders,
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-FB-Friendly-Name': 'PolarisPostActionLoadPostQueryQuery'
         },
         body: body.toString(),
         signal: AbortSignal.timeout(10000)
@@ -475,7 +545,17 @@ async function fetchWithSession(shortcode, sessionToken) {
 
       if (res.ok) {
         const json = await res.json();
-        const media = json?.data?.xdt_shortcode_media;
+
+        // Try newer response path: xdt_api__v1__media__shortcode__web_info
+        const webInfoData = json?.data?.xdt_api__v1__media__shortcode__web_info;
+        if (webInfoData && webInfoData.items && webInfoData.items.length > 0) {
+          const item = webInfoData.items[0];
+          const parsed = extractFromMediaInfoItem(item);
+          if (parsed && parsed.mediaList.length > 0) return parsed;
+        }
+
+        // Try standard path: xdt_shortcode_media (GraphQL response)
+        const media = json?.data?.xdt_shortcode_media || json?.data?.shortcode_media;
         if (media) {
           const extracted = [];
           const seen = new Set();
@@ -531,6 +611,50 @@ async function fetchWithSession(shortcode, sessionToken) {
     }
   }
 
+  // Strategy 4: Alternative /api/graphql endpoint (sometimes works when /graphql/query is blocked)
+  try {
+    const altBody = new URLSearchParams({
+      variables: variables,
+      doc_id: '8845758582119845',
+      fb_api_caller_class: 'RelayModern',
+      fb_api_req_friendly_name: 'PolarisPostActionLoadPostQueryQuery',
+      server_timestamps: 'true'
+    });
+
+    const altRes = await fetch('https://www.instagram.com/api/graphql', {
+      method: 'POST',
+      headers: {
+        ...commonHeaders,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-FB-Friendly-Name': 'PolarisPostActionLoadPostQueryQuery'
+      },
+      body: altBody.toString(),
+      signal: AbortSignal.timeout(10000)
+    });
+
+    if (altRes.ok) {
+      const altJson = await altRes.json();
+      // Check newer path
+      const altWebInfo = altJson?.data?.xdt_api__v1__media__shortcode__web_info;
+      if (altWebInfo?.items?.[0]) {
+        const parsed = extractFromMediaInfoItem(altWebInfo.items[0]);
+        if (parsed && parsed.mediaList.length > 0) return parsed;
+      }
+      // Check standard path
+      const altMedia = altJson?.data?.xdt_shortcode_media || altJson?.data?.shortcode_media;
+      if (altMedia) {
+        const bestImg = getBestPhotoUrl(altMedia) || altMedia.display_url;
+        if (altMedia.is_video && altMedia.video_url) {
+          return { mediaList: [{ type: 'video', url: cleanUrl(altMedia.video_url), thumbnail: cleanUrl(bestImg), title: 'Instagram Reel', isCroppedPreview: false }], caption: cleanCaption(altMedia.edge_media_to_caption?.edges?.[0]?.node?.text || '') };
+        } else if (bestImg) {
+          return { mediaList: [{ type: 'photo', url: cleanUrl(bestImg), thumbnail: cleanUrl(bestImg), title: 'Instagram Photo', isCroppedPreview: isCroppedUrl(bestImg) }], caption: cleanCaption(altMedia.edge_media_to_caption?.edges?.[0]?.node?.text || '') };
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[instagram-grab] /api/graphql alternative endpoint failed:', e.message);
+  }
+
   return null;
 }
 
@@ -551,11 +675,14 @@ async function fetchInstagramPost(shortcode, sessionToken = '') {
   
   // Headers that cause Instagram embed to return clean ServerJS with s.handle
   const headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.9',
     'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache'
+    'Pragma': 'no-cache',
+    'Sec-Fetch-Dest': 'iframe',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'cross-site'
   };
 
   // Attempt 1: Desktop UA
@@ -575,7 +702,7 @@ async function fetchInstagramPost(shortcode, sessionToken = '') {
   // Attempt 2: Mobile UA
   try {
     const mobileHeaders = {
-      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15',
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1',
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       'Accept-Language': 'en-US,en;q=0.9'
     };
@@ -761,7 +888,7 @@ async function handler(req, res) {
     try {
       const mediaRes = await fetch(targetUrl, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
           'Referer': 'https://www.instagram.com/'
         },
         signal: AbortSignal.timeout(25000)
