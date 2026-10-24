@@ -1,0 +1,63 @@
+name: Supabase Keep-Alive Pulse (Anti-Pause)
+
+on:
+  schedule:
+    # Run every 3 days at 07:00 UTC (1:00 PM BST) to prevent Supabase 7-day inactivity pause
+    - cron: '0 7 */3 * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab anytime
+
+jobs:
+  keepalive:
+    name: Supabase Anti-Pause Heartbeat
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping Vercel Keep-Alive Endpoint
+        run: |
+          echo "Sending Keep-Alive Pulse to Vercel Endpoint..."
+          HTTP_STATUS=$(curl -s -o vercel_response.json -w "%{http_code}" -m 30 "https://bongbangla.top/api/cron/keep-alive" || echo "failed")
+          echo "Vercel HTTP Status: $HTTP_STATUS"
+          if [ -f vercel_response.json ]; then
+            cat vercel_response.json
+          fi
+
+      - name: Direct Supabase Database Activity Heartbeat (Backup)
+        run: |
+          echo "Executing direct Supabase REST API Activity Pulse..."
+          SUPABASE_URL="https://sfnyuzemaqplpdeedsgg.supabase.co"
+          SUPABASE_KEY="${{ secrets.SUPABASE_ANON_KEY }}"
+          
+          # Fallback to public anon key if secret not explicitly configured in GitHub Secrets
+          if [ -z "$SUPABASE_KEY" ]; then
+            SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmbnl1emVtYXFwbHBkZWVkc2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMzE3ODEsImV4cCI6MjEwNjYwNzc4MX0.z3YtkhMBSQnMMdCWWCRrFAYn2Yv4bAQcyZ3NGFZOlyw"
+          fi
+
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          # 1. Direct READ (Select from models)
+          echo "1. Performing READ on models..."
+          READ_CODE=$(curl -s -o read_res.json -w "%{http_code}" -X GET "$SUPABASE_URL/rest/v1/models?select=id,name&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY")
+          echo "READ HTTP Status: $READ_CODE"
+
+          # 2. Direct WRITE (Heartbeat update on reviews)
+          echo "2. Performing WRITE on reviews..."
+          PAYLOAD="{\"id\":\"keep_alive_ping\",\"name\":\"github_action_pulse\",\"brand\":\"system\",\"rating\":5,\"comment\":\"Keep-alive heartbeat from GitHub Actions at $TIMESTAMP\"}"
+          WRITE_CODE=$(curl -s -o write_res.json -w "%{http_code}" -X POST "$SUPABASE_URL/rest/v1/reviews" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: resolution=merge-duplicates" \
+            -d "$PAYLOAD")
+          echo "WRITE HTTP Status: $WRITE_CODE"
+
+          # 3. Direct WRITE on keep_alive_logs (if table exists)
+          LOG_PAYLOAD="{\"pinged_at\":\"$TIMESTAMP\",\"source\":\"github_actions\",\"status\":\"active\",\"meta\":{\"runner\":\"ubuntu-latest\"}}"
+          curl -s -o /dev/null -X POST "$SUPABASE_URL/rest/v1/keep_alive_logs" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$LOG_PAYLOAD" || true
+
+          echo "✅ Supabase database keep-alive pulse completed successfully!"

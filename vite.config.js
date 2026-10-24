@@ -6,6 +6,28 @@ export default defineConfig({
     {
       name: 'instagram-grab-dev-api',
       configureServer(server) {
+        server.middlewares.use('/api/cron/keep-alive', async (req, res) => {
+          try {
+            const handlerModule = await import('./api/cron/keep-alive.js');
+            const handler = handlerModule.default || handlerModule;
+
+            res.json = (data) => {
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify(data));
+            };
+            res.status = (code) => {
+              res.statusCode = code;
+              return res;
+            };
+
+            handler(req, res);
+          } catch (err) {
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ success: false, error: err.message }));
+          }
+        });
+
         server.middlewares.use('/api/instagram-grab', async (req, res) => {
           try {
             const handlerModule = await import('./api/instagram-grab.js');
